@@ -1,0 +1,97 @@
+extends TObject;
+native Tonyu;
+\u(obj) {
+    return Object.assign({},obj);
+}
+\getMembers(klass){
+    let d=klass.decls;
+    let f=(d.fields),m=(d.methods);
+    let s=klass.superclass;
+    //print(klass.shortName, klass, f,m);
+    let res={};
+    if(klass.shortName!="RActor" && s)res=getMembers(s);
+    //let p=Tonyu.iterator2(f);
+
+    for(let n,v in f){
+        res [n]={
+            type="fld",
+            declin=klass
+        };
+    }
+    for(let n,v in m){
+        if (n=="new") continue;
+        res [n]={
+            type="meth",
+            declin=klass
+        };
+    }
+    return res;
+}
+\inherits(klass, parent) {
+    if (klass===parent) return true;
+    if (!klass.superclass) return false;
+    return inherits(klass.superclass,parent);
+}
+let genasm:GenAsm;
+let anodes=genasm.anodes;
+let Za=(anodes.filter \(e){
+    return e.shortName==="RActor";
+}[0]);
+let fld=new FldIdx;
+let ks=anodes.filter \(klass){
+    return
+    inherits(klass, Za) &&
+    klass!==Za;
+};
+for (let klass of ks) {
+    proc(klass);
+}
+fld.build();
+/*
+for (let klass of ks) {
+    header(klass);
+}*/
+
+\proc(klass){
+    //print(klass);
+    let r=getMembers(klass);
+    fld.addMembers(
+    Object.keys(r));
+    /*for (let k,v in r){
+        print(k,v.type,v.declin.shortName);
+    }*/
+}
+\header(klass){
+    let r=getMembers(klass);
+    let min=256,max=0;
+    let rev={};
+    printf("class %s,%s%{",
+    klass.shortName,
+    klass.superclass.shortName);
+    for (let k,v in r){
+        let i=fld.n2idx(k);
+        if(i<min)min=i;
+        if(i>max)max=i;
+        rev [i]=k;
+    }
+    for(let i=max;i>=min;i-=2){
+        let k=rev [i];
+        if(!k){
+            printf("unused%n");
+            continue;
+        }
+        let ri=r [k];
+        if(ri.type=="fld"){
+            printf("fld .%s,0%n",k);
+        }else {
+            printf('meth %s,%s%n',
+            ri.declin.shortName,
+            k);
+        }
+    }
+    printf("end.const 0%n%}");
+}
+\printf() {
+    genasm.printf.apply(genasm,arguments);
+}
+//print(t);

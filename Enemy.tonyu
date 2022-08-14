@@ -1,0 +1,15 @@
+extends RActor;
+var vx;
+while(y<200) {
+    y+=2;
+    update();
+}
+if (x>$player.x) vx=0-2;
+else vx=2;
+//print(y,$MScreen.height);
+while(true) {
+    if (screenOut()) die();
+    y+=2;
+    x+=vx;
+    update();
+}

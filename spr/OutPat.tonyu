@@ -1,0 +1,49 @@
+extends TObject;
+let pa=new Panel {
+    x:200,y:200,
+    width:16,height:16,
+    scaleX:10
+};
+
+/*let ide=$Boot.getIDE();
+if (ide) ide.runDialog.resize {
+    left:10,top:300,width:400,
+    height:400
+};*/
+let buf='',count=0;
+for(let i=0;
+i<$imageList.length;i++){
+    let l=$imageList [i];
+    if(l.width!=16)continue;
+    if(l.height!=16)continue;
+    if(count>=64)break;
+    count++;
+    pa.clearRect();
+    pa.drawSprite(8,8,i);
+    //updateEx(50);
+    let d=pa.getImageData(
+    0,0,8,16);
+    d=d.data;
+    out(d);
+    d=pa.getImageData(
+    8,0,8,16);
+    d=d.data;
+    out(d);
+    
+    //print(d.data.length);
+}
+\out(d){
+    let c="0b";
+    let db= [];
+    for(let i=3;i<d.length;
+    i+=4) {
+        c+=(d [i]>128?1:0);
+        if(c.length>=10){
+            c=(c-0).toString(16);
+            c="$"+c;
+            db.push(c);
+            c="0b";
+        }
+    }
+    buf+="db "+db+"\n";
+}

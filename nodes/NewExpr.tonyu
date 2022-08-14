@@ -1,0 +1,3 @@
+includes TNode,Elem;
+let klass:VarAccess;
+let params:Call?;

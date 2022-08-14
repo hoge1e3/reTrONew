@@ -1,0 +1,115 @@
+extends TObject;
+let idx=254;
+let _n2idx={};//optimized
+let _n2seq={};//not optimized
+
+\fldidx(){
+    let def=`Actor.noovr,Class
+ fld .class,Class
+ meth Class,main
+ fld.bottom Object
+ fld .x, 0
+ fld .y, -1024
+ fld .p, 0
+ fld .c, 3
+ fld.bottom Sprite
+ meth Actor,onUpdate
+ meth Actor,update
+ meth Actor,screenOut 
+ meth Actor,die
+ meth Actor,updateEx
+ meth Actor,crashTo
+ fld.bottom Actor
+endm
+`;
+    let fldp=/fld \.(\w+)/;
+    let metp=/meth.*,(\w+)/;
+    idx=254;
+    let res={};
+    for(let ln of def.split("\n")){
+        let m=fldp.exec(ln)||
+        metp.exec(ln);
+        if(m){
+            res [m [1]]=idx;
+            /*print(m [1],idx.
+            toString(16));*/
+            n2seq(m[1]);
+            idx-=2;
+        }
+    }
+    _n2idx=res;
+    return res;
+}
+let confli={};
+fldidx();
+//print(n2seq);
+/*print(n2idx("y"));
+print(n2idx("t").toString(16));
+print(idx2n(250));*/
+addMembers(["x","y","test","cnt"]);
+addMembers(["x","y","cnt","toste"]);
+addMembers(["x","y","ttt","toste"]);
+//print(confli);
+//print(_n2seq);
+build();
+\build(){
+    for (let n of Object.keys(_n2seq)) {
+        if (!_n2idx[n]) _n2idx[n]=idx;
+    }
+    //print(_n2idx);
+    while(true) {
+        let cont=false;
+        for (let k,i of confli) {
+            k=k.split("\t");
+            if (_n2idx[k[0]]==_n2idx[k[1]]) {
+                _n2idx[k[1]]-=2;
+                cont=true;
+            }
+        }
+        if (!cont) break;
+    }
+    //print(_n2idx);
+}
+
+
+\n2idx(n:String){
+    let r=_n2idx [n];
+    if(r)return r;
+    throw new Error(
+    `${n} is not found`);
+}
+\n2seq(n:String){
+    let r=_n2seq [n];
+    if(r!=null)return r;
+    r=Object.keys(
+    _n2seq).length;
+    _n2seq[n]=r;
+    return r;
+}
+\idx2n(i:Number){
+    for(let k,v in _n2idx){
+        if(v==i)return k;
+    }
+    return null;
+}
+\addConfli(a:String, b:String) {
+    if (a==b) return;
+    if (n2seq(a)>n2seq(b)){
+        return addConfli(b,a);
+    }
+    confli[a+"\t"+b]=true;
+}
+\isConfli(a:String, b:String) {
+    if (a==b) return true;
+    if (n2seq(a)>n2seq(b)){
+        return isConfli(b,a);
+    }
+    return confli[a+"\t"+b]=true;
+}
+\addMembers(names:String[]) {
+    for (let name of names) {
+        for (let name2 of names) {
+            addConfli(name,name2);
+        }
+    }
+}

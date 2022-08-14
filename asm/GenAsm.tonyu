@@ -1,0 +1,487 @@
+extends Visitor;
+includes Buf, Context;
+native Tonyu;
+initModule();
+let IDEPrj=$currentProject.compiler;
+let anodes=waitFor(IDEPrj.serializeAnnotatedNodes());
+let mem=new MemberScan{genasm:this};
+let lval=false;
+let symSeq=1;
+let ide=$Boot.getIDE();
+let klass, klassSrc;
+let problems=[];
+let builtins={getkey:"getkey",rnd:"rnd"};
+let globals={};
+let keynames={space: 0x0108, 
+right:0x8008,down:0x4008,up:0x2008,left:0x1008};
+//debug=true;
+let opmap={
+    "*":"call IMULT.a%n", 
+    "/":"call IDIV.a%n",
+    "%":"call IMOD.a%n",
+    "+":"add hl, de%n",
+    "-":"subhl de%n",
+};
+
+printf(`org 08000h
+include tnu
+include bool
+
+main:
+tnu.run ${$mainClassName}
+`);
+let anode;
+\annotation(n) {
+    let res=anode[n._id];
+    if (!res) {
+        return {};
+    }
+    return res;
+}
+for (klass of mem.ks) {
+    mem.header(klass);
+    klassSrc=klass.src.tonyu.text();
+    //print(klass.src.tonyu);
+    printf("def %s.main,0,0%{",klass.shortName);
+    anode=(klass.annotation);
+    visit(klass.node);
+    printf("%}");
+}
+let outp=new OutPat;
+printf(`enddef 0
+endusr:
+${Object.keys(globals).map \(k){
+    return globalLabel(k)+":dw 0\n";
+}}
+spr.inipat:
+ ld de,3800h
+ ld hl,spr.pat
+ ld bc,${outp.count*32}
+ jp LDIRVM
+spr.pat:
+${outp.buf}
+
+end main`);
+/*print(Object.keys(n.decls.fields));
+print(n.superclass.fullName);
+*/
+//print("buf="+buf);
+let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
+
+//msxpen.com/codes/-N8kjRrkOlaH4vlLV7MY";
+
+
+//msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
+
+
+new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
+
+\showDiag() {
+    //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
+    if (problems.length) {
+        let tx=new HTMLUI{
+            content:["div",
+            {style:'background: #fee;'},
+            ["h2","Problem(s) found"],
+            ["ul"].concat(
+            problems.map\(p) {
+                return ["li",["a",{
+                    href:"javascript:;",
+                    onclick: \{
+                        ide.jump(p.file, p.row, p.col);  
+                    }
+                },
+                p.file.name(),":",p.row,":",p.col," - ",p.mesg
+                ]];
+            }),
+            ["button",{onclick:\{tx.die();}},"Close"]
+            ],
+            left:10, top: 20, width:300,
+            height:400,
+        };
+        return;
+    }
+    let tx=new HTMLUI{
+        content:["div",
+        {style:'background: #eee;'},
+        ["h2","Code copied!"],
+        ["ul",
+        ["li",
+        "Open ",
+        ["a",{target:"pen",href:url},
+        "this MSXpen page "],
+        "."],
+        ["li","Paste the copied code",
+        " to 'Asm' tab."]],
+        ["textarea",{rows:"10", cols:"30",name:"val"},
+        "test\ndesu"],
+        ["button",{onclick:\{tx.die();}},"Close"]
+        ],
+        left:10, top: 20, width:300,
+        height:400,
+    };
+    let cg=new Codegen;
+    tx.setValue("val", cg.gensrc(buf+""));
+    tx.copyToClipboard("val");
+}
+
+\def(n){
+    if(!n){
+        print(n);
+        return;
+    }
+    print(n.type,":",
+    Object.keys(n));
+    unsup(n);
+}
+\unsup(n:TNode, mesg:String) {
+    mesg=mesg|| "Unsupported syntax";
+    let file=klass.src.tonyu;
+    let rc=Tonyu.TError.calcRowCol(klassSrc,n.pos);
+    let p={file, row:rc.row, col: rc.col, mesg};
+    problems.push(p);
+    //ide.jump( file, rc.row, rc.col);
+    print(p.file.name(),":",p.row,":",p.col," - ",p.mesg);
+}
+\v_program(n:Program){
+    let ext:Extends?=n.ext;
+    let incl:Includes?=n.incl;
+    let stmts:Stmt[]=n.stmts;
+    for (let s of stmts){
+        visit(s);
+    }
+    printf("ret%n");
+}
+\v_parenExpr(n:ParenExpr) {
+    visit(n.expr);
+}
+\extractSrc(n:TNode) {
+    return klassSrc.substring(n.pos, n.pos+n.len);
+}
+\v_exprstmt(n:Exprstmt){
+    let expr:Expression=n.expr;
+    printf(";%s%n", extractSrc(n));
+    visit(expr);
+}
+\v_infix(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    switch(op.text){
+        case "=":
+        assign(n);
+        break;
+        case "+":case "-":
+        case "*":case "/":case "%":
+        arith(n);
+        break;
+        case "==":case "!=":
+        case "<=":case ">=":
+        case "<":case ">":
+        cmp(n);
+        break;
+        case "+=":case "-=":
+        case "*=":case "/=":case "%=":
+        arithEq(n);
+        break;
+        default:
+        unsup(n,`Unsupported infix operator '${op.text}'`);
+    }
+}
+\isMemberRef(m:Expression) {
+    if (m.type!=="postfix") return null;
+    let tgme:Postfix=m;
+    if (tgme.op.type!=="member") return null;
+    let mem: Member=tgme.op;
+    return [tgme.left, mem.name];
+}
+\v_postfix(n:Postfix){
+    let left:Expression=n.left;
+    let op:TNode=n.op;
+    if (!lval) {
+        let tgme=isMemberRef(n);
+        if (tgme) {
+            visit(tgme[0]);
+            printf("getfldtg .%s%n",tgme[1]);
+            return;
+        } else if (op.type==="call") {
+            if (left.type==="varAccess") {
+                return myMeth(left, op);            
+            } else {
+                let tgme=isMemberRef(left);
+                if (tgme) {
+                    tgMeth(tgme[0], tgme[1], op);
+                    return;
+                }
+                unsup(n, `Not a member Ref `);
+            }
+        }
+    } else {
+        let tgme=isMemberRef(n);
+        if (tgme) {
+            printf("push hl%n");
+            enter{lval:false} \{
+                visit(tgme[0]);
+            };
+            printf("setfldtg .%s%n",tgme[1]);
+            return;
+        }
+    }
+    unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
+}
+\tgMeth(target: Expression, name:Token, op:Call) {
+    printf("pushthis 0%n");
+    let args=op.args;
+    for(let a of args){
+        visit(a);
+        printf("push hl%n");
+    }
+    visit(target);
+    printf("invoketg.a .%s%n",name);
+    printf("popthis 0%n");
+    /*
+    pushthis 0
+   ld hl,(right)
+   invoketg.a .push
+   popthis 0*/
+}
+\myMeth(left: VarAccess, op:Call) {
+    let args=op.args;
+    let mname=left.name.text;
+    if (mname==="getkey") {
+        if (!args[0]) {
+            unsup(left, "'getkey' should give a string constant.");
+        } else {
+            let kn=args[0];
+            if (kn.type==="literal") {
+                let s=kn.text;
+                s=s.substring(1,s.length-1);
+                if (!keynames[s]) {
+                    unsup(kn, `Undefined key name '${s}'.`);
+                }
+                printf("ld hl, %s%n", keynames[s]);
+                printf("call getkey%n");
+            } else {
+                unsup(kn,`'${kn.type}' is not a string constant `);
+                //print(kn.type);
+            }
+        }
+    } else if (mname==="rnd") {
+        if (!args[0]) {
+            unsup(left, "'rnd' should give a number.");
+        }
+        visit(args[0]);
+        printf("call rnd%n");
+    } else {
+        for(let a of args){
+            visit(a);
+            printf("push hl%n");
+        }
+        printf("invoke .%s%n", mname);
+    }
+}
+\cmp(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    let ops={
+        "==":"eq","!=":"ne",
+        "<=":"le",">=":"ge",
+        "<":"lt",">":"gt",
+    };
+    visit(right);
+    printf("push hl%n");
+    visit(left);
+    printf("pop de%n");
+    printf("call hl%sde%n",ops[op.text]);
+}
+\arith(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    arith2(left,op.text, right);
+}
+\arith2(left:Expression, opr:String, right:Expression) {
+    switch(opr) {
+        case "*":case "/":case "%":
+        printf("pushthis%n");
+        visit(left);
+        printf("push hl%n");
+        visit(right);
+        printf("pop de%n");
+        printf(opmap[opr]);
+        printf("popthis%n");
+        break;
+        case "+":case "-":
+        visit(right);
+        printf("push hl%n");
+        visit(left);
+        printf("pop de%n");
+        printf(opmap[opr]);
+        break;
+        default:
+        unsup(left, `Invalid op ${opr}`);
+    }
+}
+\arithEq(n:Infix) {
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    arith2(left, op.text.substring(0,op.text.length-1), right);
+    enter{lval:true} \{
+        visit(left);
+    };
+    /*if (left.type!=="varAccess") {
+        return unsup(`Only field${op.text}=... is supported `);
+    }
+    let a=annotation(left);
+    switch (a.scopeInfo.type) {
+        case "field":
+
+        break;
+        case "class":
+        unsup(n,`Cannot assign to class '${name}'.`);
+        break;
+        default:
+        unsup(n,`${name}: Unsupported variable type '${a.scopeInfo.type}'`);
+    }
+
+    
+    let s=`
+        macro getfld, n
+        local ad
+        ld (ad-1),a
+        ld hl,(n)
+        ad:
+        endm
+
+        macro setfld, n
+        local ad
+        ld (ad-1),a
+        ld (n),hl
+        ad:
+        endm
+        `;*/
+}
+\assign(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    visit(right);
+    enter{lval:true} \{
+        visit(left);
+    };
+}
+\v_reservedConst(n:Token) {
+    if (n.text==="true" || n.text==="false") {
+        printf("ld hl,%s%n",n.text);
+    } else {
+        unsup(n,`Unsupported reserved word '${n.text}'.`);
+    }
+}
+\v_number(n:Token){
+    printf("ld hl,%d%n",n.text-0);
+}
+\globalLabel(n:String) {
+    return `gbl_${n.replace(/\$/g,"")}`;
+}
+\v_varAccess(n:VarAccess){
+    let name:Token=n.name;
+    let a=annotation(n);
+    switch (a.scopeInfo.type) {
+        case "field":
+        if (lval) {
+            printf("setfld .%s%n",name);
+        } else{
+            printf("getfld .%s%n",name);
+        }
+        break;
+        case "class":
+        if (lval) {
+            unsup(n,`Cannot assign to class '${name}'.`);
+        } else{
+            printf("ld hl,%s%n",name);
+        }
+        break;
+        case "global":
+        globals[name.text]=1;
+        if (lval) {
+            printf("ld (%s),hl%n",globalLabel(name.text));
+        } else {
+            printf("ld hl,(%s)%n",globalLabel(name.text));
+        }
+        break;
+        default:
+        unsup(n,`${name.text}: Unsupported variable type '${a.scopeInfo.type}'`);
+    }
+}
+\genSym() {
+    return "lb"+(symSeq++);
+}
+\v_compound(n:Compound) {
+    for (let s of n.stmts) {
+        visit(s);
+    }
+}
+\v_while(n:While){
+    let cond:Expression=n.cond;
+    let loop:Stmt=n.loop;
+    let sh=genSym();
+    let se=genSym();
+    printf("%s:%n",sh);
+    visit(cond);
+    printf("jpf %s%n",se);
+    visit(loop);
+    printf("jp %s%n",sh);
+    printf("%s:%n",se);
+}
+\v_if(n:If){
+    let cond:Expression=n.cond;
+    let then:Stmt=n.then;
+    let _else:Stmt?=n._else;
+    let send=genSym();
+    let sels=genSym();
+    visit(cond);
+    printf("jpf %s%n",sels);
+    visit(then);
+    printf("jp %s%n",send);
+    printf("%s:%n",sels);
+    if (_else) visit(_else);
+    printf("%s:%n",send);
+}
+
+
+\v_varDecl(n:VarDecl){
+    let name:Token=n.name;
+    let typeDecl:TypeDecl?=n.typeDecl;
+    let value:Expression?=n.value;
+    if (!value) return;
+    visit(value);
+    //TODO local
+    printf("setfld .%s%n",name);
+}
+\v_varsDecl(n:VarsDecl){
+    let decls:VarDecl[]=n.decls;
+    for(let d of decls){
+        visit(d);
+    }
+}
+\v_newExpr(n:NewExpr){
+    let klass:VarAccess=n.klass;
+    let params:Call?=n.params;
+    if (params.args.length==1 && params.args[0].type=="objlit") {
+        let objlit:Objlit=params.args[0];
+        let elems:JsonElem[]=objlit.elems;
+        for (let elem of elems) {
+            if (elem.value) {
+                visit(elem.value);
+            } else {
+                printf("getfld .%s%n",elem.key);
+            }
+            printf("new.arg .%s%n",elem.key);
+        }
+        printf("new %s,%d%n",klass.name, elems.length);
+        return;
+    }
+    unsup(n,`'new ${klass.name}' can be followed by only {key:value...}`);
+}

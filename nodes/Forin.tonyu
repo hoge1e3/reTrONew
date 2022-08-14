@@ -1,0 +1,5 @@
+includes TNode;
+let isVar:Token?;
+let vars:Token[];
+let inof:Token;
+let set:Expression;

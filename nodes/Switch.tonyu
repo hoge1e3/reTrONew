@@ -1,0 +1,4 @@
+includes TNode,Stmt;
+let value:Expression;
+let cases:Case[];
+let defs:Default?;

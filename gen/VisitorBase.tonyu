@@ -1,0 +1,15 @@
+\visit(n){
+    let k=n && "v_"+n.type;
+    if(n&&
+    typeof this [k]==
+    "function"){
+        return this [k](n);
+    }
+    return def(n);
+}
+\def(o){
+    if(!o)return;
+    for(let k,v in o){
+        visit(o);
+    }
+}

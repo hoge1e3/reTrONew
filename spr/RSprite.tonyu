@@ -1,0 +1,36 @@
+let sprpat;
+let p,c;
+let dotAlign=1;
+\new(params) {
+    super(params);
+    if(!$RSprPat) $RSprPat=new RSprPat;
+    sprpat=sprpat||$RSprPat;
+    dotAlign=dotAlign||1;
+    width=$crashTo_size;
+    height=$crashTo_size;
+    //print(width,height);
+    //scaleX=2;
+}
+\setPalette(n,c){
+    sprpat.palette [n-1]=c;
+}
+\draw(ctx){
+    let pa:Panel=sprpat.get(p,c);
+    if(pa==null)return;
+    ctx.save();
+    let sx=x,sy=y;
+    x=floor(x/dotAlign)*dotAlign>> $spr_scale;
+    y=floor(y/dotAlign)*dotAlign>> $spr_scale;
+    performTransform(ctx);
+    /*ctx.drawImage(pa.image,
+    floor(x-pa.width),floor(y-pa.height)
+    );*/
+    ctx.drawImage(pa.image,
+    -floor(pa.width/2),-floor(pa.height/2)
+    );
+    x=sx;y=sy;
+    ctx.restore();
+}
+\defaultLayer{
+    return $MLayer;
+}

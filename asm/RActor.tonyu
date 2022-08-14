@@ -1,0 +1,18 @@
+extends RSprite;
+let x,y,p,c;
+//\getkey(){}
+/*\new(params){
+    super(params);
+    if (!$exporter){
+        $exporter=new GenAsm;
+    }
+}*/
+\die(){super.die();}
+\crashTo(e){return super.crashTo(e);}
+\update(){super.update();}
+\updateEx(n){super.updateEx(n);}
+\onUpdate (){}
+\screenOut(){
+    return x<0 || x>$MScreen.width<<$spr_scale || 
+    y<0 || y>$MScreen.height<<$spr_scale;
+}

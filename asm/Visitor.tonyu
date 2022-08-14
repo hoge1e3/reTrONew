@@ -1,0 +1,256 @@
+extends VisitorBase;
+\v_String(n:Token){
+    let text:String=n.text;
+    def(n);
+}
+\v_prefix(n:Prefix){
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    def(n);
+}
+\v_postfix(n:Postfix){
+    let left:Expression=n.left;
+    let op:TNode=n.op;
+    def(n);
+}
+\v_infix(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    def(n);
+}
+\v_trifix(n:Trifix){
+    let left:Expression=n.left;
+    let op1:Token=n.op1;
+    let mid:Expression=n.mid;
+    let op2:Token=n.op2;
+    let right:Expression=n.right;
+    def(n);
+}
+\v_arrayElem(n:ArrayElem){
+    let subscript:Expression=n.subscript;
+    def(n);
+}
+\v_argList(n:ArgList){
+    let args:Expression[]=n.args;
+    def(n);
+}
+\v_member(n:Member){
+    let name:Token=n.name;
+    def(n);
+}
+\v_parenExpr(n:ParenExpr){
+    let expr:Expression=n.expr;
+    def(n);
+}
+\v_varAccess(n:VarAccess){
+    let name:Token=n.name;
+    def(n);
+}
+\v_funcExprArg(n:FuncExprArg){
+    let obj:FuncExpr=n.obj;
+    def(n);
+}
+\v_objlitArg(n:ObjlitArg){
+    let obj:Objlit=n.obj;
+    def(n);
+}
+\v_call(n:Call){
+    let args:Expression[]=n.args;
+    def(n);
+}
+\v_scall(n:Scall){
+    let args:Expression[]=n.args;
+    def(n);
+}
+\v_newExpr(n:NewExpr){
+    let klass:VarAccess=n.klass;
+    let params:Call?=n.params;
+    def(n);
+}
+\v_superExpr(n:SuperExpr){
+    let name:Token?=n.name;
+    let params:Scall=n.params;
+    def(n);
+}
+\v_exprstmt(n:Exprstmt){
+    let expr:Expression=n.expr;
+    def(n);
+}
+\v_compound(n:Compound){
+    let stmts:Stmt[]=n.stmts;
+    def(n);
+}
+\v_return(n:Return){
+    let value:Expression?=n.value;
+    def(n);
+}
+\v_if(n:If){
+    let cond:Expression=n.cond;
+    let then:Stmt=n.then;
+    let _else:Stmt?=n._else;
+    def(n);
+}
+\v_forin(n:Forin){
+    let isVar:Token?=n.isVar;
+    let vars:Token[]=n.vars;
+    let inof:Token=n.inof;
+    let set:Expression=n.set;
+    def(n);
+}
+\v_normalFor(n:NormalFor){
+    let init:Stmt=n.init;
+    let cond:Expression?=n.cond;
+    let next:Expression?=n.next;
+    def(n);
+}
+\v_for(n:For){
+    let inFor:ForHead=n.inFor;
+    let loop:Stmt=n.loop;
+    def(n);
+}
+\v_while(n:While){
+    let cond:Expression=n.cond;
+    let loop:Stmt=n.loop;
+    def(n);
+}
+\v_do(n:Do){
+    let loop:Stmt=n.loop;
+    let cond:Expression=n.cond;
+    def(n);
+}
+\v_case(n:Case){
+    let value:Expression=n.value;
+    let stmts:Stmt[]=n.stmts;
+    def(n);
+}
+\v_default(n:Default){
+    let stmts:Stmt[]=n.stmts;
+    def(n);
+}
+\v_switch(n:Switch){
+    let value:Expression=n.value;
+    let cases:Case[]=n.cases;
+    let defs:Default?=n.defs;
+    def(n);
+}
+\v_break(n:Break){
+    let brk:Token=n.brk;
+    def(n);
+}
+\v_continue(n:Continue){
+    let cont:Token=n.cont;
+    def(n);
+}
+\v_finally(n:Finally){
+    let stmt:Stmt=n.stmt;
+    def(n);
+}
+\v_catch(n:Catch){
+    let name:Token=n.name;
+    let stmt:Stmt=n.stmt;
+    def(n);
+}
+\v_try(n:Try){
+    let stmt:Stmt=n.stmt;
+    let catches:Catches[]=n.catches;
+    def(n);
+}
+\v_throw(n:Throw){
+    let ex:Expression=n.ex;
+    def(n);
+}
+\v_typeExpr(n:TypeExpr){
+    let name:Token=n.name;
+    def(n);
+}
+\v_typeDecl(n:TypeDecl){
+    let vtype:TypeExpr=n.vtype;
+    def(n);
+}
+\v_varDecl(n:VarDecl){
+    let name:Token=n.name;
+    let typeDecl:TypeDecl?=n.typeDecl;
+    let value:Expression?=n.value;
+    def(n);
+}
+\v_varsDecl(n:VarsDecl){
+    let decls:VarDecl[]=n.decls;
+    def(n);
+}
+\v_paramDecl(n:ParamDecl){
+    let name:Token=n.name;
+    let typeDecl:TypeDecl?=n.typeDecl;
+    def(n);
+}
+\v_paramDecls(n:ParamDecls){
+    let params:ParamDecl[]=n.params;
+    def(n);
+}
+\v_setterDecl(n:SetterDecl){
+    let value:ParamDecl=n.value;
+    def(n);
+}
+\v_funcDeclHead(n:FuncDeclHead){
+    let _nowait:Token?=n._nowait;
+    let ftype:Token?=n.ftype;
+    let name:Token=n.name;
+    let setter:SetterDecl?=n.setter;
+    let params:ParamDecls?=n.params;
+    let rtype:TypeDecl?=n.rtype;
+    def(n);
+}
+\v_funcDecl(n:FuncDecl){
+    let head:FuncDeclHead=n.head;
+    let body:Compound=n.body;
+    def(n);
+}
+\v_nativeDecl(n:NativeDecl){
+    let name:Token=n.name;
+    def(n);
+}
+\v_ifWait(n:IfWait){
+    let then:Stmt=n.then;
+    let _else:Stmt?=n._else;
+    def(n);
+}
+\v_empty(n:Empty){
+    def(n);
+}
+\v_funcExprHead(n:FuncExprHead){
+    let name:Token?=n.name;
+    let params:ParamDecls?=n.params;
+    def(n);
+}
+\v_funcExpr(n:FuncExpr){
+    let head:FuncExprHead=n.head;
+    let body:Compound=n.body;
+    def(n);
+}
+\v_jsonElem(n:JsonElem){
+    let key:Token=n.key;
+    let value:Expression?=n.value;
+    def(n);
+}
+\v_objlit(n:Objlit){
+    let elems:JsonElem[]=n.elems;
+    def(n);
+}
+\v_arylit(n:Arylit){
+    let elems:Expression[]=n.elems;
+    def(n);
+}
+\v_extends(n:Extends){
+    let superclassName:Token=n.superclassName;
+    def(n);
+}
+\v_includes(n:Includes){
+    let includeClassNames:Token[]=n.includeClassNames;
+    def(n);
+}
+\v_program(n:Program){
+    let ext:Extends?=n.ext;
+    let incl:Includes?=n.incl;
+    let stmts:Stmt[]=n.stmts;
+    def(n);
+}

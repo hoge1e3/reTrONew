@@ -1,0 +1,15 @@
+extends RActor;
+
+p=6;
+c=8;
+while (true) {
+    if (screenOut()) die();
+    y-=10;
+    var e=crashTo(Enemy);
+    if (e) {
+        e.die();
+        die();
+    }
+    c=18-c;
+    update();
+}

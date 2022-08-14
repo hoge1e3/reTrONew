@@ -1,0 +1,2775 @@
+extends TObject;
+let data={'main'=`org 09000h
+
+include ctrl
+include math
+include debug
+include sub
+include mem
+include sp
+include vdp
+include th
+
+
+;===your code 
+
+main:
+ld a,5
+lp:
+dec b
+show a
+iff nc,nx
+jr lp
+nx:
+
+ret
+end main`,
+    'math'=`include ctrl
+
+;16bit shifts
+macro slhl
+ sla l
+ rl h
+endm
+macro srahl
+ sra h
+ rr l
+endm
+macro srlhl
+ srl h
+ rr l
+endm
+macro slde
+ sla e
+ rl d
+endm
+macro srade
+ sra d
+ rr e
+endm
+macro srlde
+ srl d
+ rr e
+endm
+macro slbc
+ sla c
+ rl b
+endm
+macro srabc
+ sra b
+ rr c
+endm
+macro srlbc
+ srl b
+ rr c
+endm
+
+
+; for xrnd
+macro sldehl,n
+  local loop
+  ld b,n
+ loop:
+  sla d
+  rl e
+  rl h
+  rl l
+  djnz loop
+endm
+macro srdehl,n
+ local loop
+ ld b,n
+ loop:
+  srl l
+  rr h
+  rr e
+  rr d
+ djnz loop
+endm
+ 
+macro xorrm,re,me
+  ld A,(me)
+  xor re
+  ld (me),a
+endm
+ 
+xrnd.a:
+proc 
+ local rhl,rde,rdhlde
+ ; s[0] ^= s[0] << 13
+ call rdhlde
+ sldehl 13
+ call wrtxor
+ ; s[0] ^= s[0] >> 17
+ call rdhlde
+ srdehl 17
+ call wrtxor
+ ; s[0] ^= s[0] << 5;
+ call rdhlde
+ sldehl 5
+ call wrtxor
+ ret
+ 
+ rdhlde:
+  ld hl,1234
+ rhl:
+  ld de,5678
+ rde:
+  ret
+ 
+ wrtxor:
+  xorrm h,rhl-1
+  xorrm l,rhl-2
+  xorrm d,rde-1
+  xorrm e,rde-2
+  ret
+endp
+
+macro cpde.a
+ rst dcompr
+endm
+
+
+rnd:
+ push af
+ call rnd.a
+ pop af
+ ret
+rnd.a:
+ ld de,07fffh
+ call IDIV.a
+ push hl
+ call xrnd.a
+ res 7,h
+ ex de,hl
+ pop hl
+ inc hl
+ call IDIV.a
+ ret
+macro subhl,rp
+ and a
+ sbc hl,rp
+endm
+
+abs:
+ bit 7,h
+ ret z
+neghl:
+ ld de,0 
+ ex de,hl 
+ subhl de
+ ret
+
+ `,
+    'bool'=`include math
+include ctrl
+true equ -1
+false equ 0
+
+macro rethl,val,flg
+ local tru
+ if not nul flg
+  iff flg ,tru
+ endif
+ ld hl,val
+ ret
+ tru:
+endm
+
+hleqde:
+ subhl de
+ rethl true,z
+ rethl false
+
+hlnede:
+ subhl de
+ rethl true,nz
+ rethl false
+ 
+hlgtde:
+ subhl de
+ rethl false,z
+ bit 7,h
+ rethl true,z
+ rethl false
+
+hlltde:
+ subhl de
+ bit 7,h
+ rethl true,nz
+ rethl false
+ 
+hlgede:
+ subhl de
+ rethl true,z
+ bit 7,h
+ rethl true,z
+ rethl false
+
+hllede:
+ subhl de
+ rethl true,z
+ bit 7,h
+ rethl true,nz
+ rethl false
+ 
+proc
+ziffalse:
+ local resa
+ ld (resa-1),a
+ call ziffalse.a
+ ld A,0
+ resa:
+ ret
+ziffalse.a:
+ ld a,0
+ cp h
+ ret nz
+ cp l
+ ret
+endp
+
+macro jpf,to
+ call ziffalse
+ jp z,to
+endm
+
+macro andand,fls
+ jpf fls
+endm
+macro oror,tru
+ call ziffalse
+ jp nz,tru
+endm
+
+macro flagtobool,fl
+ local yes,skp
+ jr fl, yes
+ ld hl,false
+ jr skp
+ yes:
+ ld hl,true
+ skp: 
+endm`,
+    'mem'=`include const
+;
+rdslt:
+ ex de,hl
+ rept 5
+ srl d;page*2
+ endm
+ CALL RSLREG
+ ld e,d
+ rdslt1:
+  RRCA
+  dec e
+  jp nz,rdslt1
+ AND    00000011B
+ LD C,A;000000Pr
+ LD B,0
+ LD HL,EXPTBL
+ ADD HL,BC
+ LD C,A;000000Pr
+ LD A,(HL)
+ AND 80H;expand flag
+ OR C
+ LD C,A;e00000Pr
+ rept 4;const
+ INC HL
+ endm
+ LD A,(HL);exp reg
+ ld e,d
+ rdslt2:
+  srl a
+  dec e
+  jp nz,rdslt2
+;000000Ex
+ sla a
+ sla a
+ ;    0000Ex00
+ and  00001100b
+ OR C;e000ExPr
+ ret
+memini:
+ CALL RSLREG
+ rept 4
+  RRCA
+ endm
+ AND    00000011B
+ LD C,A;000000Pr
+ LD B,0
+ LD HL,EXPTBL
+ ADD HL,BC
+ LD C,A;000000Pr
+ LD A,(HL)
+ AND 80H;expand flag
+ OR C
+ LD C,A;e00000Pr
+ rept 4;const
+ INC HL
+ endm
+ LD A,(HL);exp reg
+ rept 4; page*2
+ srl a
+ endm;000000Ex
+ sla a
+ sla a
+ ;    0000Ex00
+ and  00001100b
+ OR C;e000ExPr
+ LD Hl,04000H
+ jp ENASLT
+
+macro peekw ,regv,regm
+  local w
+  ld (w-2),regm
+  ld regv,(0)
+  w:
+endm
+
+macro pokew ,regm,regv
+  local w
+  ld (w-2),regm
+  ld (0),regv
+  w:
+endm
+macro movw,dst,src,rp
+ if nul rp
+  push hl
+  movw dst,src,hl
+  pop hl
+ else
+  ld rp,src
+  ld dst,rp
+ endif 
+endm
+
+macro popa
+  ex (sp),hl
+  ld a,h
+  pop HL
+endm
+
+macro pushall
+ push af
+ push bc
+ push de
+ push hl
+endm
+macro popall
+ pop hl
+ pop de
+ pop bc
+ pop af
+endm
+ 
+
+macro pushi, n,rp
+ local rrr
+ if nul rp
+  ld (rrr-2),hl
+  ld hl,n
+  push hl
+  ld hl,0
+  rrr:
+ else
+  ld rp,n
+  push rp
+ endif
+endm
+macro const,n,reg
+ ld (n-2),reg
+endm
+macro ldconst,reg,n
+ ld reg,0
+ n:
+endm
+macro peekconst,reg,n
+ ld reg,(0)
+ n:
+endm
+`,
+    'const'=`
+wrt equ 0a2h
+dcompr equ 0020H
+sp.ini equ 0dc00h
+stksize equ 512
+
+th.size equ 256
+th.count equ 16
+th.start equ th.end-th.size*th.count
+th.end equ sp.ini-stksize
+
+th.bottom equ 0
+
+spr.scale equ 1
+spr.xmax equ 256<<spr.scale
+spr.ymax equ 192<<spr.scale
+
+ENASLT EQU 0024H
+RSLREG EQU 0138H
+EXPTBL EQU 0FCC1H
+SETWRT equ 0053H
+LDIRVM equ 005CH
+WRTVDP equ 0047H
+RG1SAV equ 0F3E0H
+RDVDP  equ 013EH
+SNSMAT.a equ 0141h
+
+CHGMOD equ 005FH
+
+IMULT.a equ 3193H;HL ← DE*HL
+IDIV.a equ 31E6H;HL ← DE/HL
+IMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) 
+
+WRTPSG  equ 0093H
+
+null equ 0`,
+    'ctrl'=`include const
+freeze:
+halt
+jr freeze
+
+macro for ,lbend
+ ; uses a
+ ; c: breaked
+ proc
+  local s,lb
+  lb:
+  call dcompr
+  jp nc,lbend
+  push HL
+  push de
+  push bc
+  call s
+  pop bc
+  pop de
+  pop HL
+  jp c,lbend
+  add HL,bc
+  jr lb
+  s:
+ endp
+endm
+
+macro repti ,n,lbend
+ proc
+  local s,lb, lbend2
+  push bc
+  ld b,n
+  lb:
+  push bc
+  call s
+  pop bc
+  jr c,lbend2
+  djnz lb
+  lbend2:
+  pop bc
+  jp lbend 
+  s:
+ endp
+endm
+
+
+macro reptb ,lbend
+  local s,lb
+ inc b
+ djnz lb
+ jp lbend
+ lb:
+  push bc
+  call s
+  pop bc
+  jp c,lbend
+ djnz lb
+ jp lbend 
+ s:
+endm
+
+
+
+macro callsva,pp
+ local sva
+ ld (sva-1),a
+ call pp
+ ld a,0
+ sva:
+endm
+bcis0:
+ callsva bcis0.a
+ ret
+bcis0.a:
+ ld a,b
+ and a
+ ret nz
+ ld a,c
+ and a
+ ret
+
+macro reptbc ,lbend
+ local s,lb
+ call bcis0
+ jp z,lbend 
+ lb:
+  push bc
+  call s
+  pop bc
+  jp c,lbend
+  dec bc
+  call bcis0
+ jr nz, lb
+ jp lbend 
+ s:
+endm
+
+
+iff.NZ equ 0
+iff.Z  equ 1
+iff.NC equ 2
+iff.C  equ 3
+
+macro iff,cnd,to
+ local iff.
+ if iff.##cnd eq iff.NZ
+  jr z,to
+ endif
+ if iff.##cnd eq iff.Z
+  jr nz,to
+ endif
+ if iff.##cnd eq iff.NC
+  jr c,to
+ endif
+ if iff.##cnd eq iff.C
+  jr nc,to
+ endif
+ ;jr cnd, skip
+ ;jr to
+ ;skip:
+endm
+
+macro break,cnd
+ if NUL cnd
+  scf
+  ret
+ else
+  proc 
+   local jj
+   iff cnd ,jj
+   break
+  jj:
+  endp
+ endif
+endm
+macro continue,cnd
+ if NUL cnd 
+  or a
+  ret
+ else
+  proc 
+   local jj
+   iff cnd,jj
+   continue
+  jj:
+  endp
+ endif
+endm
+
+
+macro djnzr,reg, j
+ dec reg
+ jr NZ,j
+endm
+
+macro callhl
+ local LCD
+ ld (LCD-2),HL
+ call LCD
+ LCD:
+endm
+
+macro stride,lim,to
+ if (low $)<lim
+  exitm
+ endif
+ ds 256+to-(low $),0cdh
+endm`,
+    'th'=`include ctrl
+include sp
+include vdp
+include mem
+include math
+include debug
+
+th.ofs.stp equ 0
+th.ofs.sp equ th.ofs.stp+1
+th.st.blank equ 0c9h
+th.st.active equ 31h
+
+macro th.for,lb
+ ld HL,th.start
+ ld de,th.end
+ ld bc,th.size
+ for lb
+endm
+
+macro th.new.range,st,en
+ ld bc,st
+ ld(th.new.start),bc
+ ld bc,en
+ ld(th.new.end),bc
+endm
+
+th.new:
+; nc for alloc fail
+proc 
+ local lbend
+ db 21h
+ th.new.start:
+ dw th.start
+ db 11h
+ th.new.end:
+ dw th.end
+ ld bc,th.size
+ for lbend
+  ; TODO bottom
+  ld  a,(HL)
+  cp th.st.blank
+  break z
+  continue
+ lbend:
+ ret nc
+ ld (HL),31h
+ inc HL
+ ld (HL),0
+ ld a,h
+ inc a
+ inc HL
+ ld (hl),a
+ inc HL
+ ld (HL),0c9h
+ ld l,th.bottom
+ scf
+ ret
+endp
+
+th.init:
+proc
+ local lbend
+ th.for lbend
+  ld (HL),th.st.blank
+  continue
+ lbend:
+ ld HL,0fd9fh
+ ld (hl),0c9h
+ call susint
+ ret
+endp
+
+th.stepall:
+ th.for thnx
+ ;todo bottom
+  ld (th.cur),hl
+  ld a,(hl)
+  cp 0c9h
+  continue z
+  call th.step
+  continue
+ thnx:
+ ret
+
+macro thblock
+  local s
+  LD sp, s
+  ret
+  ds th.size-4
+  s:
+endm
+macro thblocks
+ ds 256-(low $),0cdh
+ th.start:
+ rept th.count
+ ds th.size
+ endm
+ th.end: 
+endm
+
+th.step:
+ sp2mem adrssp+1
+ ld HL,(th.cur)
+ ld l,th.ofs.stp
+ ;call susint
+ jp (hl)
+th.yield:
+ ld hl,(th.cur)
+ ld l,th.ofs.sp
+ sp2mem
+ adrssp:
+ ld sp,0
+ jp doint
+
+th.term:
+ ld hl,(th.cur)
+ ld (hl),th.st.blank
+ jr adrssp
+
+macro th.iniproc, ad
+ ld bc,th.term
+ call th.push
+ ld bc,ad
+ call th.push
+endm
+ 
+macro th.with.do, to
+ local pr
+ th.with pr
+ jr to
+ pr:
+endm 
+
+macro th.with.dsthl
+ ld (th.jpdest-2),hl
+endm
+macro th.with,pr
+ movw (th.jpdest-2), pr
+ call th.with.s
+endm
+macro th.with.ret
+ jp th.ewith
+endm
+
+th.with.s:
+ sp2mem th.wrssp-2
+ ld l, th.ofs.sp
+ ld (th.updsp-2),hl
+ mem2sp
+ jp 0
+ th.jpdest:
+th.ewith:
+ ld (0),sp
+ th.updsp:
+ ld sp,0
+ th.wrssp:
+ ret
+ 
+
+ 
+ 
+th.push:
+ ;push bc to thread hl
+ th.with tpsbc
+ ret
+ tpsbc:
+  push bc
+  th.with.ret
+
+
+th.pushes:
+proc  
+ local lp,rssp
+ ;len bc  
+ ;thread de  
+ ;src hl
+ ex de,hl
+ th.with rssp
+ ret
+ rssp: 
+  ex de,hl
+  lp:
+   ld e,(hl)
+   inc hl
+   ld d,(hl)
+   inc hl
+   push de
+  djnz lp
+  th.with.ret
+endp
+ 
+ 
+
+th.cur:
+ dw 0
+
+th.loop:
+ db 0cdh
+ h.thent:
+ dw th.nop
+ ld a,(timecnt)
+ push af
+ call th.stepall
+ db 0cdh
+ h.thlop:
+ dw th.nop
+ pop af
+ bwat:
+  ld hl,timecnt
+  cp (hl)
+  jr nz,bbwat
+  push af
+  call doint
+  pop af
+  jr bwat
+ bbwat:
+ 
+ jr th.loop
+th.nop:
+ ret
+
+
+macro th.pushi, val
+ ld bc,val
+ call th.push
+endm
+
+`,
+    'sub'=`
+macro getarg ,n
+ld l,(ix+2+n*2)
+ld h,(ix+3+n*2)
+endm
+
+macro setlcl ,n
+ld (IX-(n*2-1)),h
+ld (ix-n*2),l
+endm
+
+macro getlcl ,n
+ld h,(IX-(n*2-1))
+ld l,(ix-n*2)
+endm
+
+macro pusharg ,n
+getarg n
+push HL
+endm
+
+macro pushlcl ,n
+getlcl n
+push HL
+endm
+
+macro enter ,locals
+push ix
+ld ix,0
+add ix,sp
+rept locals
+ push HL
+endm
+endm
+
+macro pops ,n
+rept n*2
+ inc sp
+endm
+endm
+
+macro exit
+ld sp,ix
+pop ix
+ret
+endm
+
+macro run ,n,args
+call n
+pops args
+endm
+
+`,
+    'debug'=`include math
+;debug
+macro show,reg
+ ld (hexval+1),reg
+ call showhex
+endm
+macro showm ,ad
+ push hl
+ ld HL,(ad)
+ show HL
+ pop HL
+endm
+macro showlb,lb
+ push hl
+ ld hl,lb
+ ld (hexval+1),hl
+ call showhex
+ pop hl
+endm
+showhex:
+proc
+ local loop
+ push af
+ push bc
+ push HL
+ hexval:
+ ld hl,0
+ ld b,4
+ loop:
+  xor a
+  rept 4
+   slhl
+   rla
+  endm
+  call showhex1
+ djnz loop
+ ld a,32
+ call wrt
+ pop HL
+ pop bc
+ pop af
+ ret
+endp
+showhex1:
+proc
+ local els
+ cp 10
+ jp nc, els
+ add a,48
+ jp wrt
+ els:
+ add a,65-10
+ jp wrt
+endp
+abort:
+ call wrt
+ db 018h,0feh
+ret
+
+macro trace,v
+ if not nul v
+  push af
+  ld a,v
+  ld (trad),a
+  pop af
+ endif
+ call trace.s
+endm
+trace.s:
+ push af
+ push hl
+ ld a,(trad)
+ ld hl,1ae0h
+ call wrt
+ call 4dh
+ inc a
+ ld (trad),a
+ ld a,32
+ call wrt 
+ pop hl
+ pop af
+ ret
+trad:
+ db 65
+
+showz:
+ push af
+ jr z,showz.s
+ ld a,"N"
+ call wrt
+ showz.s:
+ ld a,"Z"
+ call wrt
+ ld a,32
+ call wrt
+ pop af
+ ret
+ 
+
+showc:
+ push af
+ jr c,showc.s
+ ld a,"N"
+ call wrt
+ showc.s:
+ ld a,"C"
+ call wrt
+ ld a,32
+ call wrt
+ pop af
+ ret
+ 
+
+
+
+
+
+macro unreach, mesg
+ trace mesg
+ dw 0x18,0xfe
+endm
+macro head, lb
+ unreach lb
+ lb:
+endm`,
+    'sp'=`include mem
+include debug
+macro sp.get
+ ld HL,0
+ ADD hl, sp
+endm
+macro sp.set
+ ld sp,hl
+endm
+macro mem2sp,ad
+ local rs
+ if nul ad
+  ld (rs-2),hl
+  ld sp,(0)
+  rs:
+ else
+  ld sp,(ad)
+ endif
+endm
+macro sp2mem,ad
+ local spad
+ if nul ad
+  ld (spad-2),hl
+  ld (0),sp
+  spad:
+ else
+  ld (ad),sp
+ endif
+endm
+
+macro showsp
+ ld (sptmp),sp
+ showm sptmp
+endm
+sptmp:
+dw 0
+macro showstk
+ showsp
+ ld (sva),a
+ ld a,":"
+ call wrt
+ ld a,(sva)
+ ex (sp),hl
+ show hl
+ ex (sp),hl
+endm
+sva: db 0`,
+    'oop'=`include mem
+include th
+include assert
+
+;a2 a1  oldpc oldix lcl1 lcl2
+argidx equ 2
+macro getarg ,n
+ ld l,(ix+argidx+n*2)
+ ld h,(ix+argidx+n*2+1)
+endm
+
+macro setlcl ,n
+ ld (IX-(n*2-1)),h
+ ld (ix-n*2),l
+endm
+
+macro getlcl ,n
+ ld h,(IX-(n*2-1))
+ ld l,(ix-n*2)
+endm
+
+macro addarg
+ push hl
+; hl=arg  stktp=af
+;ex (sp),hl
+;ld a,h
+;push af
+endm
+
+
+
+macro pusharg ,n
+ getarg n
+ push HL
+endm
+
+macro pushlcl ,n
+ getlcl n
+ push HL
+endm
+
+macro enter ,locals
+ push ix
+ ld ix,0
+ add ix,sp
+ rept locals
+  push HL
+ endm
+endm
+
+macro pops ,n
+ rept n*2
+  inc sp
+ endm
+endm
+
+
+macro exit,n
+ ld sp,ix
+ pop ix
+ if n!=0
+  exx
+  pop de
+  rept n
+   pop bc
+  endm
+  push de
+  exx
+ endif
+ ret
+endm
+
+macro pushthis
+ getthis
+ push af
+endm
+macro popthis
+ popa
+ ld (this),a
+endm
+
+
+macro invoketg.a,fld,args
+; pushthis before arg push
+; hl=target 
+ ld a,h
+ ld (this),a
+ getfld fld
+ callhl
+; pops args
+; popthis after 
+endm
+
+macro invoke,fld
+ getfld fld
+ callhl
+; pops args
+ getthis
+endm
+
+macro getfld, n
+ local ad
+ ld (ad-1),a
+ ld hl,(n)
+ ad:
+endm
+
+macro setfld, n
+ local ad
+ ld (ad-1),a
+ ld (n),hl
+ ad:
+endm
+
+macro getfldtg,n
+;hl=tg
+ ld l,n
+ peekw hl,hl
+endm
+
+macro setfldtg,n
+; stk=val hl=tg
+ ld l,n
+ pop de
+ pokew hl,de
+endm
+
+macro getfldtg, n
+; hl=target
+ ld d,h
+ ld e,n
+ peekw HL,de
+endm
+
+macro curth2this
+ ld a,(th.cur+1)
+ ld (this),a
+endm
+macro getthis
+ ld a,(this)
+endm
+
+macro new,Class,flds,st,en
+ if nul st
+  th.new.range th.start, th.end
+ else
+  th.new.range st, en
+ endif
+ pushi flds, bc
+ pushi Class, bc
+ call o.new
+endm
+
+head o.new
+proc
+ local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end
+ ; {val .f} n &initbl
+ pop hl
+ ld (retad-2),hl
+ pop hl;&initbl
+ th.with.dsthl 
+ ld (svthis-1),a
+ call th.new
+ jr nc, allocfail
+ push hl
+ call th.with.s
+ pop hl
+ ld a,h
+ pop bc
+ inc c
+ loop:
+  dec c
+  jr z,lpend
+  pop hl; .f
+  ld h,a
+  ld (w-2),hl
+  pop hl; val
+  ld (w),hl
+  w:
+ jr loop
+ lpend:
+ ld h,a
+ finally:
+  ld a,0
+  svthis:
+  jp 0
+  retad:
+ allocfail:
+  pop bc
+  ld b,c
+  inc c
+  lp2:
+   dec c
+   jr z, lp2end
+   pop hl
+   pop hl
+  jr lp2
+  lp2end:
+  ld hl,0
+  jr finally
+endp
+unreach 0
+
+macro new.arg, n, v
+ if not nul v
+  ld hl,v
+ endif
+ push hl
+ pushi n,bc
+endm
+ 
+macro o.assert.eq,fld, v
+ local aa
+ assert.do aa
+  getfld fld
+  assert.eq v
+  ret
+ aa:
+endm
+
+this:
+db 0
+
+macro fld.def,n
+ n equ fldidx
+ fldidx:defl fldidx-2
+endm
+macro class,Class,super
+ unreach "c"
+ dw super
+ fldidx:defl 254
+ Class:
+  fld .class,Class
+endm
+macro fld.bottom,Class
+ if defined Class##.bottom 
+  if Class##.bottom ne fldidx
+   .error bottom ne fldidx
+  endif
+ else
+ Class##.bottom:defl fldidx
+ endif
+endm 
+macro fld,n,v
+ if defined n
+  if n ne fldidx
+   .error n ne fldidx
+  else 
+   fldidx:defl fldidx-2
+  endif
+ else
+  fld.def n
+ endif
+ pushi v,bc
+endm
+macro unuse
+ fldidx:defl fldidx-2
+ pushi 0,bc
+endm
+macro meth,Class,n
+ fld .##n, Class##.##n
+endm
+macro met2,Class,n
+ fld n, Class##n
+endm
+
+class Object,null
+ fld .main,null
+ fld.bottom Object
+
+
+
+o.iniattr:
+proc
+ local aa
+ th.with aa
+ ret
+ aa:
+ pushi th.term,bc
+ th.with.ret
+endp
+ 
+head o.boot
+ curth2this
+ invoke .main,0
+ ret
+
+
+macro yield
+ pushthis
+ push ix
+ call th.yield
+ pop ix
+ popthis
+endm
+
+macro def,n,args,lcls
+head n
+ def.args:defl args
+ def.locals:defl lcls
+ if args>0 or lcls>0
+  enter lcls
+ endif
+endm
+macro enddef
+ if def.args>0 or def.locals>0
+  exit def.args
+ else
+  ret
+ endif
+endm
+
+head isobj.a
+ ;hl=obj?
+ ;cy=true
+ ld a,h
+ cp high th.start
+ jr c,notobj
+ cp high th.end
+ jr nc,notobj
+ scf
+ ret
+ notobj:
+ and a
+ ret
+head instanceof
+ ; a=this de=Class
+ ; z: true
+ getfld .class
+ jp is.subclass.a
+head get.superclass
+ ; hl=Class
+ dec hl
+ dec hl
+ peekw hl,hl
+ ret
+head is.subclass.a
+proc 
+ local top
+ ; hl=Subclass
+ ; de=Superclass
+ ; z:true
+ top:
+ cpde.a 0
+ ret z
+ call get.superclass
+ push de
+ ld de,null
+ cpde.a 0
+ pop de
+ jr nz,top
+ cpde.a 0
+ ret 
+endp
+ `,
+    'spr'=`include const
+include th
+include mem
+include oop
+
+class Sprite,Object
+ fld .main, 0
+ fld.bottom Object
+ fld .x, 100
+ fld .y, 100
+ fld .p, 0
+ fld .c, 2
+ fld.bottom Sprite
+
+macro outwrt
+  out (98h),a
+endm
+
+
+macro spr.unscale
+ rept spr.scale
+  srlde
+ endm
+endm
+spr.puts:
+ ld hl ,1b00h
+ call SETWRT
+ th.for sprl
+  ld L,.y
+  peekw de,hl
+  spr.unscale 0
+  LD A,E;y
+  outwrt 0
+  ld L,.x
+  peekw de,hl
+  spr.unscale 0
+  LD A,E;x
+  outwrt 0
+  ld l,.p
+  LD A,(hl);p*4
+  sla a
+  sla a
+  outwrt 0
+  ld l,.c
+  LD A,(hl);c
+  outwrt 0
+  continue
+ sprl:
+ret
+ 
+ 
+ `,
+    'sprpat'=`include const
+
+;aaa
+spr.inipat:
+ ld de,3800h
+ ld hl,spr.pat
+ ld bc,128
+ jp LDIRVM
+spr.pat:
+; --- Slot 0 cat fstand
+; color 9
+DB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B
+DB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C
+DB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C
+DB $98,$FC,$FE,$FE,$F6,$F0,$60,$70
+; 
+; --- Slot 1 cat fwalk1
+; color 9
+DB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B
+DB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06
+DB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C
+DB $98,$FC,$FE,$FE,$D4,$78,$F0,$00
+; 
+; --- Slot 2 cat fwalk2
+; color 9
+DB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36
+DB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00
+DB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8
+DB $30,$FC,$FE,$FE,$F7,$F7,$60,$60
+; 
+; --- Slot 3 cat omg
+; color 9
+DB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D
+DB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00
+DB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C
+DB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00
+
+ds 60*32
+`,
+    'tnu'=`
+include spr
+include bool
+include key
+
+;.onUpdate equ .c-2
+;.update equ .onUpdate-2
+;.screenOut equ .update-2
+;.die equ .screenOut-2
+;.updateEx equ .die-2
+
+macro end.const,_d
+ pushi RActor.wait,bc
+ pushi o.boot,bc
+ th.with.ret 
+endm
+
+macro RActor.noovr,Class
+ meth Class,main
+ fld.bottom Object
+ fld .x, 0
+ fld .y, -1024
+ fld .p, 0
+ fld .c, 3
+ fld.bottom Sprite
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut 
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld.bottom RActor
+endm
+
+class RActor,Sprite
+ RActor.noovr RActor
+ end.const 0
+RActor.main:
+ enter 0
+ exit 0
+RActor.update:
+ invoke .onUpdate
+ yield
+ ret 
+RActor.onUpdate:
+ ret
+RActor.screenOut:
+proc
+ local true
+ getfld .x
+ bit 1,h
+ jr nz, true
+ getfld .y
+ ld de,192*2
+ cpde.a
+ getthis
+ jr nc,true
+ ld hl,0
+ xor a
+ ret
+ true:
+ ld hl,1
+ scf
+ ret
+endp
+RActor.wait:
+proc
+ local lbl
+ lbl:
+ invoke .update
+ jr lbl
+endp
+def RActor.die,0,0
+ ld h,a
+ ld l,th.ofs.stp
+ ld (hl),th.st.blank
+ ld hl, 0
+ setfld .c
+enddef
+
+def RActor.updateEx,1,0
+proc 
+ local n
+; enter 0
+ getarg 1
+ ld b,h
+ ld c,l
+ reptbc n
+  invoke .update
+  continue
+ n:
+endp
+enddef
+
+crashTo.size equ 8<<spr.scale
+
+proc
+ local gx,gy,gtx,gty
+ local endc,cr1
+ local fe,kls
+
+macro crashTo.setXY
+ getfld .x
+ const gx,hl
+ getfld .y
+ const gy,hl
+endm
+
+
+def RActor.crashTo,1,0
+ crashTo.setXY 0
+ getarg 1
+ const kls,hl
+ call isobj.a
+ jr c, cr1
+  ld hl, th.start
+  ld de, th.end
+  call crashToC
+  jr endc
+ cr1:
+  getthis 0
+  call crashTo1
+  flagtobool c
+ endc:
+enddef
+
+head crashToC
+ ;before:
+ ; crashTo.setXY 0
+ ; const kls,Class
+ ;params:
+ ; hl start
+ ; de end
+ ld bc,th.size
+ for fe
+  ; skip blank
+  ; TODO bottom
+  ld a,(HL)
+  cp th.st.blank
+  continue z
+  ; skip hl==this
+  getthis 0
+  cp h
+  continue z
+  ; skip is not Class
+  push hl
+  ld a,h
+  ldconst de,kls
+  call instanceof
+  pop hl
+  continue nz
+  ; do crashTo1
+  getthis 0
+  call crashTo1
+  break c
+  continue
+ fe:
+ getthis 0
+ ret c
+ ld hl,null
+ ret
+
+head crashTo1
+ ;hl=tg
+ ;cy:true
+ ;hl is used
+ push af
+ ld a,h
+ ld (gtx-1),a
+ ld (gty-1),a
+ pop af
+ ld hl,(.x)
+ gtx:
+ ldconst bc,gx
+ subhl bc
+ call abs
+ ld bc,crashTo.size
+ subhl bc
+ ret nc
+
+ ld hl,(.y)
+ gty:
+ ldconst bc,gy
+ subhl bc
+ call abs
+ ld bc,crashTo.size
+ subhl bc
+ ret
+
+endp
+
+
+macro tnu.run,Main
+ ld sp,sp.ini
+ call screen1
+ 
+ showsp
+ showlb endusr
+ call spr.inipat
+
+ ld hl,th.start
+ ld (hl),0cdh
+ ld de,th.start+1
+ ld bc,th.size*th.count-1
+ ldir
+ 
+ call th.init
+ ;call mus.ini
+ new Main, 0
+ movw (h.thlop),spr.puts
+ movw (h.thent),keyall
+ jp th.loop
+endm
+
+;aaaa`,
+    'key'=`include debug
+
+head keyall
+proc
+;show hl
+ local lp
+ ld hl,keymat1
+ ld de,keymat2
+ ld bc,11
+ ldir
+ ld a,0
+ ld hl,keymat1
+ lp:
+ push af
+ call SNSMAT.a
+ xor 255
+ ld (hl),a
+ pop af
+ inc hl
+ inc a
+ cp 11
+ jr c,lp
+ ret
+endp
+
+keymat1:
+ds 11
+keymat2:
+ds 11
+
+head getkey.a
+proc
+local chkmat
+ex de,hl
+ld hl,keymat1
+call chkmat
+ld hl,0
+ret z
+ld hl,keymat2
+call chkmat
+ld hl,1
+ret z
+inc hl
+ret
+
+head chkmat
+push de
+ld a,d
+ld d,0
+add hl,de
+and (hl)
+pop de
+ret
+
+head getkey
+push af
+call getkey.a
+pop af
+ret
+
+endp`,
+    'maze'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include th
+
+;===your code 
+
+main:
+
+call memini
+call th.init
+
+call mkwall
+
+ld HL,1800h+33*3
+ld de,1800h+33*9
+ld bc,33*2
+for thgl
+push HL 
+call th.new
+pop bc
+call th.push
+th.iniproc mkmz
+continue
+thgl:
+
+jp th.loop
+
+mkwall:
+ld b,11
+ld a,35
+ld de,32-13
+ld HL,01800h+66
+reptb mkrow
+ ld b,13
+ reptb mkcol
+  call 4dh
+  inc hl
+  continue
+ mkcol:
+ add HL,de 
+ continue
+mkrow:
+ret
+
+
+
+vectbl:
+dw 1
+dw 32
+dw -1
+dw -32
+
+rnddir:
+call xrnd
+ld a,l
+and 6
+ld l,a
+ld h,0
+ret
+
+dir2vec:
+enter 0
+getarg 1
+ex de,hl
+ld hl,vectbl
+add HL,de
+peekw de,hl
+ex de,hl
+exit
+
+mkmz:
+enter 2
+call rnddir
+setlcl 1
+;call chkdir
+ld b,4
+
+mklp:
+push bc
+yield
+pushlcl 1
+run dir2vec,1
+setlcl 2
+;call chk
+push Hl
+pusharg 1
+run diggable,2
+
+jr nz,skipdig
+
+pushlcl 2
+pusharg 1
+run dig,2
+
+push HL
+run mkmz,1
+
+skipdig:
+
+getlcl 1
+inc HL
+inc HL
+ld a,l
+and 6
+ld l,a
+setlcl 1
+
+
+pop bc
+djnz mklp
+exit
+
+diggable:
+enter 0
+getarg 2
+ex de,hl
+getarg 1
+add hl,de
+add hl,de
+call 04ah
+cp 35
+exit
+
+dig:
+enter 0
+getarg 2
+ex de,hl
+getarg 1
+ld a,32
+call 04dh
+add hl,de
+call 04dh
+add hl,de
+call 04dh
+exit
+
+
+
+`,
+    't1'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include tnu
+include sp
+
+;===your code 
+
+right:dw 0
+
+main:
+tnu.run Main
+def Main.main,0,0
+new.arg .vx,1
+new.arg .vy,0
+new.arg .x,0
+new.arg .y,100
+new Cat,4
+
+new.arg .x,100
+new.arg .y,100
+new Target,2
+
+ld (right),hl
+ld a,h
+ld de,RActor
+call instanceof
+call showz
+
+ld a,(right+1)
+ld de,Target
+call instanceof
+call showz
+
+ld a,(right+1)
+ld de,Cat
+call instanceof
+call showz
+
+
+ld hl,1
+setfld .c
+enddef 0
+
+class Main,RActor
+ RActor.noovr Main
+ end.const 0
+class Target,RActor
+ RActor.noovr Target
+ met2 Target,.push
+ end.const 0
+def Target.main,0,0
+enddef
+class Cat,RActor
+ RActor.noovr Cat
+ fld .vy, 0
+ fld .vx, 0
+ fld.bottom Cat
+ end.const 0
+def Cat.main,0,0
+ blp:
+  ld hl,0108h
+  call getkey
+  jpf nomov
+  getthis
+  ;x+=vx
+  getfld .x
+  ex de, hl
+  getfld .vx
+  add hl,de
+  setfld .x
+  nomov:
+  ; y+=vy
+  getfld .y
+  ex de, hl
+  getfld .vy
+  add hl,de
+  setfld .y
+  ld hl,(right)
+  push hl
+  invoke .crashTo
+  jpf cr
+   ; r.x+=10
+   ld hl,(right)
+   getfldtg .x
+   ld de,10
+   add hl,de
+   push hl
+   ld hl,(right)
+   setfldtg .x
+   ; r.push()
+   pushthis 0
+   ld hl,(right)
+   invoketg.a .push
+   popthis 0
+  cr:
+  invoke .update
+ jp blp
+enddef
+; test t1
+def Target.push,0,0
+ ld hl,3
+ setfld .p
+ repti 30,pse
+  getfld .x
+  inc hl
+  setfld .x
+  invoke .update
+  continue
+ pse:
+ ld hl,0
+ setfld .p
+enddef
+
+endusr: 
+include sprpat
+
+end main
+https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
+https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
+    't2'=`org 09000h
+
+include tnu
+include sprpat
+;===your code 
+
+main:
+call th.init
+call spr.inipat
+
+pushi 7
+pushi .c
+new Cat1, 1
+show hl
+
+
+pushi 7
+pushi .x
+new Cat1, 1
+show hl
+
+movw (h.thlop),spr.puts
+jp th.loop
+
+dw RActor
+Cat1:
+ pushi Cat1.main
+ pushi 100,bc 
+ pushi 110,bc
+ pushi 0,bc
+ pushi 3,bc
+ pushi Cat1.onUpdate,bc
+ pushi RActor.update,bc
+ pushi RActor.screenOut,bc
+ pushi RActor.die,bc
+ end.const
+Cat1.main:
+ olp:
+  getthis
+  invoke .screenOut,0
+  jr c, dwn2
+  getthis
+  getfld .x
+  inc hl
+  inc hl
+  setfld .x
+  invoke .update,0
+ jr olp
+ dwn2:
+  ld hl,512-32
+  setfld .x
+ dwn:
+  curth2this
+  getfld .y
+  inc hl
+  setfld .y
+  invoke .update,0
+ jr dwn
+Cat1.onUpdate:
+ getfld .c
+ push af
+ ld a,l
+ xor 15
+ ld l,a
+ pop af
+ setfld .c
+ ret
+end main`,
+    't3'=`org 09000h
+
+include tnu
+include mus
+include sprpat
+
+;===your code 
+
+main:
+ld sp,(8000h)
+
+call screen1
+
+showsp
+showlb endusr
+
+ld hl,8000h
+ld (hl),0cdh
+ld de,8001h
+ld bc,th.size*th.count-1
+ldir
+
+
+call th.init
+call spr.inipat
+;call mus.ini
+
+
+new Main, 0
+show hl
+
+
+movw (h.thlop),spr.puts
+jp th.loop
+
+class Main, RActor
+ meth Main,main
+ fld.bottom Object
+ fld .x,100
+ fld .y,300
+ fld .p,0
+ fld .c,3
+ fld.bottom Sprite
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut 
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld.bottom RActor
+ fld.bottom Main
+ end.const
+
+Main.main:
+ olp:
+  getthis
+  invoke .update
+  call xrnd.a
+  ld a,h
+  and 15
+  jr nz,doap
+   getthis
+   getfld .x
+   new.arg .x
+   getfld .y
+   new.arg .y
+   ld hl,7
+   call rnd.a
+   ld de,3
+   sbc hl,de
+   new.arg .vx
+   ld hl,5
+   call rnd.a
+   ld de,15
+   sbc hl,de
+   new.arg .vy
+   new Bullet, 4
+   call dstk
+  doap:
+  ld a,8
+  call SNSMAT.a
+  and 1
+  jr z,golf
+  
+  getthis
+  getfld .x
+  inc hl
+  inc hl
+  setfld .x
+  ld de,400
+  cpde.a
+  jp c, olp
+  golf:
+  ld hl,0
+  getthis
+  setfld .x
+ jp olp
+
+
+class Bullet,RActor
+ meth Bullet,main
+ fld.bottom Object
+ fld .x, 0
+ fld .y, 0
+ fld .p, 2
+ fld .c, 15
+ fld.bottom Sprite
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut 
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld.bottom RActor
+ fld .vy, -10
+ fld .vx, 0
+ fld.bottom Bullet
+ end.const 
+ 
+Bullet.main:
+ blp:
+  getthis
+  ;x+=vx
+  getfld .x
+  ex de, hl
+  getfld .vx
+  add hl,de
+  setfld .x
+  ; y+=vy
+  getfld .y
+  ex de, hl
+  getfld .vy
+  add hl,de
+  setfld .y
+  getfld .vy
+  inc hl
+  setfld .vy
+
+  invoke .update
+  invoke .screenOut
+  jp c, bdie
+  getfld .vy
+  bit 7,h
+  jr nz,blp
+  ld de,5
+  cpde.a
+  jr c,blp
+ 
+  call dstk
+  getthis
+  ld hl,3
+  setfld .p
+  pushi 10,bc
+  invoke .updateEx
+
+ bleft:
+  getthis
+  ld hl,2
+  setfld .p
+  getfld .x
+  dec hl
+  dec hl
+  setfld .x
+  getfld .y
+  dec hl
+  setfld .y
+  invoke .update
+  invoke .screenOut
+  jr c, bdie
+  jr bleft
+ bdie:
+  invoke .die
+  ret 
+
+  
+dstk:
+ push af
+ ld hl,th.start+256*3
+ getthis
+ ld h,a
+ ld de,1900h
+ ld bc,256
+ call LDIRVM
+ pop af
+ ret
+ 
+endusr:
+end main`,
+    't4'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include tnu
+include sp
+
+;===your code 
+
+right:dw 0
+
+main:
+tnu.run Main
+def Main.main,0,0
+new.arg .vx,1
+new.arg .vy,0
+new.arg .x,0
+new.arg .y,100
+new Cat,4
+
+new.arg .x,100
+new.arg .y,100
+new Target,2
+
+new.arg .x,200
+new.arg .y,100
+new Target,2
+
+
+new.arg .x,150
+new.arg .y,100
+new.arg .c,8
+new NTarget,3
+
+ld (right),hl
+ld a,h
+ld de,Actor
+call instanceof
+call showz
+
+ld a,(right+1)
+ld de,Target
+call instanceof
+call showz
+
+ld a,(right+1)
+ld de,Cat
+call instanceof
+call showz
+
+
+ld hl,1
+setfld .c
+enddef 0
+
+class Main,Actor
+ Actor.noovr Main
+ end.const 0
+class Target,Actor
+ Actor.noovr Target
+ met2 Target,.push
+ end.const 0
+class NTarget,Actor
+ Actor.noovr NTarget
+ end.const 0
+def NTarget.main,0,0
+ ret
+enddef
+
+def Target.main,0,0
+enddef
+class Cat,Actor
+ Actor.noovr Cat
+ fld .vy, 0
+ fld .vx, 0
+ fld.bottom Cat
+ end.const 0
+def Cat.main,0,0
+ blp:
+  getthis
+  ;x+=vx
+  getfld .x
+  ex de, hl
+  getfld .vx
+  add hl,de
+  setfld .x
+  ; y+=vy
+  getfld .y
+  ex de, hl
+  getfld .vy
+  add hl,de
+  setfld .y
+  ld hl,Target
+  push hl
+  invoke .crashTo
+  jpf cr
+   ; r.x+=10
+   const setg,hl
+   getfldtg .y
+   ld de,30
+   add hl,de
+   push hl
+   ldconst hl,setg
+   setfldtg .y
+  cr:
+  invoke .update
+ jp blp
+enddef
+def Target.push,0,0
+ ld hl,3
+ setfld .p
+ repti 30,pse
+  getfld .y
+  inc hl
+  setfld .y
+  invoke .update
+  continue
+ pse:
+ ld hl,0
+ setfld .p
+enddef
+
+endusr: 
+end main
+https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
+https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
+    't5'=`org 9000h
+
+
+include key
+
+main:
+call keyall
+ld hl,0108h
+call getkey
+show hl
+ld hl,0107h
+call getkey
+show hl
+
+
+halt
+jp main`,
+    'gen'=`org 09000h
+include tnu
+include bool
+
+main:
+tnu.run Main
+class Main,Actor
+ Actor.noovr Main
+ end.const 0
+def Main.main,0,0
+
+ showlb .main
+ showlb .crashTo
+enddef 0
+endusr:
+end main`,
+    'dac'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include th
+
+
+DECSUB equ 268CH;DAC ← DAC-ARG
+DECADD equ 269AH;DAC ← DAC+ARG
+DECNRM equ 26FAH;DAC を正規化する (*1)
+DECROU equ 273CH;DAC を四捨五入する
+DECMUL equ 27E6H;DAC ← DAC*DAC
+DECDIV equ 289FH;DAC ← DAC/DAC
+MAF equ 2C4DH;ARG ← DAC
+MAM equ 2C50H;ARG ← [HL]
+MOV8DH equ 2C53H;[DE] ← [HL]
+MFA equ 2C59H;DAC ← ARG
+MFM equ 2C5CH;[HL] ← DAC
+MMF equ 2C67H;[HL] ← DAC
+MOV8HD equ 2C6AH;[HL] ← [DE]
+XTF equ 2C6FH;[SP] ←→ DAC
+PHA equ 2CC7H;ARG → [SP]
+PHF equ 2CCCH;DAC → [SP]
+PPA equ 2CDCH;[SP] → ARG
+PPF equ 2CE1H;[SP] → DAC
+PUSHF equ 2EB1H;DAC → [SP]
+MOVFM equ 2EBEH;DAC ← [HL]
+MOVFR equ 2EC1H;DAC ← (CBED)
+MOVRF equ 2ECCH;(CBED) ← DAC
+MOVRMI equ 2ED6H;(CBDE) ← [HL]
+MOVRM equ 2EDFH;(BCDE) ← [HL]
+MOVMF equ 2EE8H;[HL] ← DAC
+MOVE equ 2EEBH;[HL] ← [DE]
+VMOVAM equ 2EEFH;ARG ← [HL]
+MOVVFM equ 2EF2H;[DE] ← [HL]
+VMOVE equ 2EF3H;[HL] ← [DE]
+VMOVFA equ 2F05H;DAC ← ARG
+VMOVFM equ 2F08H;DAC ← [HL]
+VMOVAF equ 2F0DH;ARG ← DAC
+VMOVMF equ 2F10H;[HL] ← DAC
+
+VALTYP equ 0F663H;1
+DAC equ 0F7F6H;16
+ARG equ 0F847H;16
+FOUT equ 3425H
+;===your code 
+
+main:
+ld a,2
+ld (VALTYP),a
+LD HL,1234
+ld (DAC+2),HL
+call fout
+
+ld b,5
+reptb nxt
+ld a,(hl)
+call wrt
+inc hl
+continue
+nxt:
+ret
+
+`,
+    'setvrm'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include th
+
+;===your code 
+
+main:
+ld hl,1800h
+call SETWRT
+ld a,35
+repti 5, ed
+inc a
+out (98h),a
+continue
+ed:
+ret`,
+    'assert'=`include mem
+include math
+include debug
+
+a.reg.trc:
+dw 0
+a.reg.adr:
+dw 0
+a.reg.min:
+dw 0
+a.reg.val:
+dw 0
+a.reg.max:
+dw 0
+macro a.regi,n,v
+ push hl
+ ld hl,v
+ ld (a.reg.##n),hl
+ pop hl
+endm
+macro a.regr,n,v
+ ld (a.reg.##n),v
+endm
+
+macro a.dummy
+ local a.reg.,trc,adr,min,val,nax
+endm
+ 
+
+macro assert.eq,o
+ storelastpc
+ pushall 
+ if not nul o
+  a.regi val, o
+ endif
+ ld de,(a.reg.val)
+ ld(a.reg.val),hl
+ ld(a.reg.min),de
+ ld(a.reg.max),de
+ cpde
+ jp nz,assert.fail
+ popall
+endm
+
+macro assert.do,nx
+ storelastpc
+ pushall
+ call to
+ popall
+ jr nx
+ to:
+endm
+
+macro storelastpc
+ push hl
+ call getpc
+ ld (lastpc),hl
+ pop hl
+endm
+lastpc:
+ dw 0
+ 
+getpc:
+ pop hl
+ push hl
+ ret
+
+assert.fail:
+ ld hl,0deadh
+ show hl
+ showm a.reg.trc
+ showm a.reg.min
+ showm a.reg.val
+ showm a.reg.max
+ showm a.reg.adr
+ showm lastpc
+ call freeze
+macro assert.meqw,ad,val
+ a.regi adr,ad
+ push hl
+ ld hl,(ad)
+ assert.eq val
+ pop hl
+endm
+ `,
+    'stksz'=`org 09000h
+jp main
+include const
+include ctrl
+include math
+include debug
+include sub
+include mem
+include th
+
+
+;===your code 
+
+sz equ 256
+  
+main:
+ld hl,0fd9fh
+ld (hl),0c9h
+ rept sz/2
+  push hl
+ endm
+ rept sz/2
+  pop hl
+ endm
+
+loop:
+ getsp
+ ld de,-sz
+ add hl,de
+ ld de,1800h
+ ld bc,sz
+ call LDIRVM
+ ld hl,0
+ halt
+ jp loop
+ 
+ 
+ `,
+    'vdp'=`;https://www.msx.org/wiki/VDP_Status_Registers
+;st 0 bit 7
+;read 1
+
+;https://www.msx.org/wiki/VDP_Mode_Registers
+;ctrl 1 bit 5 set 0
+include const
+
+susint:
+ ld a,(RG1SAV)
+ res 5,a
+ ld b,A
+ ld c,1
+ jp WRTVDP
+;rstint:
+ ld a,(RG1SAV)
+ set 5,a
+ ld b,A
+ ld c,1
+ jp WRTVDP
+inted:
+ call RDVDP
+ bit 7,a
+ ret
+doint:
+ call inted
+ jr z, norst
+ ld hl,timecnt
+ inc (hl)
+ call h.tntimi
+ norst:
+ ;call rstint
+ ret
+h.tntimi:
+ ld A,(timecnt)
+ ld hl,1ae0h
+ call 4dh
+ ret
+ ds 16
+ 
+timecnt:
+db 0
+macro vdptest
+local stk1,stk2,stk3,vl
+stk1:
+ ds 256,35
+stk2:
+ ds 256,42
+stk3:
+
+vl:
+ call susint
+ ld sp,stk2
+ ld hl,stk1
+ ld de,1800h
+ ld bc,256
+ call LDIRVM
+ 
+ 
+ ld sp,stk3
+ call doint
+ ld hl,stk2
+ ld de,1900h
+ ld bc,256
+ call LDIRVM
+ jp vl
+endm
+ 
+screen1:
+ ld a,1
+ call CHGMOD
+ ld a,(RG1SAV)
+ set 1,a
+ ld b,A
+ ld c,1
+ call WRTVDP
+ ret
+ `,
+    'mus'=`include mem
+mus.ini:
+ di
+ ld hl,0fd9fh
+ ld (hl),0c3h
+ movw (0fd9fh+1),mus
+ ei
+ ret
+mus:
+proc
+local we
+ push af
+ push de
+ ld a,(we-1)
+ xor 15
+ ld (we-1),a 
+ ld a,8
+ ld e,15
+ we:
+ call WRTPSG
+ pop af 
+ pop de
+ ret
+endp`,
+};

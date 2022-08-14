@@ -1,0 +1,7 @@
+includes TNode;
+let _nowait:Token?;
+let ftype:Token?;
+let name:Token;
+let setter:SetterDecl?;
+let params:ParamDecls?;
+let rtype:TypeDecl?;

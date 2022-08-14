@@ -1,0 +1,4 @@
+includes TNode;
+let init:Stmt;
+let cond:Expression?;
+let next:Expression?;

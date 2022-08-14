@@ -1,0 +1,2 @@
+includes TNode;
+let superclassName:Token;

@@ -1,0 +1,29 @@
+extends Boot;
+
+\createMainObject() {
+    getMainClass();
+    $excludeFromAll=$Screen.all();
+    $Screen.resize(512,512);
+    $MScreen=new Screen{x:256,y:224,width:256,height:192,scaleX:2};
+    $MLayer=$MScreen.addLayer();
+    $spr_scale=1;
+    $crashTo_size=8<<$spr_scale;
+    $RSprPat=new RSprPat;
+    $MScreen.setBGColor($RSprPat.palette[3]);
+    $Screen.setBGColor($RSprPat.palette[6]);
+    $exporter=new GenAsm;
+    let ide=$Boot.getIDE();
+    if (ide && $Navigator.isMobile()) ide.runDialog.resize {
+        left:10,top:300,width:400,
+        height:400
+    };
+    if ($editButton) {
+        new Button{top:480,text:"Edit Page",height:30, 
+            fillStyle:$RSprPat.palette[4],
+            onClick:\{$editButton.openEditor();}
+        };
+    }
+    $mainClassName=mainClass.meta.shortName;
+    new mainClass;
+}
+super.main();

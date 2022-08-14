@@ -1,0 +1,4 @@
+includes TNode;
+let name:Token;
+let typeDecl:TypeDecl?;
+let value:Expression?;

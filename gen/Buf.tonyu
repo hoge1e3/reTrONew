@@ -1,0 +1,130 @@
+extends TObject;
+native console;
+let indentBuf="";
+let indentStr=" ";
+let buf=new StringBuilder;
+let visitor:Visitor;
+\initModule(){
+    indentBuf="";
+    indentStr=" ";
+    buf=new StringBuilder;
+    visitor=this;
+}
+\printf() {
+    let ap=new ArgParser(arguments);
+    function shiftArg(nullable) {
+        let res=ap.shift();
+        if (res==null && !nullable) {
+            console.log(ap);
+            throw new Error(
+            "null param: fmt="+fmt);
+        }
+        return res;
+    }
+    let fmt=shiftArg();
+    while (true) {
+        let i=fmt.indexOf("%");
+        if (i<0) {printraw(fmt); break;}
+        printraw(fmt.substring(0,i));
+        i++;
+        let fstr=fmt.charAt(i);
+        if (fstr=="s") {
+            let str=shiftArg();
+            if (typeof str == "string" || typeof str =="number") {}
+            else if (str==null) str="null";
+            else if (str.text) {
+                addMapping(str);
+                str=str.text;
+            }
+            printraw(str);
+            i++;
+        } else if (fstr=="d") {
+            let n=shiftArg();
+            if (typeof n!="number") throw new Error (n+" is not a number: fmt="+fmt);
+            printraw(n);
+            i++;
+        } else if (fstr=="n") {
+            ln();
+            i++;
+        } else if (fstr=="{") {
+            indent();
+            i++;
+        } else if (fstr=="}") {
+            dedent();
+            i++;
+        } else if (fstr=="%") {
+            printraw("%");
+            i++;
+        } else if (fstr=="f") {
+            shiftArg()($);
+            i++;
+        /*} else if (fstr=="l") {
+            let lit=shiftArg();
+            printraw(toLiteral(lit));
+            i++;*/
+        } else if (fstr=="v") {
+            let a=shiftArg();
+            if (!a) throw new Error ("Null %v");
+            if (typeof a!="object") throw new Error("nonobject %v:"+a);
+            addMapping(a);
+            visitor.visit(a);
+            i++;
+        /*} else if (fstr=="z") {
+            let place=shiftArg();
+            if ("val" in place) {
+                printraw(place.val);
+                return;
+            }
+            if (!place.inited) {
+                lazy(place);
+            }
+            place.printraw();
+            i++;*/
+        } else if (fstr=="j") {
+            let sp_node=shiftArg();
+            let sp=sp_node[0];
+            let node=sp_node[1];
+            let sep=false;
+            if (!node || !node.forEach) {
+                console.log(node);
+                throw new Error (node+" is not array. cannot join fmt:"+fmt);
+            }
+            for (let n of node) {
+                if (sep) printf(sp);
+                sep=true;
+                visitor.visit(n);
+            }
+            i++;
+        } else if (fstr=="D"){
+            shiftArg(true);
+            i++;
+        } else {
+            i+=2;
+        }
+        fmt=fmt.substring(i);
+    }
+}
+
+\ln() {
+		
+    printraw("\n"+indentBuf);
+}
+\indent() {
+
+    indentBuf+=indentStr;
+    printraw("\n"+indentBuf);
+}
+\dedent() {
+    let len=indentStr.length;
+    if (!buf.last(len).match(/^\s*$/)) {
+        console.log(buf);
+        throw new Error ("Non-space truncated ");
+    }
+    buf.truncate(len);//=buf.substring(0,buf.length-len);
+    indentBuf=indentBuf.substring(0 , indentBuf.length-len);
+}
+//let debug=false;
+\addMapping(){}
+\printraw(s){
+    buf.append(s);
+}

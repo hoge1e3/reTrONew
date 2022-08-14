@@ -1,0 +1,15 @@
+extends RActor;
+
+
+while(true) {
+    if (getkey("left")) x-=3;
+    if (getkey("right")) x+=3;
+    if (crashTo(Enemy)) {
+        die();
+    }
+    if (getkey("space")==1) {
+        new PBullet{x,y};
+    }
+    update();
+    
+}

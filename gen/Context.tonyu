@@ -1,0 +1,13 @@
+\enter(newval, act) {
+    let sv={};
+    let curval=this;
+    for (let k in newval) {
+        sv[k]=curval[k];
+        curval[k]=newval[k];
+    }
+    let res=act(this);
+    for (let k in sv) {
+        curval[k]=sv[k];
+    }
+    return res;
+}

@@ -1,0 +1,27 @@
+extends TObject;
+let asms=new Asms;
+let incled;
+function gensrc(src){
+    incled={};
+    return incl(src);
+}
+function incl(src){
+    return src.split("\n").
+    map(inclf).
+    join("\n");
+}
+let cmtp=/;([^\n]+)/gi;
+let inclp=
+/^include ([\d\w]+)/; 
+function inclf(line){
+    var m=inclp.exec(line);
+    if(!m)return line;
+    var f=m[1];
+    if(incled[f])return "";
+    incled[f]=1;
+    return 
+    ";include "+f+"\n"+
+    incl(asms.data[f])+
+    "\n"+
+    ";end of include "+f;
+}

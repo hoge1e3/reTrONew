@@ -1,0 +1,3 @@
+includes TNode,Elem;
+let head:FuncExprHead;
+let body:Compound;

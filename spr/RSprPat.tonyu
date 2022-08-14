@@ -1,0 +1,27 @@
+extends TObject;
+let palette=palette||[[0,0,0],
+[64,183,74],[117,207,126],[89,86,215],
+[128,119,239],[184,95,81],
+[102,219,238],[217,102,90],[253,138,126],
+[204,195,96],[222,208,136],
+[59,161,66],[182,103,180],
+[204,204,204],[255,255,255]].map\(rgb) {
+    return new Color(rgb[0],rgb[1],rgb[2]);
+};
+let imgs={};
+\get(p:Number, c:Number) {
+    c=amod(c,(palette.length+1));
+    if (c<=0) return null;
+    let key=`${p}\t${c}`;
+    if (imgs[key]) return imgs[key];
+    let ls=$imageList[p];
+    if (!ls) return  null;
+    let res=new Panel{width:ls.width, height:ls.height};
+    imgs[key]=res;
+    res.context.drawImage(ls.image, 
+    ls.x,ls.y,ls.width,ls.height,
+    0,0,ls.width,ls.height);
+    res.replaceColor(0,0,ls.width, ls.height, palette[c-1]);
+    res.die();
+    return res;
+}

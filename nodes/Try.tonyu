@@ -1,0 +1,3 @@
+includes TNode,Stmt;
+let stmt:Stmt;
+let catches:Catches[];
