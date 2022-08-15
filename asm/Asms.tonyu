@@ -1591,20 +1591,20 @@ crashTo.size equ 8<<spr.scale
 proc
  local gx,gy,gtx,gty
  local endc,cr1
- local fe,kls
+ local fe
 
-macro crashTo.setXY
+head crashTo.setXY
  getfld .x
  const gx,hl
  getfld .y
  const gy,hl
-endm
+ ret
 
 
 def RActor.crashTo,1,0
- crashTo.setXY 0
+ call crashTo.setXY
  getarg 1
- const kls,hl
+ const crashTo.kls,hl
  call isobj.a
  jr c, cr1
   ld hl, th.start
@@ -1620,8 +1620,8 @@ enddef
 
 head crashToC
  ;before:
- ; crashTo.setXY 0
- ; const kls,Class
+ ; call crashTo.setXY
+ ; const crashTo.kls,Class
  ;params:
  ; hl start
  ; de end
@@ -1639,7 +1639,7 @@ head crashToC
   ; skip is not Class
   push hl
   ld a,h
-  ldconst de,kls
+  ldconst de,crashTo.kls
   call instanceof
   pop hl
   continue nz

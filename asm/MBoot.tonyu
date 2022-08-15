@@ -4,7 +4,7 @@ extends Boot;
     $config={
         "spr.scale"=1,
         "obj.limits"={
-            PBullet: 3, Enemy: 10
+            PBullet: 5, Enemy: 10
         },
         "th.count"=20,
     };

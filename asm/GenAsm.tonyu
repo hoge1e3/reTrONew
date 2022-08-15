@@ -274,6 +274,25 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         visit(args[0]);
         printf("call rnd%n");
+    } else if (mname==="crashTo") {
+        let tg=args[0];
+        if (!tg) {
+            unsup(left, "'crashTo' should give a object or Class.");
+        }
+        let klass=(tg.type==="varAccess" && isClassConst(tg));
+        if (klass) {
+            printf("call crashTo.setXY%n");
+            printf("ld hl,%s%n",klass.shortName);
+            printf("const crashTo.kls,hl%n");
+            let range=mem.objRange(klass);
+            printf("ld hl,%s%n",rangeToAd(range[0]));
+            printf("ld de,%s%n",rangeToAd(range[1]));
+            printf("call crashToC%n");
+        } else {
+            visit(tg);
+            printf("call crashTo1%n");
+            printf("flagtobool c%n");
+        }
     } else {
         for(let a of args){
             visit(a);
@@ -471,6 +490,13 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 \rangeToAd(r) {
     return `th.start+${r}*th.size`;
 }
+\isClassConst(klass:VarAccess) {
+    let a=annotation(klass);
+    if (a.scopeInfo.type!=="class") {
+        return null;
+    }
+    return a.scopeInfo.info;
+}
 \v_newExpr(n:NewExpr){
     let klass:VarAccess=n.klass;
     let params:Call?=n.params;
@@ -485,13 +511,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             }
             printf("new.arg .%s%n",elem.key);
         }
-        let a=annotation(klass);
-        if (a.scopeInfo.type!=="class") {
-            unsup(klass , `Only class name is allowed`);
-        }
-        let resKlass=a.scopeInfo.info;
+        let resKlass=isClassConst(klass);
         if (!resKlass) {
-            throw new Error(Object.keys(a.scopeInfo).join("-"));
+            unsup(klass , `Only class name is allowed`);
         }
         let range=mem.objRange(resKlass);
         printf("new %s,%d,%s,%s%n",

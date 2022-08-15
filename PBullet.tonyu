@@ -4,7 +4,7 @@ p=6;
 c=8;
 while (true) {
     if (screenOut()) die();
-    y-=10;
+    y-=6;
     var e=crashTo(Enemy);
     if (e) {
         e.die();
