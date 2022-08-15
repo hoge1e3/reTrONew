@@ -39,6 +39,8 @@ let anode;
     return res;
 }
 for (klass of mem.ks) {
+    let r=mem.objRange(klass);
+    printf(";range %d-%d%n",r[0],r[1]);
     mem.header(klass);
     klassSrc=klass.src.tonyu.text();
     //print(klass.src.tonyu);
@@ -466,6 +468,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         visit(d);
     }
 }
+\rangeToAd(r) {
+    return `th.start+${r}*th.size`;
+}
 \v_newExpr(n:NewExpr){
     let klass:VarAccess=n.klass;
     let params:Call?=n.params;
@@ -480,7 +485,18 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             }
             printf("new.arg .%s%n",elem.key);
         }
-        printf("new %s,%d%n",klass.name, elems.length);
+        let a=annotation(klass);
+        if (a.scopeInfo.type!=="class") {
+            unsup(klass , `Only class name is allowed`);
+        }
+        let resKlass=a.scopeInfo.info;
+        if (!resKlass) {
+            throw new Error(Object.keys(a.scopeInfo).join("-"));
+        }
+        let range=mem.objRange(resKlass);
+        printf("new %s,%d,%s,%s%n",
+        klass.name, elems.length,
+        rangeToAd(range[0]),rangeToAd(range[1]));
         return;
     }
     unsup(n,`'new ${klass.name}' can be followed by only {key:value...}`);

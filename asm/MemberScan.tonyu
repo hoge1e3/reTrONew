@@ -43,7 +43,10 @@ let ks=anodes.filter \(klass){
     inherits(klass, Za) &&
     klass!==Za;
 };
+let obj_limits=initLimitRange($config["obj.limits"]||{});
+let name2klass={};
 for (let klass of ks) {
+    name2klass[klass.shortName]=klass;
     proc(klass);
 }
 fld.build();
@@ -51,6 +54,27 @@ fld.build();
 for (let klass of ks) {
     header(klass);
 }*/
+\initLimitRange(lims) {
+    let res={};
+    let base={};
+    let allCnt=$config["th.count"], cur=allCnt;
+    for (let klass, num in lims) {
+        res[klass]=[cur-num, cur];
+        cur-=num;
+    }
+    if (cur<0) {
+        throw new Error(`Config error: obj.limit exceeded th.count(${allCnt})`);
+    }
+    res["*"]=[0,cur];
+    return res;
+}
+\objRange(klass) {
+    for (let klassEnt, num in obj_limits) {
+        klassEnt=name2klass[klassEnt];
+        if (inherits(klass, klassEnt)) return num;
+    }
+    return obj_limits["*"];
+}
 
 \proc(klass){
     //print(klass);

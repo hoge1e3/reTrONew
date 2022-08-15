@@ -1,13 +1,24 @@
 extends Boot;
 
+\config() {
+    $config={
+        "spr.scale"=1,
+        "obj.limits"={
+            PBullet: 3, Enemy: 10
+        },
+        "th.count"=20,
+    };
+}
 \createMainObject() {
+    //--config section---
+    config();
+    //--------
     getMainClass();
     $excludeFromAll=$Screen.all();
     $Screen.resize(512,512);
     $MScreen=new Screen{x:256,y:224,width:256,height:192,scaleX:2};
     $MLayer=$MScreen.addLayer();
-    $spr_scale=1;
-    $crashTo_size=8<<$spr_scale;
+    $crashTo_size=8<<$config["spr.scale"];
     $RSprPat=new RSprPat;
     $MScreen.setBGColor($RSprPat.palette[3]);
     $Screen.setBGColor($RSprPat.palette[6]);

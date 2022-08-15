@@ -3,7 +3,14 @@ let asms=new Asms;
 let incled;
 function gensrc(src){
     incled={};
-    return incl(src);
+    return writeConfig(incl(src));
+}
+function writeConfig(src) {
+    for (let k,v in $config) {
+        let r=new RegExp(k.replace(/\./g,"\\.")+"\\s+equ\\s+[^\\n]+");
+        src=src.replace(r,`${k} equ ${v}`);
+    }
+    return src;
 }
 function incl(src){
     return src.split("\n").
