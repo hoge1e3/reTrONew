@@ -1,3 +1,4 @@
+extends null;
 let klass: C_Meta;
 let node: FuncDecl;
 let head: FuncDeclHead;

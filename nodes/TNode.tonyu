@@ -1,3 +1,4 @@
+extends null;
 let type:String;
 let row:Number;
 let col:Number;

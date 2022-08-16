@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let key:Token;
 let value:Expression?;

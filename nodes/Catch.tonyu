@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let name:Token;
 let stmt:Stmt;

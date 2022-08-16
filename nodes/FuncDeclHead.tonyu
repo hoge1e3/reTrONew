@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let _nowait:Token?;
 let ftype:Token?;

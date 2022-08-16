@@ -1,2 +1,3 @@
+extends null;
 includes TNode,Elem;
 let elems:JsonElem[];

@@ -2227,7 +2227,6 @@ Tonyu.klass.define({
   fullName: 'user.While',
   shortName: 'While',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4630,7 +4629,6 @@ Tonyu.klass.define({
   fullName: 'user.Catch',
   shortName: 'Catch',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {

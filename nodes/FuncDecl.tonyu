@@ -1,3 +1,4 @@
+extends null;
 includes TNode,Stmt;
 let head:FuncDeclHead;
 let body:Compound;

@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let value:Expression;
 let stmts:Stmt[];

@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let ext:Extends?;
 let incl:Includes?;

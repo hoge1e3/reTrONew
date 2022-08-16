@@ -1,3 +1,4 @@
+extends null;
 let decls;//: C_Decls;
 let superclass: C_Meta;
 //let includes: C_Meta[];

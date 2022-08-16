@@ -1,2 +1,3 @@
+extends null;
 includes TNode;
 let vtype:TypeExpr;

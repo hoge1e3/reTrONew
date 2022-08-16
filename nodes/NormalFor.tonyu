@@ -1,3 +1,4 @@
+extends null;
 includes TNode;
 let init:Stmt;
 let cond:Expression?;
