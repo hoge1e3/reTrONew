@@ -1,4 +1,4 @@
-//extends TObject;
+extends TObject;
 "field strict";
 native $;
 var name2id;

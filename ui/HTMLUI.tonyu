@@ -1,3 +1,4 @@
+extends Actor;
 includes JQExpr;
 native document;
 native $;

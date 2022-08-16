@@ -2831,7 +2831,7 @@ Tonyu.klass.define({
   fullName: 'user.JQExpr',
   shortName: 'JQExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
+  superclass: Tonyu.classes.kernel.TObject,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -3001,12 +3001,12 @@ Tonyu.klass.define({
           
         }
         
-        elem.on("focus",(function anonymous_1627() {
+        elem.on("focus",(function anonymous_1625() {
           
           svp=Tonyu.globals.$Keys.preventDefaults;
           Tonyu.globals.$Keys.preventDefaults={};
         }));
-        elem.on("blur",(function anonymous_1726() {
+        elem.on("blur",(function anonymous_1724() {
           
           if (svp) {
             Tonyu.globals.$Keys.preventDefaults=svp;
@@ -3105,12 +3105,12 @@ Tonyu.klass.define({
           
         }
         
-        elem.on("focus",(function anonymous_1627() {
+        elem.on("focus",(function anonymous_1625() {
           
           svp=Tonyu.globals.$Keys.preventDefaults;
           Tonyu.globals.$Keys.preventDefaults={};
         }));
-        elem.on("blur",(function anonymous_1726() {
+        elem.on("blur",(function anonymous_1724() {
           
           if (svp) {
             Tonyu.globals.$Keys.preventDefaults=svp;
@@ -3137,91 +3137,6 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"isArray":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isPlainObj":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"genid":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"isPrimitive":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"extLink":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"add2":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}}},"fields":{"name2id":{}}}
-});
-Tonyu.klass.define({
-  fullName: 'user.UITes',
-  shortName: 'UITes',
-  namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
-  includes: [],
-  methods: function (__superClass) {
-    return {
-      main :function _trc_UITes_main() {
-        "use strict";
-        var _this=this;
-        
-        _this.tx = new Tonyu.classes.user.HTMLUI({content: ["textarea",{name: "val"},"test\ndesu"],left: 10,top: 20,width: 300,height: 100});
-        
-        _this.calc = new Tonyu.classes.user.HTMLUI({content: ["div",{style: "background: cyan;"},["input",{name: "a",value: 2}],"+",["input",{name: "b",value: 3}],["button",{onclick: Tonyu.bindFunc(_this,_this.plus)},"="],["input",{name: "c"}]],left: 10,top: 300,width: 400,height: 100});
-        
-        _this.calc.add(["div",["button",{onclick: (function anonymous_422() {
-          
-          _this.calc.die();
-        })},"Close"]]);
-        _this.x=100;
-        _this.y=200;
-        _this.align="left";
-        while (true) {
-          Tonyu.checkLoop();
-          _this.text="Value of textarea:\n"+_this.tx.getValue("val");
-          _this.update();
-          
-        }
-      },
-      fiber$main :function* _trc_UITes_f_main(_thread) {
-        "use strict";
-        var _this=this;
-        //var _arguments=Tonyu.A(arguments);
-        
-        _this.tx = new Tonyu.classes.user.HTMLUI({content: ["textarea",{name: "val"},"test\ndesu"],left: 10,top: 20,width: 300,height: 100});
-        
-        _this.calc = new Tonyu.classes.user.HTMLUI({content: ["div",{style: "background: cyan;"},["input",{name: "a",value: 2}],"+",["input",{name: "b",value: 3}],["button",{onclick: Tonyu.bindFunc(_this,_this.plus)},"="],["input",{name: "c"}]],left: 10,top: 300,width: 400,height: 100});
-        
-        _this.calc.add(["div",["button",{onclick: (function anonymous_422() {
-          
-          _this.calc.die();
-        })},"Close"]]);
-        _this.x=100;
-        _this.y=200;
-        _this.align="left";
-        while (true) {
-          yield null;
-          _this.text="Value of textarea:\n"+_this.tx.getValue("val");
-          (yield* _this.fiber$update(_thread));
-          
-        }
-        
-      },
-      plus :function _trc_UITes_plus() {
-        "use strict";
-        var _this=this;
-        var a;
-        var b;
-        
-        a = _this.calc.getValue("a")-0;
-        
-        b = _this.calc.getValue("b")-0;
-        
-        _this.calc.setValue("c",a+b);
-      },
-      fiber$plus :function* _trc_UITes_f_plus(_thread) {
-        "use strict";
-        var _this=this;
-        //var _arguments=Tonyu.A(arguments);
-        var a;
-        var b;
-        
-        a = _this.calc.getValue("a")-0;
-        
-        b = _this.calc.getValue("b")-0;
-        
-        _this.calc.setValue("c",a+b);
-        
-      },
-      __dummy: false
-    };
-  },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"plus":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"tx":{"vtype":"user.HTMLUI"},"calc":{"vtype":"user.HTMLUI"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.RActor',
@@ -5980,7 +5895,7 @@ Tonyu.klass.define({
         }
         document.body.appendChild($("#"+_this.id)[0]);
         _this.fit();
-        Tonyu.globals.$uiScreen.on("resize",(function anonymous_827() {
+        Tonyu.globals.$uiScreen.on("resize",(function anonymous_842() {
           
           _this.fit();
         }));
