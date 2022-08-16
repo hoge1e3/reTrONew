@@ -271,7 +271,8 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         } else {
             let kn=args[0];
             if (kn.type==="literal") {
-                let s=kn.text;
+                let lit:Token=kn;
+                let s=lit.text;
                 s=s.substring(1,s.length-1);
                 if (!keynames[s]) {
                     unsup(kn, `Undefined key name '${s}'.`);

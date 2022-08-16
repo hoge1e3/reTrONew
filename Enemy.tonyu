@@ -1,4 +1,3 @@
-extends RActor;
 var vx;
 while(y<200) {
     y+=2;

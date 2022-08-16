@@ -1949,7 +1949,6 @@ Tonyu.klass.define({
   fullName: 'user.Catches',
   shortName: 'Catches',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -1974,7 +1973,6 @@ Tonyu.klass.define({
   fullName: 'user.ForHead',
   shortName: 'ForHead',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -1999,7 +1997,6 @@ Tonyu.klass.define({
   fullName: 'user.ObjOrFuncArg',
   shortName: 'ObjOrFuncArg',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2024,7 +2021,6 @@ Tonyu.klass.define({
   fullName: 'user.Stmt',
   shortName: 'Stmt',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2049,7 +2045,6 @@ Tonyu.klass.define({
   fullName: 'user.TNode',
   shortName: 'TNode',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2084,7 +2079,6 @@ Tonyu.klass.define({
   fullName: 'user.Try',
   shortName: 'Try',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -2113,7 +2107,6 @@ Tonyu.klass.define({
   fullName: 'user.TypeDecl',
   shortName: 'TypeDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -2140,7 +2133,6 @@ Tonyu.klass.define({
   fullName: 'user.TypeExpr',
   shortName: 'TypeExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -2167,7 +2159,6 @@ Tonyu.klass.define({
   fullName: 'user.VarDecl',
   shortName: 'VarDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -2198,7 +2189,6 @@ Tonyu.klass.define({
   fullName: 'user.VarsDecl',
   shortName: 'VarsDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -2255,7 +2245,6 @@ Tonyu.klass.define({
   fullName: 'user.C_Meta',
   shortName: 'C_Meta',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2290,7 +2279,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncInfo',
   shortName: 'FuncInfo',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2341,7 +2329,6 @@ Tonyu.klass.define({
   fullName: 'user.Locals',
   shortName: 'Locals',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -4492,7 +4479,6 @@ Tonyu.klass.define({
   fullName: 'user.ArgList',
   shortName: 'ArgList',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4519,7 +4505,6 @@ Tonyu.klass.define({
   fullName: 'user.ArrayElem',
   shortName: 'ArrayElem',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4546,7 +4531,6 @@ Tonyu.klass.define({
   fullName: 'user.Break',
   shortName: 'Break',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4573,7 +4557,6 @@ Tonyu.klass.define({
   fullName: 'user.Call',
   shortName: 'Call',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4600,7 +4583,6 @@ Tonyu.klass.define({
   fullName: 'user.Case',
   shortName: 'Case',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4657,7 +4639,6 @@ Tonyu.klass.define({
   fullName: 'user.Compound',
   shortName: 'Compound',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4684,7 +4665,6 @@ Tonyu.klass.define({
   fullName: 'user.Continue',
   shortName: 'Continue',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4711,7 +4691,6 @@ Tonyu.klass.define({
   fullName: 'user.Default',
   shortName: 'Default',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4738,7 +4717,6 @@ Tonyu.klass.define({
   fullName: 'user.Do',
   shortName: 'Do',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4767,7 +4745,6 @@ Tonyu.klass.define({
   fullName: 'user.Empty',
   shortName: 'Empty',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4792,7 +4769,6 @@ Tonyu.klass.define({
   fullName: 'user.Expr',
   shortName: 'Expr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4817,7 +4793,6 @@ Tonyu.klass.define({
   fullName: 'user.Expression',
   shortName: 'Expression',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4842,7 +4817,6 @@ Tonyu.klass.define({
   fullName: 'user.Exprstmt',
   shortName: 'Exprstmt',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4869,7 +4843,6 @@ Tonyu.klass.define({
   fullName: 'user.Extends',
   shortName: 'Extends',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4896,7 +4869,6 @@ Tonyu.klass.define({
   fullName: 'user.Finally',
   shortName: 'Finally',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4923,7 +4895,6 @@ Tonyu.klass.define({
   fullName: 'user.For',
   shortName: 'For',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -4952,7 +4923,6 @@ Tonyu.klass.define({
   fullName: 'user.Forin',
   shortName: 'Forin',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -4985,7 +4955,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncDecl',
   shortName: 'FuncDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5014,7 +4983,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncDeclHead',
   shortName: 'FuncDeclHead',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5051,7 +5019,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncExprArg',
   shortName: 'FuncExprArg',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.ObjOrFuncArg],
   methods: function (__superClass) {
     return {
@@ -5078,7 +5045,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncExprHead',
   shortName: 'FuncExprHead',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5107,7 +5073,6 @@ Tonyu.klass.define({
   fullName: 'user.If',
   shortName: 'If',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5138,7 +5103,6 @@ Tonyu.klass.define({
   fullName: 'user.IfWait',
   shortName: 'IfWait',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5167,7 +5131,6 @@ Tonyu.klass.define({
   fullName: 'user.Includes',
   shortName: 'Includes',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5194,7 +5157,6 @@ Tonyu.klass.define({
   fullName: 'user.Infix',
   shortName: 'Infix',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Expression],
   methods: function (__superClass) {
     return {
@@ -5225,7 +5187,6 @@ Tonyu.klass.define({
   fullName: 'user.JsonElem',
   shortName: 'JsonElem',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5254,7 +5215,6 @@ Tonyu.klass.define({
   fullName: 'user.Member',
   shortName: 'Member',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5281,7 +5241,6 @@ Tonyu.klass.define({
   fullName: 'user.NativeDecl',
   shortName: 'NativeDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5308,7 +5267,6 @@ Tonyu.klass.define({
   fullName: 'user.NormalFor',
   shortName: 'NormalFor',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5339,7 +5297,6 @@ Tonyu.klass.define({
   fullName: 'user.ObjlitArg',
   shortName: 'ObjlitArg',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.ObjOrFuncArg],
   methods: function (__superClass) {
     return {
@@ -5366,7 +5323,6 @@ Tonyu.klass.define({
   fullName: 'user.ParamDecl',
   shortName: 'ParamDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5395,7 +5351,6 @@ Tonyu.klass.define({
   fullName: 'user.ParamDecls',
   shortName: 'ParamDecls',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5422,7 +5377,6 @@ Tonyu.klass.define({
   fullName: 'user.Postfix',
   shortName: 'Postfix',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Expression],
   methods: function (__superClass) {
     return {
@@ -5451,7 +5405,6 @@ Tonyu.klass.define({
   fullName: 'user.Prefix',
   shortName: 'Prefix',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Expression],
   methods: function (__superClass) {
     return {
@@ -5480,7 +5433,6 @@ Tonyu.klass.define({
   fullName: 'user.Program',
   shortName: 'Program',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5511,7 +5463,6 @@ Tonyu.klass.define({
   fullName: 'user.Return',
   shortName: 'Return',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5538,7 +5489,6 @@ Tonyu.klass.define({
   fullName: 'user.Scall',
   shortName: 'Scall',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5565,7 +5515,6 @@ Tonyu.klass.define({
   fullName: 'user.SetterDecl',
   shortName: 'SetterDecl',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode],
   methods: function (__superClass) {
     return {
@@ -5592,7 +5541,6 @@ Tonyu.klass.define({
   fullName: 'user.Switch',
   shortName: 'Switch',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5623,7 +5571,6 @@ Tonyu.klass.define({
   fullName: 'user.Throw',
   shortName: 'Throw',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Stmt],
   methods: function (__superClass) {
     return {
@@ -5650,7 +5597,6 @@ Tonyu.klass.define({
   fullName: 'user.Trifix',
   shortName: 'Trifix',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Expression],
   methods: function (__superClass) {
     return {
@@ -5743,7 +5689,7 @@ Tonyu.klass.define({
         
         _this.c+=1;
         if (_this.c>14) {
-          _this.c=8;
+          _this.c=0;
         }
       },
       __dummy: false
@@ -6805,7 +6751,9 @@ Tonyu.klass.define({
             let kn = args[0];
             
             if (kn.type==="literal") {
-              let s = kn.text;
+              let lit = kn;
+              
+              let s = lit.text;
               
               s=s.substring(1,s.length-1);
               if (! _this.keynames[s]) {
@@ -6887,7 +6835,9 @@ Tonyu.klass.define({
             let kn = args[0];
             
             if (kn.type==="literal") {
-              let s = kn.text;
+              let lit = kn;
+              
+              let s = lit.text;
               
               s=s.substring(1,s.length-1);
               if (! _this.keynames[s]) {
@@ -7096,7 +7046,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_9409() {
+        _this.enter({lval: true},(function anonymous_9444() {
           
           _this.visit(left);
         }));
@@ -7113,7 +7063,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9409() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9444() {
           
           _this.visit(left);
         })));
@@ -7130,7 +7080,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_10224() {
+        _this.enter({lval: true},(function anonymous_10259() {
           
           _this.visit(left);
         }));
@@ -7147,7 +7097,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_10224() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_10259() {
           
           _this.visit(left);
         })));
@@ -7628,7 +7578,6 @@ Tonyu.klass.define({
   fullName: 'user.Elem',
   shortName: 'Elem',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Expression],
   methods: function (__superClass) {
     return {
@@ -7653,7 +7602,6 @@ Tonyu.klass.define({
   fullName: 'user.FuncExpr',
   shortName: 'FuncExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7682,7 +7630,6 @@ Tonyu.klass.define({
   fullName: 'user.NewExpr',
   shortName: 'NewExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7711,7 +7658,6 @@ Tonyu.klass.define({
   fullName: 'user.Objlit',
   shortName: 'Objlit',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7738,7 +7684,6 @@ Tonyu.klass.define({
   fullName: 'user.ParenExpr',
   shortName: 'ParenExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7765,7 +7710,6 @@ Tonyu.klass.define({
   fullName: 'user.SuperExpr',
   shortName: 'SuperExpr',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7794,7 +7738,6 @@ Tonyu.klass.define({
   fullName: 'user.Token',
   shortName: 'Token',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7821,7 +7764,6 @@ Tonyu.klass.define({
   fullName: 'user.VarAccess',
   shortName: 'VarAccess',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {
@@ -7848,7 +7790,6 @@ Tonyu.klass.define({
   fullName: 'user.Arylit',
   shortName: 'Arylit',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [Tonyu.classes.user.TNode,Tonyu.classes.user.Elem],
   methods: function (__superClass) {
     return {

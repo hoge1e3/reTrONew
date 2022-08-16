@@ -1,6 +1,3 @@
-extends RActor;
-
-
 while(true) {
     if (getkey("left")) x-=3;
     if (getkey("right")) x+=3;

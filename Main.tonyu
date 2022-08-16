@@ -1,7 +1,3 @@
-extends RActor;
-
-
-
 $player=new Player{x:256, y: 300, p:4, c:15};
 var i=0;
 while(i<20) {
