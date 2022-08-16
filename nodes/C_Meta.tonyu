@@ -1,0 +1,6 @@
+let decls;//: C_Decls;
+let superclass: C_Meta;
+//let includes: C_Meta[];
+let	src;//: {tonyu?:any, js?:any, map?: string},
+let node: Program;
+let annotation;//: object,

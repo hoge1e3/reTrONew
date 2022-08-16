@@ -1,0 +1,14 @@
+let klass: C_Meta;
+let node: FuncDecl;
+let head: FuncDeclHead;
+let ftype:String;
+let name: String;
+let isMain: Boolean;
+let stmts: Stmt[];
+let locals: Locals;
+let params: ParamDecl[];
+let scope;//: ScopeMap;
+let useArgs:Boolean;
+let paramTypes;//: AnnotatedType[];
+let returnType;//: AnnotatedType;
+//let nowait: Boolean;

@@ -1,3 +1,4 @@
+extends null;
 \enter(newval, act) {
     let sv={};
     let curval=this;

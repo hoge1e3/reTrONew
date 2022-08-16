@@ -1,3 +1,4 @@
+extends Actor;
 \visit(n){
     let k=n && "v_"+n.type;
     if(n&&

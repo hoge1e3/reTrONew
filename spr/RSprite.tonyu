@@ -1,3 +1,4 @@
+extends Actor;
 let sprpat;
 let p,c;
 let dotAlign=1;

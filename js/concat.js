@@ -1448,7 +1448,6 @@ Tonyu.klass.define({
   fullName: 'user.Context',
   shortName: 'Context',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -2208,6 +2207,7 @@ Tonyu.klass.define({
         var _this=this;
         
         
+        
       },
       fiber$main :function* _trc_VarsDecl_f_main(_thread) {
         "use strict";
@@ -2216,11 +2216,12 @@ Tonyu.klass.define({
         
         
         
+        
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"decls":{"vtype":{"element":"user.VarDecl"}}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"decls":{"vtype":{"element":"user.VarDecl"}},"declPrefix":{"vtype":"user.Token"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.While',
@@ -2250,6 +2251,121 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"cond":{"vtype":"user.Expression"},"loop":{"vtype":"user.Stmt"}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.C_Meta',
+  shortName: 'C_Meta',
+  namespace: 'user',
+  superclass: Tonyu.classes.kernel.Actor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_C_Meta_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        
+        
+        
+        
+      },
+      fiber$main :function* _trc_C_Meta_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        
+        
+        
+        
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"decls":{},"superclass":{"vtype":"user.C_Meta"},"src":{},"node":{"vtype":"user.Program"},"annotation":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.FuncInfo',
+  shortName: 'FuncInfo',
+  namespace: 'user',
+  superclass: Tonyu.classes.kernel.Actor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_FuncInfo_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      },
+      fiber$main :function* _trc_FuncInfo_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"klass":{"vtype":"user.C_Meta"},"node":{"vtype":"user.FuncDecl"},"head":{"vtype":"user.FuncDeclHead"},"ftype":{"vtype":"String"},"name":{"vtype":"String"},"isMain":{"vtype":"Boolean"},"stmts":{"vtype":{"element":"user.Stmt"}},"locals":{"vtype":"user.Locals"},"params":{"vtype":{"element":"user.ParamDecl"}},"scope":{},"useArgs":{"vtype":"Boolean"},"paramTypes":{},"returnType":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.Locals',
+  shortName: 'Locals',
+  namespace: 'user',
+  superclass: Tonyu.classes.kernel.Actor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Locals_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        
+      },
+      fiber$main :function* _trc_Locals_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"varDecls":{},"subFuncDecls":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.OutPat',
@@ -5679,7 +5795,6 @@ Tonyu.klass.define({
             _this.die();
             
           }
-          _this.c=18-_this.c;
           _this.update();
           
         }
@@ -5704,16 +5819,24 @@ Tonyu.klass.define({
             _this.die();
             
           }
-          _this.c=18-_this.c;
           (yield* _this.fiber$update(_thread));
           
         }
         
       },
+      onUpdate :function _trc_PBullet_onUpdate() {
+        "use strict";
+        var _this=this;
+        
+        _this.c+=1;
+        if (_this.c>14) {
+          _this.c=8;
+        }
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"e":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"onUpdate":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"e":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Player',
@@ -6116,21 +6239,43 @@ Tonyu.klass.define({
         
         _this.printf(['org 08000h\ninclude tnu\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join(''));
         
+        _this.x=256;
+        _this.y=20;
+        _this.fillStyle="black";
         for ([_this.klass] of Tonyu.iterator2(_this.mem.ks,1)) {
           let r = _this.mem.objRange(_this.klass);
           
+          _this.text=_this.klass.shortName;
           _this.printf(";range %d-%d%n",r[0],r[1]);
           _this.mem.header(_this.klass);
           _this.klassSrc=_this.klass.src.tonyu.text();
-          _this.printf("def %s.main,0,0%{",_this.klass.shortName);
+          let methods = _this.klass.decls.methods;
+          
           _this.anode=(_this.klass.annotation);
-          _this.visit(_this.klass.node);
-          _this.printf("%}");
+          for (let [mname, me] of Tonyu.iterator2(methods,2)) {
+            let method = me;
+            
+            _this.text=_this.klass.shortName+"."+mname;
+            if (method.params.length>0) {
+              _this.unsup(method.params[0],"Parameters is not yet supported");
+              
+            }
+            _this.printf("def %s.%s,%d,0%{",_this.klass.shortName,mname,method.params.length);
+            for (let [s] of Tonyu.iterator2(method.stmts,1)) {
+              _this.visit(s);
+            }
+            _this.printf("ret%n");
+            _this.printf("%}");
+            _this.update();
+            
+          }
+          _this.update();
           
         }
+        _this.text="";
         _this.outp = new Tonyu.classes.user.OutPat;
         
-        _this.printf(['enddef 0\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1152(k) {
+        _this.printf(['enddef 0\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1629(k) {
           
           return _this.globalLabel(k)+":dw 0\n";
         })),'\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,',_this.outp.count*32,'\n jp LDIRVM\nspr.pat:\n',_this.outp.buf,'\n\nend main'].join(''));
@@ -6169,21 +6314,43 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$printf(_thread, ['org 08000h\ninclude tnu\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join('')));
         
+        _this.x=256;
+        _this.y=20;
+        _this.fillStyle="black";
         for ([_this.klass] of Tonyu.iterator2(_this.mem.ks,1)) {
           let r = _this.mem.objRange(_this.klass);
           
+          _this.text=_this.klass.shortName;
           (yield* _this.fiber$printf(_thread, ";range %d-%d%n", r[0], r[1]));
           _this.mem.header(_this.klass);
           _this.klassSrc=_this.klass.src.tonyu.text();
-          (yield* _this.fiber$printf(_thread, "def %s.main,0,0%{", _this.klass.shortName));
+          let methods = _this.klass.decls.methods;
+          
           _this.anode=(_this.klass.annotation);
-          (yield* _this.fiber$visit(_thread, _this.klass.node));
-          (yield* _this.fiber$printf(_thread, "%}"));
+          for (let [mname, me] of Tonyu.iterator2(methods,2)) {
+            let method = me;
+            
+            _this.text=_this.klass.shortName+"."+mname;
+            if (method.params.length>0) {
+              (yield* _this.fiber$unsup(_thread, method.params[0], "Parameters is not yet supported"));
+              
+            }
+            (yield* _this.fiber$printf(_thread, "def %s.%s,%d,0%{", _this.klass.shortName, mname, method.params.length));
+            for (let [s] of Tonyu.iterator2(method.stmts,1)) {
+              (yield* _this.fiber$visit(_thread, s));
+            }
+            (yield* _this.fiber$printf(_thread, "ret%n"));
+            (yield* _this.fiber$printf(_thread, "%}"));
+            (yield* _this.fiber$update(_thread));
+            
+          }
+          (yield* _this.fiber$update(_thread));
           
         }
+        _this.text="";
         _this.outp = new Tonyu.classes.user.OutPat;
         
-        (yield* _this.fiber$printf(_thread, ['enddef 0\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1152(k) {
+        (yield* _this.fiber$printf(_thread, ['enddef 0\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1629(k) {
           
           return _this.globalLabel(k)+":dw 0\n";
         })),'\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,',_this.outp.count*32,'\n jp LDIRVM\nspr.pat:\n',_this.outp.buf,'\n\nend main'].join('')));
@@ -6223,13 +6390,13 @@ Tonyu.klass.define({
         var _this=this;
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_1904(p) {
+          let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_2381(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_2017() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_2494() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_2249() {
+          }))),["button",{onclick: (function anonymous_2726() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -6237,7 +6404,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_2801() {
+        let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_3278() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -6253,13 +6420,13 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_1904(p) {
+          let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_2381(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_2017() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_2494() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_2249() {
+          }))),["button",{onclick: (function anonymous_2726() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -6267,7 +6434,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_2801() {
+        let tx = new Tonyu.classes.user.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_3278() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -6607,7 +6774,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_5416() {
+            _this.enter({lval: false},(function anonymous_5893() {
               
               _this.visit(tgme[0]);
             }));
@@ -6662,7 +6829,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_5416() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_5893() {
               
               _this.visit(tgme[0]);
             })));
@@ -7016,7 +7183,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_8932() {
+        _this.enter({lval: true},(function anonymous_9409() {
           
           _this.visit(left);
         }));
@@ -7033,7 +7200,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_8932() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9409() {
           
           _this.visit(left);
         })));
@@ -7050,7 +7217,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_9747() {
+        _this.enter({lval: true},(function anonymous_10224() {
           
           _this.visit(left);
         }));
@@ -7067,7 +7234,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9747() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_10224() {
           
           _this.visit(left);
         })));
@@ -7351,6 +7518,13 @@ Tonyu.klass.define({
         
         let value = n.value;
         
+        let a = _this.annotation(n);
+        
+        if (! a.varInMain) {
+          _this.unsup(n,"Local Variables are not yet supported.");
+          return _this;
+          
+        }
         if (! value) {
           return _this;
         }
@@ -7368,6 +7542,13 @@ Tonyu.klass.define({
         
         let value = n.value;
         
+        let a=yield* _this.fiber$annotation(_thread, n);
+        
+        if (! a.varInMain) {
+          (yield* _this.fiber$unsup(_thread, n, "Local Variables are not yet supported."));
+          return _this;
+          
+        }
         if (! value) {
           return _this;
         }
@@ -7381,6 +7562,10 @@ Tonyu.klass.define({
         
         let decls = n.decls;
         
+        if (n.declPrefix.text!=="var") {
+          _this.unsup(n,"let or const are not supported.");
+          
+        }
         for (let [d] of Tonyu.iterator2(decls,1)) {
           _this.visit(d);
           
@@ -7393,6 +7578,10 @@ Tonyu.klass.define({
         
         let decls = n.decls;
         
+        if (n.declPrefix.text!=="var") {
+          (yield* _this.fiber$unsup(_thread, n, "let or const are not supported."));
+          
+        }
         for (let [d] of Tonyu.iterator2(decls,1)) {
           (yield* _this.fiber$visit(_thread, d));
           

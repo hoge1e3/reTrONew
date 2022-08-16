@@ -1,2 +1,3 @@
 includes TNode,Stmt;
 let decls:VarDecl[];
+let declPrefix: Token;

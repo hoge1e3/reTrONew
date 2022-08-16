@@ -38,17 +38,32 @@ let anode;
     }
     return res;
 }
+x=256;y=20;fillStyle="black";
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
+    text=klass.shortName;
+    //print("KLS",klass);
     printf(";range %d-%d%n",r[0],r[1]);
     mem.header(klass);
     klassSrc=klass.src.tonyu.text();
     //print(klass.src.tonyu);
-    printf("def %s.main,0,0%{",klass.shortName);
+    let methods=klass.decls.methods;
     anode=(klass.annotation);
-    visit(klass.node);
-    printf("%}");
+    for (let mname, me of methods) {
+        let method:FuncInfo=me;
+        text=klass.shortName+"."+mname;
+        if (method.params.length>0) {
+            unsup(method.params[0],"Parameters is not yet supported");
+        }
+        printf("def %s.%s,%d,0%{",klass.shortName, mname, method.params.length);
+        for(let s of method.stmts) visit(s);
+        printf("ret%n");
+        printf("%}");
+        update();
+    }
+    update();
 }
+text="";
 let outp=new OutPat;
 printf(`enddef 0
 endusr:
@@ -476,13 +491,20 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     let name:Token=n.name;
     let typeDecl:TypeDecl?=n.typeDecl;
     let value:Expression?=n.value;
+    let a=annotation(n);
+    if (!a.varInMain) {
+        unsup(n,"Local Variables are not yet supported.");
+        return;
+    }
     if (!value) return;
     visit(value);
-    //TODO local
     printf("setfld .%s%n",name);
 }
 \v_varsDecl(n:VarsDecl){
     let decls:VarDecl[]=n.decls;
+    if (n.declPrefix.text!=="var") {
+        unsup(n,"let or const are not supported.");
+    }
     for(let d of decls){
         visit(d);
     }

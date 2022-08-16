@@ -10,6 +10,10 @@ while (true) {
         e.die();
         die();
     }
-    c=18-c;
     update();
+}
+\onUpdate() {
+    //var t;
+    c+=1;
+    if (c>14) c=8;
 }

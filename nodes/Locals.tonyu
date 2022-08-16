@@ -1,0 +1,2 @@
+let varDecls;//: {[key: string]:VarDecl},
+let subFuncDecls;//: {[key: string]:FuncDecl},
