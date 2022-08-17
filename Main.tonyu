@@ -1,4 +1,4 @@
-$player=new Player{x:256, y: 300, p:4, c:15};
+$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 var i=0;
 while(i<20) {
     new Enemy{x:rnd(512), y:0, p:5, c:7};

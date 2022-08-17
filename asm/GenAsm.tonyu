@@ -68,8 +68,8 @@ let outp=new OutPat;
 printf(`enddef 0
 endusr:
 ${Object.keys(globals).map \(k){
-    return globalLabel(k)+":dw 0\n";
-}}
+    return globalLabel(k)+":dw 0";
+}.join("\n")}
 spr.inipat:
  ld de,3800h
  ld hl,spr.pat
