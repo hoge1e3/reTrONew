@@ -2065,6 +2065,58 @@ include bool
 
 main:
 tnu.run Main
+;range 0-5
+class EBullet,RActor
+ meth EBullet,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld .vx,0
+ fld .vy,0
+ end.const 0
+def EBullet.main,0,0
+ ;p=7;
+ ld hl,7
+ setfld .p
+ ;c=15;
+ ld hl,15
+ setfld .c
+ lb1:
+ ld hl,true
+ jpf lb2
+ ;x+=vx;
+ getfld .vx
+ push hl
+ getfld .x
+ pop de
+ add hl, de
+ setfld .x
+ ;y+=vy;
+ getfld .vy
+ push hl
+ getfld .y
+ pop de
+ add hl, de
+ setfld .y
+ invoke .screenOut
+ jpf lb4
+ ;die();
+ invoke .die
+ jp lb3
+ lb4:
+ lb3:
+ ;update();
+ invoke .update
+ jp lb1
+ lb2:
+ ret
 ;range 5-15
 class Enemy,RActor
  meth Enemy,main
@@ -2085,13 +2137,13 @@ class Enemy,RActor
  meth Enemy,fire
  end.const 0
 def Enemy.main,0,0
- lb1:
+ lb5:
  ld hl,200
  push hl
  getfld .y
  pop de
  call hlltde
- jpf lb2
+ jpf lb6
  ;y+=2;
  ld hl,2
  push hl
@@ -2101,15 +2153,15 @@ def Enemy.main,0,0
  setfld .y
  ;update();
  invoke .update
- jp lb1
- lb2:
+ jp lb5
+ lb6:
  ld hl,(gbl_player)
  getfldtg .x
  push hl
  getfld .x
  pop de
  call hlgtde
- jpf lb4
+ jpf lb8
  ;vx=0-2;
  ld hl,2
  push hl
@@ -2117,24 +2169,24 @@ def Enemy.main,0,0
  pop de
  subhl de
  setfld .vx
- jp lb3
- lb4:
+ jp lb7
+ lb8:
  ;vx=2;
  ld hl,2
  setfld .vx
- lb3:
+ lb7:
  ;fire();
  invoke .fire
- lb5:
+ lb9:
  ld hl,true
- jpf lb6
+ jpf lb10
  invoke .screenOut
- jpf lb8
+ jpf lb12
  ;die();
  invoke .die
- jp lb7
- lb8:
- lb7:
+ jp lb11
+ lb12:
+ lb11:
  ;y+=2;
  ld hl,2
  push hl
@@ -2151,8 +2203,8 @@ def Enemy.main,0,0
  setfld .x
  ;update();
  invoke .update
- jp lb5
- lb6:
+ jp lb9
+ lb10:
  ret
 def Enemy.fire,0,0
  ;bvx=$player.x-x;
@@ -2216,7 +2268,7 @@ def Enemy.fire,0,0
  new.arg .vx
  getfld .bvy
  new.arg .vy
- new EBullet,4,th.start+0*th.size,th.start+5*th.size
+ new EBullet,4,0,5
  ret
 ;range 0-5
 class Main,RActor
@@ -2247,17 +2299,17 @@ def Main.main,0,0
  new.arg .p
  ld hl,15
  new.arg .c
- new Player,4,th.start+0*th.size,th.start+5*th.size
+ new Player,4,0,5
  ld (gbl_player),hl
  ld hl,0
  setfld .i
- lb9:
+ lb13:
  ld hl,20
  push hl
  getfld .i
  pop de
  call hlltde
- jpf lb10
+ jpf lb14
  ;new Enemy{x:rnd(512), y:0, p:5, c:7};
  ld hl,512
  call rnd
@@ -2268,13 +2320,13 @@ def Main.main,0,0
  new.arg .p
  ld hl,7
  new.arg .c
- new Enemy,4,th.start+5*th.size,th.start+15*th.size
+ new Enemy,4,5,15
  ;updateEx(30);
  ld hl,30
  push hl
  invoke .updateEx
- jp lb9
- lb10:
+ jp lb13
+ lb14:
  ret
 ;range 15-20
 class PBullet,RActor
@@ -2298,16 +2350,16 @@ def PBullet.main,0,0
  ;c=8;
  ld hl,8
  setfld .c
- lb11:
+ lb15:
  ld hl,true
- jpf lb12
+ jpf lb16
  invoke .screenOut
- jpf lb14
+ jpf lb18
  ;die();
  invoke .die
- jp lb13
- lb14:
- lb13:
+ jp lb17
+ lb18:
+ lb17:
  ;y-=6;
  ld hl,6
  push hl
@@ -2315,15 +2367,10 @@ def PBullet.main,0,0
  pop de
  subhl de
  setfld .y
- call crashTo.setXY
- ld hl,Enemy
- const crashTo.kls,hl
- ld hl,th.start+5*th.size
- ld de,th.start+15*th.size
- call crashToC
+ crashToClass Enemy, 5, 15
  setfld .e
  getfld .e
- jpf lb16
+ jpf lb20
  ;e.die();
  pushthis 0
  getfld .e
@@ -2331,13 +2378,13 @@ def PBullet.main,0,0
  popthis 0
  ;die();
  invoke .die
- jp lb15
- lb16:
- lb15:
+ jp lb19
+ lb20:
+ lb19:
  ;update();
  invoke .update
- jp lb11
- lb12:
+ jp lb15
+ lb16:
  ret
 def PBullet.onUpdate,0,0
  ;c+=1;
@@ -2352,13 +2399,13 @@ def PBullet.onUpdate,0,0
  getfld .c
  pop de
  call hlgtde
- jpf lb18
+ jpf lb22
  ;c=0;
  ld hl,0
  setfld .c
- jp lb17
- lb18:
- lb17:
+ jp lb21
+ lb22:
+ lb21:
  ret
 ;range 0-5
 class Player,RActor
@@ -2375,12 +2422,12 @@ class Player,RActor
  meth RActor,crashTo
  end.const 0
 def Player.main,0,0
- lb19:
+ lb23:
  ld hl,true
- jpf lb20
+ jpf lb24
  ld hl, 4104
  call getkey
- jpf lb22
+ jpf lb26
  ;x-=3;
  ld hl,3
  push hl
@@ -2388,12 +2435,12 @@ def Player.main,0,0
  pop de
  subhl de
  setfld .x
- jp lb21
- lb22:
- lb21:
+ jp lb25
+ lb26:
+ lb25:
  ld hl, 32776
  call getkey
- jpf lb24
+ jpf lb28
  ;x+=3;
  ld hl,3
  push hl
@@ -2401,12 +2448,12 @@ def Player.main,0,0
  pop de
  add hl, de
  setfld .x
- jp lb23
- lb24:
- lb23:
+ jp lb27
+ lb28:
+ lb27:
  ld hl, 8200
  call getkey
- jpf lb26
+ jpf lb30
  ;y-=3;
  ld hl,3
  push hl
@@ -2414,12 +2461,12 @@ def Player.main,0,0
  pop de
  subhl de
  setfld .y
- jp lb25
- lb26:
- lb25:
+ jp lb29
+ lb30:
+ lb29:
  ld hl, 16392
  call getkey
- jpf lb28
+ jpf lb32
  ;y+=3;
  ld hl,3
  push hl
@@ -2427,105 +2474,43 @@ def Player.main,0,0
  pop de
  add hl, de
  setfld .y
- jp lb27
- lb28:
- lb27:
- call crashTo.setXY
- ld hl,Enemy
- const crashTo.kls,hl
- ld hl,th.start+5*th.size
- ld de,th.start+15*th.size
- call crashToC
- jpf lb30
- ;die();
- invoke .die
- jp lb29
- lb30:
- lb29:
- call crashTo.setXY
- ld hl,EBullet
- const crashTo.kls,hl
- ld hl,th.start+0*th.size
- ld de,th.start+5*th.size
- call crashToC
- jpf lb32
- ;die();
- invoke .die
  jp lb31
  lb32:
  lb31:
+ crashToClass Enemy, 5, 15
+ jpf lb34
+ ;die();
+ invoke .die
+ jp lb33
+ lb34:
+ lb33:
+ crashToClass EBullet, 0, 5
+ jpf lb36
+ ;die();
+ invoke .die
+ jp lb35
+ lb36:
+ lb35:
  ld hl,1
  push hl
  ld hl, 264
  call getkey
  pop de
  call hleqde
- jpf lb34
+ jpf lb38
  ;new PBullet{x,y};
  getfld .x
  new.arg .x
  getfld .y
  new.arg .y
- new PBullet,2,th.start+15*th.size,th.start+20*th.size
- jp lb33
- lb34:
- lb33:
- ;update();
- invoke .update
- jp lb19
- lb20:
- ret
-;range 0-5
-class EBullet,RActor
- meth EBullet,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth RActor,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- fld .vx,0
- fld .vy,0
- end.const 0
-def EBullet.main,0,0
- ;p=7;
- ld hl,7
- setfld .p
- ;c=15;
- ld hl,15
- setfld .c
- lb35:
- ld hl,true
- jpf lb36
- ;x+=vx;
- getfld .vx
- push hl
- getfld .x
- pop de
- add hl, de
- setfld .x
- ;y+=vy;
- getfld .vy
- push hl
- getfld .y
- pop de
- add hl, de
- setfld .y
- invoke .screenOut
- jpf lb38
- ;die();
- invoke .die
+ new PBullet,2,15,20
  jp lb37
  lb38:
  lb37:
  ;update();
  invoke .update
- jp lb35
- lb36:
+ jp lb23
+ lb24:
  ret
 enddef 0
 endusr:
