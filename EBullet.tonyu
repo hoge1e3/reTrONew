@@ -1,0 +1,10 @@
+
+var vx,vy;
+p=7;
+c=15;
+while(true) {
+    x+=vx;
+    y+=vy;
+    if (screenOut()) die();
+    update();
+}

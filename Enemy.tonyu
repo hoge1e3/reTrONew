@@ -6,9 +6,22 @@ while(y<200) {
 if (x>$player.x) vx=0-2;
 else vx=2;
 //print(y,$MScreen.height);
+fire();
 while(true) {
     if (screenOut()) die();
     y+=2;
     x+=vx;
     update();
+}
+var bvx,bvy,bdist;//TODO: move to fire, local var
+function fire() {
+    bvx=$player.x-x;
+    bvy=$player.y-y;
+    bdist=abs(bvx)+abs(bvy);
+    bdist/=8;
+    bvx/=bdist;
+    bvy/=bdist;
+    new EBullet{
+        x,y,vx:bvx,vy:bvy
+    };
 }

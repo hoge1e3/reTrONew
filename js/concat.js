@@ -4387,6 +4387,7 @@ Tonyu.klass.define({
         } else {
           _this.vx=2;
         }
+        _this.fire();
         while (true) {
           Tonyu.checkLoop();
           if (_this.screenOut()) {
@@ -4397,6 +4398,7 @@ Tonyu.klass.define({
           _this.update();
           
         }
+        
       },
       fiber$main :function* _trc_Enemy_f_main(_thread) {
         "use strict";
@@ -4415,6 +4417,7 @@ Tonyu.klass.define({
         } else {
           _this.vx=2;
         }
+        (yield* _this.fiber$fire(_thread));
         while (true) {
           yield null;
           if (_this.screenOut()) {
@@ -4426,11 +4429,38 @@ Tonyu.klass.define({
           
         }
         
+        
+      },
+      fire :function _trc_Enemy_fire() {
+        "use strict";
+        var _this=this;
+        
+        _this.bvx=Tonyu.globals.$player.x-_this.x;
+        _this.bvy=Tonyu.globals.$player.y-_this.y;
+        _this.bdist=_this.abs(_this.bvx)+_this.abs(_this.bvy);
+        _this.bdist/=8;
+        _this.bvx/=_this.bdist;
+        _this.bvy/=_this.bdist;
+        new Tonyu.classes.user.EBullet({x: _this.x,y: _this.y,vx: _this.bvx,vy: _this.bvy});
+      },
+      fiber$fire :function* _trc_Enemy_f_fire(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.bvx=Tonyu.globals.$player.x-_this.x;
+        _this.bvy=Tonyu.globals.$player.y-_this.y;
+        _this.bdist=_this.abs(_this.bvx)+_this.abs(_this.bvy);
+        _this.bdist/=8;
+        _this.bvx/=_this.bdist;
+        _this.bvy/=_this.bdist;
+        new Tonyu.classes.user.EBullet({x: _this.x,y: _this.y,vx: _this.bvx,vy: _this.bvy});
+        
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"fire":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{},"bvx":{},"bvy":{},"bdist":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -5717,7 +5747,17 @@ Tonyu.klass.define({
           if (_this.getkey("right")) {
             _this.x+=3;
           }
+          if (_this.getkey("up")) {
+            _this.y-=3;
+          }
+          if (_this.getkey("down")) {
+            _this.y+=3;
+          }
           if (_this.crashTo(Tonyu.classes.user.Enemy)) {
+            _this.die();
+            
+          }
+          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
             _this.die();
             
           }
@@ -5742,7 +5782,17 @@ Tonyu.klass.define({
           if (_this.getkey("right")) {
             _this.x+=3;
           }
+          if (_this.getkey("up")) {
+            _this.y-=3;
+          }
+          if (_this.getkey("down")) {
+            _this.y+=3;
+          }
           if (_this.crashTo(Tonyu.classes.user.Enemy)) {
+            _this.die();
+            
+          }
+          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
             _this.die();
             
           }
@@ -6059,6 +6109,57 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"add":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"toUI":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"fit":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"checkExists":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"getValue":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"setValue":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"copyToClipboard":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"die":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"loop":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"left":{},"top":{},"width":{},"height":{},"screen":{},"id":{},"content":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.EBullet',
+  shortName: 'EBullet',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.RActor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_EBullet_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        _this.p=7;
+        _this.c=15;
+        while (true) {
+          Tonyu.checkLoop();
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          _this.update();
+          
+        }
+      },
+      fiber$main :function* _trc_EBullet_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        _this.p=7;
+        _this.c=15;
+        while (true) {
+          yield null;
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          (yield* _this.fiber$update(_thread));
+          
+        }
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{},"vy":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.GenAsm',
@@ -6428,7 +6529,7 @@ Tonyu.klass.define({
         
         let expr = n.expr;
         
-        _this.printf(";%s%n",_this.extractSrc(n));
+        _this.printf(";%s%n",_this.extractSrc(n).replace(/[\r\n]/g,""));
         _this.visit(expr);
       },
       fiber$v_exprstmt :function* _trc_GenAsm_f_v_exprstmt(_thread,n) {
@@ -6438,7 +6539,7 @@ Tonyu.klass.define({
         
         let expr = n.expr;
         
-        (yield* _this.fiber$printf(_thread, ";%s%n", _this.extractSrc(n)));
+        (yield* _this.fiber$printf(_thread, ";%s%n", _this.extractSrc(n).replace(/[\r\n]/g,"")));
         (yield* _this.fiber$visit(_thread, expr));
         
       },
@@ -6633,7 +6734,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_5902() {
+            _this.enter({lval: false},(function anonymous_5924() {
               
               _this.visit(tgme[0]);
             }));
@@ -6688,7 +6789,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_5902() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_5924() {
               
               _this.visit(tgme[0]);
             })));
@@ -6780,40 +6881,50 @@ Tonyu.klass.define({
             _this.printf("call rnd%n");
             
           } else {
-            if (mname==="crashTo") {
-              let tg = args[0];
-              
-              if (! tg) {
-                _this.unsup(left,"'crashTo' should give a object or Class.");
+            if (mname==="abs") {
+              if (! args[0]) {
+                _this.unsup(left,"'abs' should give a number.");
                 
               }
-              let klass = (tg.type==="varAccess"&&_this.isClassConst(tg));
-              
-              if (klass) {
-                _this.printf("call crashTo.setXY%n");
-                _this.printf("ld hl,%s%n",klass.shortName);
-                _this.printf("const crashTo.kls,hl%n");
-                let range = _this.mem.objRange(klass);
-                
-                _this.printf("ld hl,%s%n",_this.rangeToAd(range[0]));
-                _this.printf("ld de,%s%n",_this.rangeToAd(range[1]));
-                _this.printf("call crashToC%n");
-                
-              } else {
-                _this.visit(tg);
-                _this.printf("call crashTo1%n");
-                _this.printf("flagtobool c%n");
-                
-              }
+              _this.visit(args[0]);
+              _this.printf("call abs%n");
               
             } else {
-              for (let [a] of Tonyu.iterator2(args,1)) {
-                _this.visit(a);
-                _this.printf("push hl%n");
+              if (mname==="crashTo") {
+                let tg = args[0];
+                
+                if (! tg) {
+                  _this.unsup(left,"'crashTo' should give a object or Class.");
+                  
+                }
+                let klass = (tg.type==="varAccess"&&_this.isClassConst(tg));
+                
+                if (klass) {
+                  _this.printf("call crashTo.setXY%n");
+                  _this.printf("ld hl,%s%n",klass.shortName);
+                  _this.printf("const crashTo.kls,hl%n");
+                  let range = _this.mem.objRange(klass);
+                  
+                  _this.printf("ld hl,%s%n",_this.rangeToAd(range[0]));
+                  _this.printf("ld de,%s%n",_this.rangeToAd(range[1]));
+                  _this.printf("call crashToC%n");
+                  
+                } else {
+                  _this.visit(tg);
+                  _this.printf("call crashTo1%n");
+                  _this.printf("flagtobool c%n");
+                  
+                }
+                
+              } else {
+                for (let [a] of Tonyu.iterator2(args,1)) {
+                  _this.visit(a);
+                  _this.printf("push hl%n");
+                  
+                }
+                _this.printf("invoke .%s%n",mname);
                 
               }
-              _this.printf("invoke .%s%n",mname);
-              
             }
           }
         }
@@ -6864,40 +6975,50 @@ Tonyu.klass.define({
             (yield* _this.fiber$printf(_thread, "call rnd%n"));
             
           } else {
-            if (mname==="crashTo") {
-              let tg = args[0];
-              
-              if (! tg) {
-                (yield* _this.fiber$unsup(_thread, left, "'crashTo' should give a object or Class."));
+            if (mname==="abs") {
+              if (! args[0]) {
+                (yield* _this.fiber$unsup(_thread, left, "'abs' should give a number."));
                 
               }
-              let klass = (tg.type==="varAccess"&&_this.isClassConst(tg));
-              
-              if (klass) {
-                (yield* _this.fiber$printf(_thread, "call crashTo.setXY%n"));
-                (yield* _this.fiber$printf(_thread, "ld hl,%s%n", klass.shortName));
-                (yield* _this.fiber$printf(_thread, "const crashTo.kls,hl%n"));
-                let range = _this.mem.objRange(klass);
-                
-                (yield* _this.fiber$printf(_thread, "ld hl,%s%n", _this.rangeToAd(range[0])));
-                (yield* _this.fiber$printf(_thread, "ld de,%s%n", _this.rangeToAd(range[1])));
-                (yield* _this.fiber$printf(_thread, "call crashToC%n"));
-                
-              } else {
-                (yield* _this.fiber$visit(_thread, tg));
-                (yield* _this.fiber$printf(_thread, "call crashTo1%n"));
-                (yield* _this.fiber$printf(_thread, "flagtobool c%n"));
-                
-              }
+              (yield* _this.fiber$visit(_thread, args[0]));
+              (yield* _this.fiber$printf(_thread, "call abs%n"));
               
             } else {
-              for (let [a] of Tonyu.iterator2(args,1)) {
-                (yield* _this.fiber$visit(_thread, a));
-                (yield* _this.fiber$printf(_thread, "push hl%n"));
+              if (mname==="crashTo") {
+                let tg = args[0];
+                
+                if (! tg) {
+                  (yield* _this.fiber$unsup(_thread, left, "'crashTo' should give a object or Class."));
+                  
+                }
+                let klass = (tg.type==="varAccess"&&_this.isClassConst(tg));
+                
+                if (klass) {
+                  (yield* _this.fiber$printf(_thread, "call crashTo.setXY%n"));
+                  (yield* _this.fiber$printf(_thread, "ld hl,%s%n", klass.shortName));
+                  (yield* _this.fiber$printf(_thread, "const crashTo.kls,hl%n"));
+                  let range = _this.mem.objRange(klass);
+                  
+                  (yield* _this.fiber$printf(_thread, "ld hl,%s%n", _this.rangeToAd(range[0])));
+                  (yield* _this.fiber$printf(_thread, "ld de,%s%n", _this.rangeToAd(range[1])));
+                  (yield* _this.fiber$printf(_thread, "call crashToC%n"));
+                  
+                } else {
+                  (yield* _this.fiber$visit(_thread, tg));
+                  (yield* _this.fiber$printf(_thread, "call crashTo1%n"));
+                  (yield* _this.fiber$printf(_thread, "flagtobool c%n"));
+                  
+                }
+                
+              } else {
+                for (let [a] of Tonyu.iterator2(args,1)) {
+                  (yield* _this.fiber$visit(_thread, a));
+                  (yield* _this.fiber$printf(_thread, "push hl%n"));
+                  
+                }
+                (yield* _this.fiber$printf(_thread, "invoke .%s%n", mname));
                 
               }
-              (yield* _this.fiber$printf(_thread, "invoke .%s%n", mname));
-              
             }
           }
         }
@@ -7046,7 +7167,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_9453() {
+        _this.enter({lval: true},(function anonymous_9651() {
           
           _this.visit(left);
         }));
@@ -7063,7 +7184,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9453() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_9651() {
           
           _this.visit(left);
         })));
@@ -7080,7 +7201,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_10268() {
+        _this.enter({lval: true},(function anonymous_10466() {
           
           _this.visit(left);
         }));
@@ -7097,7 +7218,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_10268() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_10466() {
           
           _this.visit(left);
         })));

@@ -1,7 +1,14 @@
 while(true) {
     if (getkey("left")) x-=3;
     if (getkey("right")) x+=3;
+    if (getkey("up")) y-=3;
+    if (getkey("down")) y+=3;
+    // TODO combine these crashTo with hierarchical index
+    //   AbstractEnemy <- {Enemy, EBullet}
     if (crashTo(Enemy)) {
+        die();
+    }
+    if (crashTo(EBullet)) {
         die();
     }
     if (getkey("space")==1) {

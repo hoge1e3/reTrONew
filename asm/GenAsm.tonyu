@@ -177,7 +177,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 }
 \v_exprstmt(n:Exprstmt){
     let expr:Expression=n.expr;
-    printf(";%s%n", extractSrc(n));
+    printf(";%s%n", extractSrc(n).replace(/[\r\n]/g,""));
     visit(expr);
 }
 \v_infix(n:Infix){
@@ -290,6 +290,12 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         visit(args[0]);
         printf("call rnd%n");
+    } else if (mname==="abs") {
+        if (!args[0]) {
+            unsup(left, "'abs' should give a number.");
+        }
+        visit(args[0]);
+        printf("call abs%n");
     } else if (mname==="crashTo") {
         let tg=args[0];
         if (!tg) {
