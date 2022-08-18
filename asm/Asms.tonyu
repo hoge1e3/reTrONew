@@ -1,5 +1,5 @@
 extends TObject;
-let data={'main'=`org 09000h
+let data={'main':`org 09000h
 
 include ctrl
 include math
@@ -24,7 +24,7 @@ nx:
 
 ret
 end main`,
-    'math'=`include ctrl
+    'math':`include ctrl
 
 ;16bit shifts
 macro slhl
@@ -161,7 +161,7 @@ neghl:
  ret
 
  `,
-    'bool'=`include math
+    'bool':`include math
 include ctrl
 true equ -1
 false equ 0
@@ -251,7 +251,7 @@ macro flagtobool,fl
  ld hl,true
  skp: 
 endm`,
-    'mem'=`include const
+    'mem':`include const
 ;
 rdslt:
  ex de,hl
@@ -389,7 +389,7 @@ macro peekconst,reg,n
  n:
 endm
 `,
-    'const'=`
+    'const':`
 wrt equ 0a2h
 dcompr equ 0020H
 sp.ini equ 0dc00h
@@ -425,7 +425,7 @@ IMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL)
 WRTPSG  equ 0093H
 
 null equ 0`,
-    'ctrl'=`include const
+    'ctrl':`include const
 freeze:
 halt
 jr freeze
@@ -593,7 +593,7 @@ macro stride,lim,to
  endif
  ds 256+to-(low $),0cdh
 endm`,
-    'th'=`include ctrl
+    'th':`include ctrl
 include sp
 include vdp
 include mem
@@ -821,7 +821,7 @@ macro th.pushi, val
 endm
 
 `,
-    'sub'=`
+    'sub':`
 macro getarg ,n
 ld l,(ix+2+n*2)
 ld h,(ix+3+n*2)
@@ -874,7 +874,7 @@ pops args
 endm
 
 `,
-    'debug'=`include math
+    'debug':`include math
 ;debug
 macro show,reg
  ld (hexval+1),reg
@@ -999,7 +999,7 @@ macro head, lb
  unreach lb
  lb:
 endm`,
-    'sp'=`include mem
+    'sp':`include mem
 include debug
 macro sp.get
  ld HL,0
@@ -1046,7 +1046,7 @@ macro showstk
  ex (sp),hl
 endm
 sva: db 0`,
-    'oop'=`include mem
+    'oop':`include mem
 include th
 include assert
 
@@ -1414,7 +1414,7 @@ proc
  ret 
 endp
  `,
-    'spr'=`include const
+    'spr':`include const
 include th
 include mem
 include oop
@@ -1466,7 +1466,7 @@ ret
  
  
  `,
-    'sprpat'=`include const
+    'sprpat':`include const
 
 ;aaa
 spr.inipat:
@@ -1505,7 +1505,7 @@ DB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00
 
 ds 60*32
 `,
-    'tnu'=`
+    'tnu':`
 include spr
 include bool
 include key
@@ -1602,7 +1602,7 @@ enddef
 crashTo.size equ 8<<spr.scale
 
 proc
- local gx,gy,gtx,gty
+ local gx,gy,t1,t2
  local endc,cr1
  local fe
 
@@ -1673,14 +1673,10 @@ head crashTo1
  ;hl is used
  push af
  ld a,h
- tgconst gtx
- tgconst gty
- ;ld (gtx-1),a
- ;ld (gty-1),a
+ tgconst t1
+ tgconst t2
  pop af
- tgconst.g hl,gtx,.x
- ;ld hl,(.x)
- ;gtx:
+ tgconst.g hl,t1,.x
  ldconst bc,gx
  subhl bc
  call abs
@@ -1688,9 +1684,7 @@ head crashTo1
  subhl bc
  ret nc
 
- ;ld hl,(.y)
- ;gty:
- tgconst.g hl,gty,.y
+ tgconst.g hl,t2,.y
  ldconst bc,gy
  subhl bc
  call abs
@@ -1724,7 +1718,7 @@ macro tnu.run,Main
 endm
 
 ;aaaa`,
-    'key'=`include debug
+    'key':`include debug
 
 head keyall
 proc
@@ -1785,7 +1779,7 @@ pop af
 ret
 
 endp`,
-    'maze'=`org 09000h
+    'maze':`org 09000h
 jp main
 include const
 include ctrl
@@ -1930,7 +1924,7 @@ exit
 
 
 `,
-    't1'=`org 09000h
+    't1':`org 09000h
 jp main
 include const
 include ctrl
@@ -2055,7 +2049,7 @@ include sprpat
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't2'=`org 09000h
+    't2':`org 09000h
 
 include tnu
 include sprpat
@@ -2123,7 +2117,7 @@ Cat1.onUpdate:
  setfld .c
  ret
 end main`,
-    't3'=`org 09000h
+    't3':`org 09000h
 
 include tnu
 include mus
@@ -2311,7 +2305,7 @@ dstk:
  
 endusr:
 end main`,
-    't4'=`org 09000h
+    't4':`org 09000h
 jp main
 include const
 include ctrl
@@ -2441,7 +2435,7 @@ endusr:
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't5'=`org 9000h
+    't5':`org 9000h
 
 
 include key
@@ -2458,7 +2452,7 @@ show hl
 
 halt
 jp main`,
-    'gen'=`org 09000h
+    'gen':`org 09000h
 include tnu
 include bool
 
@@ -2474,7 +2468,7 @@ def Main.main,0,0
 enddef 0
 endusr:
 end main`,
-    'dac'=`org 09000h
+    'dac':`org 09000h
 jp main
 include const
 include ctrl
@@ -2542,7 +2536,7 @@ nxt:
 ret
 
 `,
-    'setvrm'=`org 09000h
+    'setvrm':`org 09000h
 jp main
 include const
 include ctrl
@@ -2564,7 +2558,7 @@ out (98h),a
 continue
 ed:
 ret`,
-    'assert'=`include mem
+    'assert':`include mem
 include math
 include debug
 
@@ -2649,7 +2643,7 @@ macro assert.meqw,ad,val
  pop hl
 endm
  `,
-    'stksz'=`org 09000h
+    'stksz':`org 09000h
 jp main
 include const
 include ctrl
@@ -2687,7 +2681,7 @@ loop:
  
  
  `,
-    'vdp'=`;https://www.msx.org/wiki/VDP_Status_Registers
+    'vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
 ;st 0 bit 7
 ;read 1
 
@@ -2765,7 +2759,7 @@ screen1:
  call WRTVDP
  ret
  `,
-    'mus'=`include mem
+    'mus':`include mem
 mus.ini:
  di
  ld hl,0fd9fh
