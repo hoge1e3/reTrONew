@@ -396,7 +396,7 @@ sp.ini equ 0dc00h
 stksize equ 512
 
 th.size equ 256
-th.count equ 16
+th.count equ 20
 th.start equ th.end-th.size*th.count
 th.end equ sp.ini-stksize
 
@@ -1205,7 +1205,7 @@ macro new,Class,flds,st,en
  if nul st
   th.new.range th.start, th.end
  else
-  th.new.range st, en
+  th.new.range th.start+st*th.size, th.start+en*th.size
  endif
  pushi flds, bc
  pushi Class, bc
@@ -2049,73 +2049,502 @@ include sprpat
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't2':`org 09000h
-
+    't2':`org 08000h
 include tnu
-include sprpat
-;===your code 
+include bool
 
 main:
-call th.init
-call spr.inipat
-
-pushi 7
-pushi .c
-new Cat1, 1
-show hl
-
-
-pushi 7
-pushi .x
-new Cat1, 1
-show hl
-
-movw (h.thlop),spr.puts
-jp th.loop
-
-dw RActor
-Cat1:
- pushi Cat1.main
- pushi 100,bc 
- pushi 110,bc
- pushi 0,bc
- pushi 3,bc
- pushi Cat1.onUpdate,bc
- pushi RActor.update,bc
- pushi RActor.screenOut,bc
- pushi RActor.die,bc
- end.const
-Cat1.main:
- olp:
-  getthis
-  invoke .screenOut,0
-  jr c, dwn2
-  getthis
-  getfld .x
-  inc hl
-  inc hl
-  setfld .x
-  invoke .update,0
- jr olp
- dwn2:
-  ld hl,512-32
-  setfld .x
- dwn:
-  curth2this
-  getfld .y
-  inc hl
-  setfld .y
-  invoke .update,0
- jr dwn
-Cat1.onUpdate:
- getfld .c
- push af
- ld a,l
- xor 15
- ld l,a
- pop af
- setfld .c
+tnu.run Main
+;range 5-15
+class Enemy,RActor
+ meth Enemy,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld .vx,0
+ fld .bvx,0
+ fld .bvy,0
+ fld .bdist,0
+ meth Enemy,fire
+ end.const 0
+def Enemy.main,0,0
+ lb1:
+ ld hl,200
+ push hl
+ getfld .y
+ pop de
+ call hlltde
+ jpf lb2
+ ;y+=2;
+ ld hl,2
+ push hl
+ getfld .y
+ pop de
+ add hl, de
+ setfld .y
+ ;update();
+ invoke .update
+ jp lb1
+ lb2:
+ ld hl,(gbl_player)
+ getfldtg .x
+ push hl
+ getfld .x
+ pop de
+ call hlgtde
+ jpf lb4
+ ;vx=0-2;
+ ld hl,2
+ push hl
+ ld hl,0
+ pop de
+ subhl de
+ setfld .vx
+ jp lb3
+ lb4:
+ ;vx=2;
+ ld hl,2
+ setfld .vx
+ lb3:
+ ;fire();
+ invoke .fire
+ lb5:
+ ld hl,true
+ jpf lb6
+ invoke .screenOut
+ jpf lb8
+ ;die();
+ invoke .die
+ jp lb7
+ lb8:
+ lb7:
+ ;y+=2;
+ ld hl,2
+ push hl
+ getfld .y
+ pop de
+ add hl, de
+ setfld .y
+ ;x+=vx;
+ getfld .vx
+ push hl
+ getfld .x
+ pop de
+ add hl, de
+ setfld .x
+ ;update();
+ invoke .update
+ jp lb5
+ lb6:
  ret
+def Enemy.fire,0,0
+ ;bvx=$player.x-x;
+ getfld .x
+ push hl
+ ld hl,(gbl_player)
+ getfldtg .x
+ pop de
+ subhl de
+ setfld .bvx
+ ;bvy=$player.y-y;
+ getfld .y
+ push hl
+ ld hl,(gbl_player)
+ getfldtg .y
+ pop de
+ subhl de
+ setfld .bvy
+ ;bdist=abs(bvx)+abs(bvy);
+ getfld .bvy
+ call abs
+ push hl
+ getfld .bvx
+ call abs
+ pop de
+ add hl, de
+ setfld .bdist
+ ;bdist/=8;
+ pushthis
+ getfld .bdist
+ push hl
+ ld hl,8
+ pop de
+ call IDIV.a
+ popthis
+ setfld .bdist
+ ;bvx/=bdist;
+ pushthis
+ getfld .bvx
+ push hl
+ getfld .bdist
+ pop de
+ call IDIV.a
+ popthis
+ setfld .bvx
+ ;bvy/=bdist;
+ pushthis
+ getfld .bvy
+ push hl
+ getfld .bdist
+ pop de
+ call IDIV.a
+ popthis
+ setfld .bvy
+ ;new EBullet{        x,y,vx:bvx,vy:bvy    };
+ getfld .x
+ new.arg .x
+ getfld .y
+ new.arg .y
+ getfld .bvx
+ new.arg .vx
+ getfld .bvy
+ new.arg .vy
+ new EBullet,4,th.start+0*th.size,th.start+5*th.size
+ ret
+;range 0-5
+class Main,RActor
+ meth Main,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld .i,0
+ end.const 0
+def Main.main,0,0
+ ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
+ ld hl,256
+ new.arg .x
+ ld hl,300
+ new.arg .y
+ ld hl,4
+ push hl
+ ld hl,(gbl_pat_spr)
+ pop de
+ add hl, de
+ new.arg .p
+ ld hl,15
+ new.arg .c
+ new Player,4,th.start+0*th.size,th.start+5*th.size
+ ld (gbl_player),hl
+ ld hl,0
+ setfld .i
+ lb9:
+ ld hl,20
+ push hl
+ getfld .i
+ pop de
+ call hlltde
+ jpf lb10
+ ;new Enemy{x:rnd(512), y:0, p:5, c:7};
+ ld hl,512
+ call rnd
+ new.arg .x
+ ld hl,0
+ new.arg .y
+ ld hl,5
+ new.arg .p
+ ld hl,7
+ new.arg .c
+ new Enemy,4,th.start+5*th.size,th.start+15*th.size
+ ;updateEx(30);
+ ld hl,30
+ push hl
+ invoke .updateEx
+ jp lb9
+ lb10:
+ ret
+;range 15-20
+class PBullet,RActor
+ meth PBullet,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth PBullet,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld .e,0
+ end.const 0
+def PBullet.main,0,0
+ ;p=6;
+ ld hl,6
+ setfld .p
+ ;c=8;
+ ld hl,8
+ setfld .c
+ lb11:
+ ld hl,true
+ jpf lb12
+ invoke .screenOut
+ jpf lb14
+ ;die();
+ invoke .die
+ jp lb13
+ lb14:
+ lb13:
+ ;y-=6;
+ ld hl,6
+ push hl
+ getfld .y
+ pop de
+ subhl de
+ setfld .y
+ call crashTo.setXY
+ ld hl,Enemy
+ const crashTo.kls,hl
+ ld hl,th.start+5*th.size
+ ld de,th.start+15*th.size
+ call crashToC
+ setfld .e
+ getfld .e
+ jpf lb16
+ ;e.die();
+ pushthis 0
+ getfld .e
+ invoketg.a .die
+ popthis 0
+ ;die();
+ invoke .die
+ jp lb15
+ lb16:
+ lb15:
+ ;update();
+ invoke .update
+ jp lb11
+ lb12:
+ ret
+def PBullet.onUpdate,0,0
+ ;c+=1;
+ ld hl,1
+ push hl
+ getfld .c
+ pop de
+ add hl, de
+ setfld .c
+ ld hl,14
+ push hl
+ getfld .c
+ pop de
+ call hlgtde
+ jpf lb18
+ ;c=0;
+ ld hl,0
+ setfld .c
+ jp lb17
+ lb18:
+ lb17:
+ ret
+;range 0-5
+class Player,RActor
+ meth Player,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ end.const 0
+def Player.main,0,0
+ lb19:
+ ld hl,true
+ jpf lb20
+ ld hl, 4104
+ call getkey
+ jpf lb22
+ ;x-=3;
+ ld hl,3
+ push hl
+ getfld .x
+ pop de
+ subhl de
+ setfld .x
+ jp lb21
+ lb22:
+ lb21:
+ ld hl, 32776
+ call getkey
+ jpf lb24
+ ;x+=3;
+ ld hl,3
+ push hl
+ getfld .x
+ pop de
+ add hl, de
+ setfld .x
+ jp lb23
+ lb24:
+ lb23:
+ ld hl, 8200
+ call getkey
+ jpf lb26
+ ;y-=3;
+ ld hl,3
+ push hl
+ getfld .y
+ pop de
+ subhl de
+ setfld .y
+ jp lb25
+ lb26:
+ lb25:
+ ld hl, 16392
+ call getkey
+ jpf lb28
+ ;y+=3;
+ ld hl,3
+ push hl
+ getfld .y
+ pop de
+ add hl, de
+ setfld .y
+ jp lb27
+ lb28:
+ lb27:
+ call crashTo.setXY
+ ld hl,Enemy
+ const crashTo.kls,hl
+ ld hl,th.start+5*th.size
+ ld de,th.start+15*th.size
+ call crashToC
+ jpf lb30
+ ;die();
+ invoke .die
+ jp lb29
+ lb30:
+ lb29:
+ call crashTo.setXY
+ ld hl,EBullet
+ const crashTo.kls,hl
+ ld hl,th.start+0*th.size
+ ld de,th.start+5*th.size
+ call crashToC
+ jpf lb32
+ ;die();
+ invoke .die
+ jp lb31
+ lb32:
+ lb31:
+ ld hl,1
+ push hl
+ ld hl, 264
+ call getkey
+ pop de
+ call hleqde
+ jpf lb34
+ ;new PBullet{x,y};
+ getfld .x
+ new.arg .x
+ getfld .y
+ new.arg .y
+ new PBullet,2,th.start+15*th.size,th.start+20*th.size
+ jp lb33
+ lb34:
+ lb33:
+ ;update();
+ invoke .update
+ jp lb19
+ lb20:
+ ret
+;range 0-5
+class EBullet,RActor
+ meth EBullet,main
+ fld .x,0
+ fld .y,0
+ fld .p,0
+ fld .c,0
+ meth RActor,onUpdate
+ meth RActor,update
+ meth RActor,screenOut
+ meth RActor,die
+ meth RActor,updateEx
+ meth RActor,crashTo
+ fld .vx,0
+ fld .vy,0
+ end.const 0
+def EBullet.main,0,0
+ ;p=7;
+ ld hl,7
+ setfld .p
+ ;c=15;
+ ld hl,15
+ setfld .c
+ lb35:
+ ld hl,true
+ jpf lb36
+ ;x+=vx;
+ getfld .vx
+ push hl
+ getfld .x
+ pop de
+ add hl, de
+ setfld .x
+ ;y+=vy;
+ getfld .vy
+ push hl
+ getfld .y
+ pop de
+ add hl, de
+ setfld .y
+ invoke .screenOut
+ jpf lb38
+ ;die();
+ invoke .die
+ jp lb37
+ lb38:
+ lb37:
+ ;update();
+ invoke .update
+ jp lb35
+ lb36:
+ ret
+enddef 0
+endusr:
+gbl_player:dw 0
+gbl_pat_spr:dw 0
+spr.inipat:
+ ld de,3800h
+ ld hl,spr.pat
+ ld bc,2048
+ jp LDIRVM
+spr.pat:
+db $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c
+db $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70
+db $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6
+db $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0
+db $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0
+db $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60
+db $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0
+db $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0
+db $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0
+db $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0
+db $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c
+db $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18
+db $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0
+db $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0
+db $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0
+db $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0
+
+
 end main`,
     't3':`org 09000h
 

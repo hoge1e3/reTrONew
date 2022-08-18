@@ -551,7 +551,8 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         let range=mem.objRange(resKlass);
         printf("new %s,%d,%s,%s%n",
         klass.name, elems.length,
-        rangeToAd(range[0]),rangeToAd(range[1]));
+        range[0], range[1]);
+        //rangeToAd(range[0]),rangeToAd(range[1]));
         return;
     }
     unsup(n,`'new ${klass.name}' can be followed by only {key:value...}`);
