@@ -307,13 +307,14 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         let klass=(tg.type==="varAccess" && isClassConst(tg));
         if (klass) {
-            printf("call crashTo.setXY%n");
+            let range=mem.objRange(klass);
+            printf("crashToClass %s, %d, %d%n",klass.shortName,range[0],range[1]);
+            /*printf("call crashTo.setXY%n");
             printf("ld hl,%s%n",klass.shortName);
             printf("const crashTo.kls,hl%n");
-            let range=mem.objRange(klass);
             printf("ld hl,%s%n",rangeToAd(range[0]));
             printf("ld de,%s%n",rangeToAd(range[1]));
-            printf("call crashToC%n");
+            printf("call crashToC%n");*/
         } else {
             visit(tg);
             printf("call crashTo1%n");

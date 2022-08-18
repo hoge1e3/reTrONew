@@ -1631,6 +1631,16 @@ def RActor.crashTo,1,0
  endc:
 enddef
 
+macro crashToClass,Class,st,en
+ ; a=this
+ call crashTo.setXY
+ ld hl,Class
+ const crashTo.kls,hl
+ ld hl,th.start+st*th.size
+ ld de,th.start+en*th.size
+ call crashToC
+endm
+
 head crashToC
  ;before:
  ; call crashTo.setXY
