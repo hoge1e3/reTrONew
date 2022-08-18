@@ -137,8 +137,12 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         left:10, top: 20, width:300,
         height:400,
     };
-    let cg=new Codegen;
-    tx.setValue("val", cg.gensrc(buf+""));
+    if (getkey("n")) {
+        tx.setValue("val", buf+"");
+    } else {
+        let cg=new Includer;
+        tx.setValue("val", cg.gensrc(buf+""));
+    }
     tx.copyToClipboard("val");
 }
 
