@@ -1180,6 +1180,19 @@ macro getfldtg, n
  peekw HL,de
 endm
 
+macro tgconst,n
+ ld (n-1),a
+endm
+macro tgconst.g ,r16,n,fld
+ ld r16,(fld)
+ n:
+endm
+macro tgconst.s ,n,fld,r16
+ ld (fld),r16
+ n:
+endm
+
+
 macro curth2this
  ld a,(th.cur+1)
  ld (this),a
@@ -1660,11 +1673,14 @@ head crashTo1
  ;hl is used
  push af
  ld a,h
- ld (gtx-1),a
- ld (gty-1),a
+ tgconst gtx
+ tgconst gty
+ ;ld (gtx-1),a
+ ;ld (gty-1),a
  pop af
- ld hl,(.x)
- gtx:
+ tgconst.g hl,gtx,.x
+ ;ld hl,(.x)
+ ;gtx:
  ldconst bc,gx
  subhl bc
  call abs
@@ -1672,8 +1688,9 @@ head crashTo1
  subhl bc
  ret nc
 
- ld hl,(.y)
- gty:
+ ;ld hl,(.y)
+ ;gty:
+ tgconst.g hl,gty,.y
  ldconst bc,gy
  subhl bc
  call abs
