@@ -522,14 +522,14 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
       },
       fiber$config :function* _trc_MBoot_f_config(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
         
       },
       createMainObject :function _trc_MBoot_createMainObject() {
@@ -553,7 +553,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_933() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_1846() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -584,7 +584,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_933() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_1846() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
