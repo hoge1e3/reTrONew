@@ -19,9 +19,11 @@ function fire() {
     bvy=$player.y-y;
     bdist=abs(bvx)+abs(bvy);
     bdist/=8;
-    bvx/=bdist;
-    bvy/=bdist;
-    new EBullet{
-        x,y,vx:bvx,vy:bvy
-    };
+    if (bdist>0) {
+        bvx/=bdist;
+        bvy/=bdist;
+        new EBullet{
+            x,y,vx:bvx,vy:bvy
+        };
+    }
 }
