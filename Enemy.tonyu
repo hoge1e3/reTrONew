@@ -11,6 +11,7 @@ while(true) {
     if (screenOut()) die();
     y+=2;
     x+=vx;
+    map_setAt(x,y,32);
     update();
 }
 var bvx,bvy,bdist;//TODO: move to fire, local var

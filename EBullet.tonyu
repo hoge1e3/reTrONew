@@ -6,5 +6,9 @@ while(true) {
     x+=vx;
     y+=vy;
     if (screenOut()) die();
+    if (map_getAt(x,y)==35) {
+        map_setAt(x,y,32);
+        die();
+    }
     update();
 }

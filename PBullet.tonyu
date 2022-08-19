@@ -8,6 +8,10 @@ while (true) {
         e.die();
         die();
     }
+    if (map_getAt(x,y-16)==35){
+        map_setAt(x,y-16,32);
+        die();
+    }
     update();
 }
 \onUpdate() {
