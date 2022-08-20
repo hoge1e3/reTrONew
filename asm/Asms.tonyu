@@ -424,6 +424,9 @@ IMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL)
 
 WRTPSG  equ 0093H
 
+CSRY equ 0F3DCH
+CSRX equ 0F3DDH
+
 null equ 0`,
     'ctrl':`include const
 freeze:
@@ -1866,6 +1869,12 @@ defsub map.setat.a
  call 4dh
 endsub 0
 
+defsub locate
+ ; hl=chipx
+ ; de=chipy
+ ld h,e
+ ld (CSRX),hl
+endsub
 `,
     'maze':`org 09000h
 jp main

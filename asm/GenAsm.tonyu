@@ -301,9 +301,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         visit(args[0]);
         printf("call abs%n");
-    } else if (mname=="map_setAt") {
+    } else if (mname.match(/^map_set(At)?/)) {
         if (args.length!==3) {
-            unsup(left, "'map_setAt should give (x,y,p)");
+            unsup(left, "'map_set(At) should give (x,y,p)");
         }
         visit(args[1]); // y
         printf("push hl%n");
@@ -313,17 +313,19 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         printf("ld a,l%n");
         printf("pop hl%n");
         printf("pop de%n");
-        printf("call map.setat.a%n");
+        printf("call map.set%s.a%n",
+        mname.match(/At/)?"at":"");
         printf("getthis 0%n");
-    } else if (mname=="map_getAt") {
+    } else if (mname.match(/^map_get(At)?/)) {
         if (args.length!==2) {
-            unsup(left, "'map_getAt should give (x,y)");
+            unsup(left, "'map_get(At) should give (x,y)");
         }
         visit(args[1]); // y
         printf("push hl%n");
         visit(args[0]); // x
         printf("pop de%n");
-        printf("call map.getat.a%n");
+        printf("call map.get%s.a%n",
+        mname.match(/At/)?"at":"");
         printf("ld h,0%n");
         printf("ld l,a%n");
         printf("getthis 0%n");
@@ -348,6 +350,11 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             printf("call crashTo1%n");
             printf("flagtobool c%n");
         }
+    } else if (mname==="div") {
+        if (args.length!==2) {
+            return unsup("'div' should supply 2 numbers");
+        }
+        arith2(args[0],"/",args[1]);
     } else {
         for(let a of args){
             visit(a);

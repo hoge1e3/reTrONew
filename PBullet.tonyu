@@ -7,6 +7,7 @@ while (true) {
     if (e) {
         e.die();
         die();
+        $score+=10;
     }
     if (map_getAt(x,y-16)==35){
         map_setAt(x,y-16,32);
