@@ -113,7 +113,7 @@ for (let klass of ks) {
             k);
         }
     }
-    printf("end.const 0%n%}");
+    printf("end.const %s%n%}",klass.shortName);
 }
 \printf() {
     genasm.printf.apply(genasm,arguments);

@@ -103,7 +103,7 @@ macro cpde.a
 endm
 
 
-marker.b 0
+marker.b xrnd.a
 xrnd.a:
 proc 
  local rhl,rde,rdhlde
@@ -135,17 +135,17 @@ proc
   xorrm e,rde-2
   ret
 endp
-marker.e 0
+marker.e xrnd.a
 
 
-marker.b 0
+marker.b rnd
 rnd:
  push af
  call rnd.a
  pop af
  ret
-marker.e 0
-marker.b 0
+marker.e rnd
+marker.b rnd.a
 rnd.a:
  ld de,07fffh
  call IDIV.a
@@ -157,9 +157,9 @@ rnd.a:
  inc hl
  call IDIV.a
  ret
-marker.e 0
+marker.e rnd.a
 
-marker.b 0
+marker.b abs
 abs:
  bit 7,h
  ret z
@@ -168,7 +168,7 @@ neghl:
  ex de,hl 
  subhl de
  ret
-marker.e 0
+marker.e abs
 
  `,
     'bool':`include math
@@ -439,11 +439,11 @@ CSRX equ 0F3DDH
 
 null equ 0
 
-macro marker.b
- db "BEGIN"
+macro marker.b, n
+ last.marker: defl $
 endm
-macro marker.e
- db "END"
+macro marker.e, n
+ len.##n: defl $-last.marker
 endm
 `,
     'ctrl':`include const
@@ -966,23 +966,23 @@ macro unreach, mesg
 endm
 macro head, lb
  unreach lb
- marker.b 0
+ marker.b lb
  lb:
 endm
 
 macro defsub, n
  head n
 endm
-macro endsub
+macro endsub, n
  ret
- marker.e 0
+ marker.e n
 endm
 macro defwork, n
  head n
 endm
-macro endwork
+macro endwork, n
  ret
- marker.e 0
+ marker.e n
 endm
 
 defsub wrt
@@ -1004,7 +1004,7 @@ proc
  pop hl
  ret
 endp
-endsub
+endsub wrt
 `,
     'sp':`include mem
 include debug
@@ -1265,7 +1265,7 @@ proc
   ld hl,0
   jr finally
 endp
-endsub
+endsub o.new
 
 macro new.arg, n, v
  if not nul v
@@ -1334,7 +1334,7 @@ endm
 class Object,null
  fld .main,null
  fld.bottom Object
- marker.e 0
+ marker.e Object
 
 
 o.iniattr:
@@ -1350,7 +1350,7 @@ endp
 defsub o.boot
  curth2this
  invoke .main,0
-endsub
+endsub o.boot
 
 
 macro yield
@@ -1369,13 +1369,13 @@ head n
   enter lcls
  endif
 endm
-macro enddef
+macro enddef,n
  if def.args>0 or def.locals>0
   exit def.args
  else
   ret
  endif
- marker.e 0
+ marker.e n
 endm
 
 defsub isobj.a
@@ -1390,20 +1390,22 @@ defsub isobj.a
  ret
  notobj:
  and a
-endsub
+endsub isobj.a
 
 defsub instanceof
  ; a=this de=Class
  ; z: true
  getfld .class
  jp is.subclass.a
-endsub
+endsub instanceof
+
 defsub get.superclass
  ; hl=Class
  dec hl
  dec hl
  peekw hl,hl
-endsub
+endsub get.superclass
+
 defsub is.subclass.a
 proc 
  local top
@@ -1421,7 +1423,7 @@ proc
  jr nz,top
  cpde.a 0
 endp
-endsub
+endsub is.subclass.a
  `,
     'spr':`include const
 include th
@@ -1437,7 +1439,7 @@ class Sprite,Object
  fld .p, 0
  fld .c, 2
  fld.bottom Sprite
- marker.e 0
+ marker.e Sprite
  
 macro outwrt
   out (98h),a
@@ -1483,7 +1485,7 @@ proc
   continue
  sprl:
 endp
-endsub 0
+endsub spr.puts
  
  `,
     'sprpat':`include const
@@ -1536,11 +1538,11 @@ include key
 ;.die equ .screenOut-2
 ;.updateEx equ .die-2
 
-macro end.const,_d
+macro end.const, n
  pushi RActor.wait,bc
  pushi o.boot,bc
  th.with.ret 0 
- marker.e 0
+ marker.e n
 endm
 
 macro RActor.noovr,Class
@@ -1562,7 +1564,7 @@ endm
 
 class RActor,Sprite
  RActor.noovr RActor
- end.const 0
+ end.const RActor
 RActor.main:
  enter 0
  exit 0
@@ -1604,7 +1606,7 @@ def RActor.die,0,0
  ld (hl),th.st.blank
  ld hl, 0
  setfld .c
-enddef
+enddef RActor.die
 
 def RActor.updateEx,1,0
 proc 
@@ -1618,7 +1620,7 @@ proc
   continue
  n:
 endp
-enddef
+enddef RActor.updateEx
 
 crashTo.size equ 8<<spr.scale
 
@@ -1632,7 +1634,7 @@ defsub crashTo.setXY
  const gx,hl
  getfld .y
  const gy,hl
-endsub
+endsub crashTo.setXY
 
 
 def RActor.crashTo,1,0
@@ -1650,7 +1652,7 @@ def RActor.crashTo,1,0
   call crashTo1
   flagtobool c
  endc:
-enddef
+enddef RActor.crashTo
 
 macro crashToClass,Class,st,en
  ; a=this
@@ -1696,7 +1698,7 @@ defsub crashToC
  getthis 0
  ret c
  ld hl,null
-endsub
+endsub crashToC
 
 defsub crashTo1
  ;hl=tg
@@ -1721,7 +1723,7 @@ defsub crashTo1
  call abs
  ld bc,crashTo.size
  subhl bc
-endsub
+endsub crashTo1
 
 endp
 
@@ -1772,14 +1774,14 @@ proc
  cp 11
  jr c,lp
 endp
-endsub
+endsub keyall
 
 defwork keymat1
 ds 11
-endwork
+endwork keymat1
 defwork keymat2
 ds 11
-endwork
+endwork keymat2
 
 
 proc
@@ -1795,7 +1797,7 @@ call chkmat
 ld hl,1
 ret z
 inc hl
-endsub
+endsub getkey.a
 
 defsub chkmat
 push de
@@ -1804,13 +1806,13 @@ ld d,0
 add hl,de
 and (hl)
 pop de
-endsub
+endsub chkmat
 
 defsub getkey
 push af
 call getkey.a
 pop af
-endsub
+endsub getkey
 
 endp`,
     'map':`include sub
@@ -1826,18 +1828,18 @@ defsub map.adr
  add hl,de
  ld de,1800h
  add hl,de
-endsub 0
+endsub map.adr
 
 defsub map.set.a
  ;  a=data
  call map.adr
  call 4dh
-endsub 0
+endsub map.set.a
 
 defsub map.get.a
  call map.adr
  call 4ah 
-endsub 0
+endsub map.get.a
 
 defsub map.adrat.a
  ; hl=spr_x
@@ -1860,12 +1862,12 @@ defsub map.adrat.a
  inc hl
  inc de
  call map.adr
-endsub 0
+endsub map.adrat.a
 
 defsub map.getat.a
  call map.adrat.a
  call 4ah
-endsub 0
+endsub map.getat.a
 
 defsub map.setat.a
  ; a=data
@@ -1873,21 +1875,14 @@ defsub map.setat.a
  call map.adrat.a
  pop af
  call 4dh
-endsub 0
+endsub map.setat.a
 
 defsub locate
  ; hl=chipx
  ; de=chipy
- ld d,l
- ld (CSRY),de
-endsub
-
-defsub locate2
- ; hl=chipx
- ; de=chipy
  call map.adr
  ld (cursor-2),hl
-endsub
+endsub locate
 `,
     'maze':`org 09000h
 jp main
@@ -2085,11 +2080,11 @@ enddef 0
 
 class Main,RActor
  RActor.noovr Main
- end.const 0
+ end.const Main
 class Target,RActor
  RActor.noovr Target
  met2 Target,.push
- end.const 0
+ end.const Target
 def Target.main,0,0
 enddef
 class Cat,RActor
@@ -2097,7 +2092,7 @@ class Cat,RActor
  fld .vy, 0
  fld .vx, 0
  fld.bottom Cat
- end.const 0
+ end.const Cat
 def Cat.main,0,0
  blp:
   ld hl,0108h
@@ -3064,7 +3059,7 @@ defsub int2dac
  ld (VALTYP),a
  ld (DAC+2),HL
  pop af
-endsub
+endsub int2dac
 ;===your code 
 
 main:

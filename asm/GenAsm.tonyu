@@ -58,7 +58,7 @@ for (klass of mem.ks) {
         }
         printf("def %s.%s,%d,0%{",klass.shortName, mname, method.params.length);
         for(let s of method.stmts) visit(s);
-        printf("enddef 0%n");
+        printf("enddef %s.%s%n", klass.shortName, mname);
         printf("%}");
         update();
     }
