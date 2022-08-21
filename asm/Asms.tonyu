@@ -640,7 +640,7 @@ macro th.new.range,st,en
  ld(th.new.end),bc
 endm
 
-th.new:
+defsub th.new
 ; nc for alloc fail
 proc 
  local lbend
@@ -672,8 +672,9 @@ proc
  scf
  ret
 endp
+endsub th.new
 
-th.init:
+defsub th.init
 proc
  local lbend
  th.for lbend
@@ -685,8 +686,9 @@ proc
  call susint
  ret
 endp
+endsub th.init
 
-th.stepall:
+defsub th.stepall
  th.for thnx
  ;todo bottom
   ld (th.cur),hl
@@ -696,7 +698,7 @@ th.stepall:
   call th.step
   continue
  thnx:
- ret
+endsub th.stepall
 
 macro thblock
   local s
@@ -714,24 +716,28 @@ macro thblocks
  th.end: 
 endm
 
-th.step:
+defsub th.step
  sp2mem adrssp+1
  ld HL,(th.cur)
  ld l,th.ofs.stp
  ;call susint
  jp (hl)
-th.yield:
+endsub th.step
+
+defsub th.yield
  ld hl,(th.cur)
  ld l,th.ofs.sp
  sp2mem
  adrssp:
  ld sp,0
  jp doint
+endsub th.yield
 
-th.term:
+defsub th.term
  ld hl,(th.cur)
  ld (hl),th.st.blank
  jr adrssp
+endsub th.term
 
 macro th.iniproc, ad
  ld bc,th.term
@@ -758,7 +764,7 @@ macro th.with.ret
  jp th.ewith
 endm
 
-th.with.s:
+defsub th.with.s
  sp2mem th.wrssp-2
  ld l, th.ofs.sp
  ld (th.updsp-2),hl
@@ -770,21 +776,21 @@ th.ewith:
  th.updsp:
  ld sp,0
  th.wrssp:
- ret
+endsub th.with.s
  
 
  
  
-th.push:
+defsub th.push
  ;push bc to thread hl
  th.with tpsbc
  ret
  tpsbc:
   push bc
-  th.with.ret
+  th.with.ret 0
+endsub th.push
 
-
-th.pushes:
+defsub th.pushes
 proc  
  local lp,rssp
  ;len bc  
@@ -804,22 +810,28 @@ proc
   djnz lp
   th.with.ret
 endp
- 
+endsub th.pushes
  
 
-th.cur:
+defwork th.cur
  dw 0
+endwork th.cur
 
-th.loop:
+defsub th.loop
+ ; hook before stepall
  db 0cdh
  h.thent:
  dw th.nop
+ ; save prev timecnt
  ld a,(timecnt)
  push af
+ ; Do stepall
  call th.stepall
+ ; hook after stepall
  db 0cdh
  h.thlop:
  dw th.nop
+ ; wait until timecnt changes
  pop af
  bwat:
   ld hl,timecnt
@@ -830,8 +842,10 @@ th.loop:
   pop af
   jr bwat
  bbwat:
- 
+ ; repeat
  jr th.loop
+endsub th.loop
+
 th.nop:
  ret
 
@@ -981,7 +995,6 @@ macro defwork, n
  head n
 endm
 macro endwork, n
- ret
  marker.e n
 endm
 
