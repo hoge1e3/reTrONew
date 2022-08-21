@@ -1115,11 +1115,9 @@ macro exit,n
  pop ix
  if n!=0
   exx
-  pop de
-  rept n
-   pop bc
-  endm
-  push de
+  pop bc
+  pops n
+  push bc
   exx
  endif
  ret
@@ -1219,7 +1217,7 @@ macro new,Class,flds,st,en
  call o.new
 endm
 
-head o.new
+defsub o.new
 proc
  local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end
  ; {val .f} n &initbl
@@ -1267,7 +1265,7 @@ proc
   ld hl,0
   jr finally
 endp
-unreach 0
+endsub
 
 macro new.arg, n, v
  if not nul v
@@ -1295,6 +1293,7 @@ macro fld.def,n
 endm
 macro class,Class,super
  unreach "c"
+ marker.b 0
  dw super
  fldidx:defl 254
  Class:
@@ -1335,7 +1334,7 @@ endm
 class Object,null
  fld .main,null
  fld.bottom Object
-
+ marker.e 0
 
 
 o.iniattr:
@@ -1348,10 +1347,10 @@ proc
  th.with.ret
 endp
  
-head o.boot
+defsub o.boot
  curth2this
  invoke .main,0
- ret
+endsub
 
 
 macro yield
@@ -1376,9 +1375,10 @@ macro enddef
  else
   ret
  endif
+ marker.e 0
 endm
 
-head isobj.a
+defsub isobj.a
  ;hl=obj?
  ;cy=true
  ld a,h
@@ -1390,19 +1390,21 @@ head isobj.a
  ret
  notobj:
  and a
- ret
-head instanceof
+endsub
+
+defsub instanceof
  ; a=this de=Class
  ; z: true
  getfld .class
  jp is.subclass.a
-head get.superclass
+endsub
+defsub get.superclass
  ; hl=Class
  dec hl
  dec hl
  peekw hl,hl
- ret
-head is.subclass.a
+endsub
+defsub is.subclass.a
 proc 
  local top
  ; hl=Subclass
@@ -1418,8 +1420,8 @@ proc
  pop de
  jr nz,top
  cpde.a 0
- ret 
 endp
+endsub
  `,
     'spr':`include const
 include th
@@ -1435,7 +1437,8 @@ class Sprite,Object
  fld .p, 0
  fld .c, 2
  fld.bottom Sprite
-
+ marker.e 0
+ 
 macro outwrt
   out (98h),a
 endm
@@ -1536,7 +1539,8 @@ include key
 macro end.const,_d
  pushi RActor.wait,bc
  pushi o.boot,bc
- th.with.ret 
+ th.with.ret 0 
+ marker.e 0
 endm
 
 macro RActor.noovr,Class
@@ -1623,12 +1627,12 @@ proc
  local endc,cr1
  local fe
 
-head crashTo.setXY
+defsub crashTo.setXY
  getfld .x
  const gx,hl
  getfld .y
  const gy,hl
- ret
+endsub
 
 
 def RActor.crashTo,1,0
@@ -1658,7 +1662,7 @@ macro crashToClass,Class,st,en
  call crashToC
 endm
 
-head crashToC
+defsub crashToC
  ;before:
  ; call crashTo.setXY
  ; const crashTo.kls,Class
@@ -1692,9 +1696,9 @@ head crashToC
  getthis 0
  ret c
  ld hl,null
- ret
+endsub
 
-head crashTo1
+defsub crashTo1
  ;hl=tg
  ;cy:true
  ;hl is used
@@ -1717,7 +1721,7 @@ head crashTo1
  call abs
  ld bc,crashTo.size
  subhl bc
- ret
+endsub
 
 endp
 
@@ -1747,7 +1751,7 @@ endm
 ;aaaa`,
     'key':`include debug
 
-head keyall
+defsub keyall
 proc
 ;show hl
  local lp
@@ -1767,16 +1771,19 @@ proc
  inc a
  cp 11
  jr c,lp
- ret
 endp
+endsub
 
-keymat1:
+defwork keymat1
 ds 11
-keymat2:
+endwork
+defwork keymat2
 ds 11
+endwork
 
-head getkey.a
+
 proc
+defsub getkey.a
 local chkmat
 ex de,hl
 ld hl,keymat1
@@ -1788,22 +1795,22 @@ call chkmat
 ld hl,1
 ret z
 inc hl
-ret
+endsub
 
-head chkmat
+defsub chkmat
 push de
 ld a,d
 ld d,0
 add hl,de
 and (hl)
 pop de
-ret
+endsub
 
-head getkey
+defsub getkey
 push af
 call getkey.a
 pop af
-ret
+endsub
 
 endp`,
     'map':`include sub
