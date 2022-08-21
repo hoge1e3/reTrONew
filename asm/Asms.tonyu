@@ -92,7 +92,18 @@ macro xorrm,re,me
   xor re
   ld (me),a
 endm
- 
+
+macro subhl,rp
+ and a
+ sbc hl,rp
+endm
+
+macro cpde.a
+ rst dcompr
+endm
+
+
+marker.b 0
 xrnd.a:
 proc 
  local rhl,rde,rdhlde
@@ -124,17 +135,17 @@ proc
   xorrm e,rde-2
   ret
 endp
-
-macro cpde.a
- rst dcompr
-endm
+marker.e 0
 
 
+marker.b 0
 rnd:
  push af
  call rnd.a
  pop af
  ret
+marker.e 0
+marker.b 0
 rnd.a:
  ld de,07fffh
  call IDIV.a
@@ -146,11 +157,9 @@ rnd.a:
  inc hl
  call IDIV.a
  ret
-macro subhl,rp
- and a
- sbc hl,rp
-endm
+marker.e 0
 
+marker.b 0
 abs:
  bit 7,h
  ret z
@@ -159,6 +168,7 @@ neghl:
  ex de,hl 
  subhl de
  ret
+marker.e 0
 
  `,
     'bool':`include math
@@ -390,7 +400,7 @@ macro peekconst,reg,n
 endm
 `,
     'const':`
-wrt equ 0a2h
+;wrt equ 0a2h
 dcompr equ 0020H
 sp.ini equ 0dc00h
 stksize equ 512
@@ -427,7 +437,15 @@ WRTPSG  equ 0093H
 CSRY equ 0F3DCH
 CSRX equ 0F3DDH
 
-null equ 0`,
+null equ 0
+
+macro marker.b
+ db "BEGIN"
+endm
+macro marker.e
+ db "END"
+endm
+`,
     'ctrl':`include const
 freeze:
 halt
@@ -824,64 +842,7 @@ macro th.pushi, val
 endm
 
 `,
-    'sub':`include debug
-macro getarg ,n
-ld l,(ix+2+n*2)
-ld h,(ix+3+n*2)
-endm
-
-macro setlcl ,n
-ld (IX-(n*2-1)),h
-ld (ix-n*2),l
-endm
-
-macro getlcl ,n
-ld h,(IX-(n*2-1))
-ld l,(ix-n*2)
-endm
-
-macro pusharg ,n
-getarg n
-push HL
-endm
-
-macro pushlcl ,n
-getlcl n
-push HL
-endm
-
-macro enter ,locals
-push ix
-ld ix,0
-add ix,sp
-rept locals
- push HL
-endm
-endm
-
-macro pops ,n
-rept n*2
- inc sp
-endm
-endm
-
-macro exit
-ld sp,ix
-pop ix
-ret
-endm
-
-macro run ,n,args
-call n
-pops args
-endm
-
-macro defsub, n
- head n
-endm
-macro endsub
- ret
-endm`,
+    'sub':``,
     'debug':`include math
 ;debug
 macro show,reg
@@ -1005,8 +966,46 @@ macro unreach, mesg
 endm
 macro head, lb
  unreach lb
+ marker.b 0
  lb:
-endm`,
+endm
+
+macro defsub, n
+ head n
+endm
+macro endsub
+ ret
+ marker.e 0
+endm
+macro defwork, n
+ head n
+endm
+macro endwork
+ ret
+ marker.e 0
+endm
+
+defsub wrt
+proc
+ local sk
+ push hl
+ push af
+ ld hl,1800h
+ cursor:
+ call 4dh
+ inc hl
+ ld a,h
+ cp 1bh
+ jr c,sk
+  ld h,18h
+ sk:
+ ld (cursor-2),hl
+ pop af
+ pop hl
+ ret
+endp
+endsub
+`,
     'sp':`include mem
 include debug
 macro sp.get
@@ -1872,8 +1871,15 @@ endsub 0
 defsub locate
  ; hl=chipx
  ; de=chipy
- ld h,e
- ld (CSRX),hl
+ ld d,l
+ ld (CSRY),de
+endsub
+
+defsub locate2
+ ; hl=chipx
+ ; de=chipy
+ call map.adr
+ ld (cursor-2),hl
 endsub
 `,
     'maze':`org 09000h
@@ -2511,7 +2517,16 @@ class Player,RActor
  end.const 0
 def Player.main,0,0
  lb23:
+ ld hl,3
+ ld de,10
+ call locate2
  getfld .y
+ ld a,l
+ call wrt
+ ld a,h
+ call wrt
+ getthis 0
+ 
  ex de,hl
  getfld .x
  ld a,35
@@ -3035,23 +3050,34 @@ VALTYP equ 0F663H;1
 DAC equ 0F7F6H;16
 ARG equ 0F847H;16
 FOUT equ 3425H
+
+defsub int2dac
+ push af
+ ld a,2
+ ld (VALTYP),a
+ ld (DAC+2),HL
+ pop af
+endsub
 ;===your code 
 
 main:
-ld a,2
-ld (VALTYP),a
-LD HL,1234
-ld (DAC+2),HL
-call fout
+ld hl,12345
+call int2dac
+ld hl,str
+call FOUT
 
-ld b,5
+ld b,10
 reptb nxt
-ld a,(hl)
-call wrt
-inc hl
-continue
+ ld a,(hl)
+ cp 0
+ break z
+ call wrt2
+ inc hl
+ continue
 nxt:
 ret
+str:
+
 
 `,
     'setvrm':`org 09000h
