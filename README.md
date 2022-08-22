@@ -7,7 +7,7 @@ with Web-based developing environment.
 ## Application running on Tonyu2:
 
 https://run.tonyu.jp/?hoge_ship/reTrONew
-- Push Edit Page to View/Modify Source
+- Push "Edit Page" to View/Modify Source
 - Push "to MSXPen" to export to MSXPen
 - See [Wiki](https://github.com/hoge1e3/reTrONew/wiki) for details.
 
