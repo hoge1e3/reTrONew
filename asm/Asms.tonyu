@@ -621,8 +621,10 @@ include mem
 include math
 include debug
 
-th.ofs.stp equ 0
+th.ofs.stp equ 256-4
 th.ofs.sp equ th.ofs.stp+1
+th.ofs.spini equ th.ofs.stp
+fld.top equ th.ofs.spini-2
 th.st.blank equ 0c9h
 th.st.active equ 31h
 
@@ -661,18 +663,17 @@ proc
  ld bc,th.size
  for lbend
   ; TODO th.ofs.stp
-  ld a,(HL)
-  cp th.st.blank
+  call th.isblank.a
   break z
   continue
  lbend:
  ret nc
  ; TODO th.ofs.stp
+ ld L,th.ofs.stp
  ld (HL),31h
  inc HL
- ld (HL),0
+ ld (HL),th.ofs.spini
  ld a,h
- inc a
  inc HL
  ld (hl),a
  inc HL
@@ -688,6 +689,7 @@ proc
  local lbend
  th.for lbend
   ; TODO th.ofs.stp
+  ld L, th.ofs.stp
   ld (HL),th.st.blank
   continue
  lbend:
@@ -701,31 +703,14 @@ endsub th.init
 
 defsub th.stepall
  th.for thnx
- ;todo th.ofs.stp
+  ;todo th.ofs.stp
   ld (th.cur),hl
-  ld a,(hl)
-  cp 0c9h
+  call th.isblank.a
   continue z
   call th.step
   continue
  thnx:
 endsub th.stepall
-
-macro thblock
-  local s
-  LD sp, s
-  ret
-  ds th.size-4
-  s:
-endm
-macro thblocks
- ds 256-(low $),0cdh
- th.start:
- rept th.count
- ds th.size
- endm
- th.end: 
-endm
 
 defsub th.step
  sp2mem adrssp+1
@@ -747,6 +732,7 @@ endsub th.yield
 defsub th.term
  ld hl,(th.cur)
  ; TODO th.ofs.stp
+ ld L,th.ofs.stp
  ld (hl),th.st.blank
  jr adrssp
 endsub th.term
@@ -1266,7 +1252,7 @@ proc
    pop hl
   jr lp2
   lp2end:
-  ld hl,0; todo null
+  ld hl,null;  todo null
   jr finally
 endp
 endsub o.new
@@ -1299,7 +1285,7 @@ macro class,Class,super
  unreach "c"
  marker.b 0
  dw super
- fldidx:defl 254; todo fld.top
+ fldidx:defl fld.top; todo fld.top
  Class:
   fld .class,Class
 endm
@@ -1671,8 +1657,7 @@ defsub crashToC
  for fe
   ; skip blank
   ; TODO th.ofs.stp
-  ld a,(HL)
-  cp th.st.blank
+  call th.isblank.a
   continue z
   ; skip hl==this
   getthis 0

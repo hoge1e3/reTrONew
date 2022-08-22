@@ -1,5 +1,5 @@
 extends TObject;
-let idx=254;
+let idx=256-4-2;
 let _n2idx={};//optimized
 let _n2seq={};//not optimized
 
@@ -24,7 +24,7 @@ endm
 `;
     let fldp=/fld \.(\w+)/;
     let metp=/meth.*,(\w+)/;
-    idx=254;
+    idx=256-4-2;
     let res={};
     for(let ln of def.split("\n")){
         let m=fldp.exec(ln)||
