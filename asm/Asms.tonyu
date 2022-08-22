@@ -640,6 +640,14 @@ macro th.new.range,st,en
  ld(th.new.end),bc
 endm
 
+defsub th.isblank.a
+ ; h= thread
+ ; z if true
+ ld l, th.ofs.stp
+ ld a,(hl)
+ cp th.st.blank
+endsub th.isblank.a
+
 defsub th.new
 ; nc for alloc fail
 proc 
@@ -652,13 +660,14 @@ proc
  dw th.end
  ld bc,th.size
  for lbend
-  ; TODO bottom
-  ld  a,(HL)
+  ; TODO th.ofs.stp
+  ld a,(HL)
   cp th.st.blank
   break z
   continue
  lbend:
  ret nc
+ ; TODO th.ofs.stp
  ld (HL),31h
  inc HL
  ld (HL),0
@@ -678,9 +687,11 @@ defsub th.init
 proc
  local lbend
  th.for lbend
+  ; TODO th.ofs.stp
   ld (HL),th.st.blank
   continue
  lbend:
+ ; disable timer
  ld HL,0fd9fh
  ld (hl),0c9h
  call susint
@@ -690,7 +701,7 @@ endsub th.init
 
 defsub th.stepall
  th.for thnx
- ;todo bottom
+ ;todo th.ofs.stp
   ld (th.cur),hl
   ld a,(hl)
   cp 0c9h
@@ -735,26 +746,20 @@ endsub th.yield
 
 defsub th.term
  ld hl,(th.cur)
+ ; TODO th.ofs.stp
  ld (hl),th.st.blank
  jr adrssp
 endsub th.term
 
-macro th.iniproc, ad
- ld bc,th.term
- call th.push
- ld bc,ad
- call th.push
-endm
- 
 macro th.with.do, to
  local pr
  th.with pr
  jr to
  pr:
-endm 
+endm
 
-macro th.with.dsthl
- ld (th.jpdest-2),hl
+macro th.with.setdst, reg
+ ld (th.jpdest-2),reg
 endm
 macro th.with,pr
  movw (th.jpdest-2), pr
@@ -790,28 +795,6 @@ defsub th.push
   th.with.ret 0
 endsub th.push
 
-defsub th.pushes
-proc  
- local lp,rssp
- ;len bc  
- ;thread de  
- ;src hl
- ex de,hl
- th.with rssp
- ret
- rssp: 
-  ex de,hl
-  lp:
-   ld e,(hl)
-   inc hl
-   ld d,(hl)
-   inc hl
-   push de
-  djnz lp
-  th.with.ret
-endp
-endsub th.pushes
- 
 
 defwork th.cur
  dw 0
@@ -1233,19 +1216,23 @@ endm
 defsub o.new
 proc
  local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end
- ; {val .f} n &initbl
- pop hl
+ ; {val .f} n &initbl retad
+ pop hl;retad
  ld (retad-2),hl
+ ; set initbl for th.with
  pop hl;&initbl
- th.with.dsthl 
+ th.with.setdst hl
+ ; save this
  ld (svthis-1),a
+ ; allocate thread
  call th.new
  jr nc, allocfail
- push hl
- call th.with.s
- pop hl
- ld a,h
- pop bc
+ push hl; thread address
+ call th.with.s; call &initbl
+ pop hl; thread address
+ ld a,h; set this as thread
+ ; init fields
+ pop bc; n of {val .f}
  inc c
  loop:
   dec c
@@ -1258,14 +1245,18 @@ proc
   w:
  jr loop
  lpend:
+ ; return h as this
  ld h,a
  finally:
+  ;restore a before call o.new
   ld a,0
   svthis:
+  ;return 
   jp 0
   retad:
  allocfail:
-  pop bc
+  ; drop {val .f}
+  pop bc; n of {val .f}
   ld b,c
   inc c
   lp2:
@@ -1275,7 +1266,7 @@ proc
    pop hl
   jr lp2
   lp2end:
-  ld hl,0
+  ld hl,0; todo null
   jr finally
 endp
 endsub o.new
@@ -1308,7 +1299,7 @@ macro class,Class,super
  unreach "c"
  marker.b 0
  dw super
- fldidx:defl 254
+ fldidx:defl 254; todo fld.top
  Class:
   fld .class,Class
 endm
@@ -1350,16 +1341,6 @@ class Object,null
  marker.e Object
 
 
-o.iniattr:
-proc
- local aa
- th.with aa
- ret
- aa:
- pushi th.term,bc
- th.with.ret
-endp
- 
 defsub o.boot
  curth2this
  invoke .main,0
@@ -1689,7 +1670,7 @@ defsub crashToC
  ld bc,th.size
  for fe
   ; skip blank
-  ; TODO bottom
+  ; TODO th.ofs.stp
   ld a,(HL)
   cp th.st.blank
   continue z
@@ -1697,7 +1678,7 @@ defsub crashToC
   getthis 0
   cp h
   continue z
-  ; skip is not Class
+  ; skip object not instance of *Class*
   push hl
   ld a,h
   ldconst de,crashTo.kls
@@ -1900,151 +1881,7 @@ defsub locate
  ld (cursor-2),hl
 endsub locate
 `,
-    'maze':`org 09000h
-jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include th
-
-;===your code 
-
-main:
-
-call memini
-call th.init
-
-call mkwall
-
-ld HL,1800h+33*3
-ld de,1800h+33*9
-ld bc,33*2
-for thgl
-push HL 
-call th.new
-pop bc
-call th.push
-th.iniproc mkmz
-continue
-thgl:
-
-jp th.loop
-
-mkwall:
-ld b,11
-ld a,35
-ld de,32-13
-ld HL,01800h+66
-reptb mkrow
- ld b,13
- reptb mkcol
-  call 4dh
-  inc hl
-  continue
- mkcol:
- add HL,de 
- continue
-mkrow:
-ret
-
-
-
-vectbl:
-dw 1
-dw 32
-dw -1
-dw -32
-
-rnddir:
-call xrnd
-ld a,l
-and 6
-ld l,a
-ld h,0
-ret
-
-dir2vec:
-enter 0
-getarg 1
-ex de,hl
-ld hl,vectbl
-add HL,de
-peekw de,hl
-ex de,hl
-exit
-
-mkmz:
-enter 2
-call rnddir
-setlcl 1
-;call chkdir
-ld b,4
-
-mklp:
-push bc
-yield
-pushlcl 1
-run dir2vec,1
-setlcl 2
-;call chk
-push Hl
-pusharg 1
-run diggable,2
-
-jr nz,skipdig
-
-pushlcl 2
-pusharg 1
-run dig,2
-
-push HL
-run mkmz,1
-
-skipdig:
-
-getlcl 1
-inc HL
-inc HL
-ld a,l
-and 6
-ld l,a
-setlcl 1
-
-
-pop bc
-djnz mklp
-exit
-
-diggable:
-enter 0
-getarg 2
-ex de,hl
-getarg 1
-add hl,de
-add hl,de
-call 04ah
-cp 35
-exit
-
-dig:
-enter 0
-getarg 2
-ex de,hl
-getarg 1
-ld a,32
-call 04dh
-add hl,de
-call 04dh
-add hl,de
-call 04dh
-exit
-
-
-
-`,
+    'maze':``,
     't1':`org 09000h
 jp main
 include const
