@@ -46,9 +46,9 @@ fldidx();
 /*print(n2idx("y"));
 print(n2idx("t").toString(16));
 print(idx2n(250));*/
-addMembers(["x","y","test","cnt"]);
+/*addMembers(["x","y","test","cnt"]);
 addMembers(["x","y","cnt","toste"]);
-addMembers(["x","y","ttt","toste"]);
+addMembers(["x","y","ttt","toste"]);*/
 //print(confli);
 //print(_n2seq);
 build();

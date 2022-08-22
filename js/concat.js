@@ -48,9 +48,6 @@ Tonyu.klass.define({
         _this.confli = {};
         
         _this.fldidx();
-        _this.addMembers(["x","y","test","cnt"]);
-        _this.addMembers(["x","y","cnt","toste"]);
-        _this.addMembers(["x","y","ttt","toste"]);
         _this.build();
       },
       fiber$main :function* _trc_FldIdx_f_main(_thread) {
@@ -67,9 +64,6 @@ Tonyu.klass.define({
         _this.confli = {};
         
         (yield* _this.fiber$fldidx(_thread));
-        (yield* _this.fiber$addMembers(_thread, ["x","y","test","cnt"]));
-        (yield* _this.fiber$addMembers(_thread, ["x","y","cnt","toste"]));
-        (yield* _this.fiber$addMembers(_thread, ["x","y","ttt","toste"]));
         (yield* _this.fiber$build(_thread));
         
       },
