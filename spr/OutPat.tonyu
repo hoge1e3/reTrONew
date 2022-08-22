@@ -32,6 +32,7 @@ i<$imageList.length;i++){
     
     //print(d.data.length);
 }
+pa.die();
 \out(d){
     let c="0b";
     let db= [];
@@ -40,7 +41,7 @@ i<$imageList.length;i++){
         c+=(d [i]>128?1:0);
         if(c.length>=10){
             c=(c-0).toString(16);
-            c="$"+c;
+            c="0"+c+"h";
             db.push(c);
             c="0b";
         }

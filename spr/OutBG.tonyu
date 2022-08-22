@@ -1,0 +1,83 @@
+//extends TObject;
+extends Actor;
+let pa=new Panel {
+    x:16,y:16,
+    width:8,height:8,
+    scaleX:1
+};
+$RSprPat=$RSprPat||new RSprPat;
+let buf='',count=0;
+let patgen=[], coltbl=[];
+for(let i=0;
+i<$imageList.length;i++){
+    let l=$imageList [i];
+    if(l.width!=8)continue;
+    if(l.height!=8)continue;
+    if(count>=256)break;
+    count++;
+    pa.clearRect();
+    pa.drawSprite(4,4,i);
+    //updateEx(50);
+    let d=pa.getImageData(
+    0,0,8,8);
+    d=d.data;
+    //print(i);
+    out(d);
+    if (i% 8==0 )updateEx(1);
+    //print(d.data.length);
+}
+//print(patgen.map\(e){return e.toString(2);},coltbl.map\(e){return e.toString(16);});
+pa.die();
+fireEvent("complete");
+\out(d){
+    let pals:Color[]=$RSprPat.palette;
+    if (!pals) throw new Error("No pals");
+    for (let y=0;y<8;y++) {
+        let line=[],colc={};
+        for (let x=0;x<8;x++) {
+            let i=(y*8+x)*4;
+            let c=new Color(d[i],d[i+1],d[i+2]);
+            let min=100000, minc=0;
+            for (let i,pal in pals) {
+                let di=c.distHSLA(pal);
+                if (di<min) {
+                    minc=i;
+                    min=di;
+                }
+            }
+            minc++;
+            line.push(minc);
+            colc[minc]=colc[minc]||0;
+            colc[minc]++;
+        }
+        let cols=Object.keys(colc).map\(e){
+            return e-0;
+        }.sort\(a,b){
+            return colc[b]-colc[a];
+        };
+        if (cols.length<2) {
+            coltbl.push(cols[0]);
+            patgen.push(0);
+            continue;
+        }
+        let bgc=pals[cols[0]-1];
+        let fgc=pals[cols[1]-1];
+        coltbl.push(cols[1]*16+cols[0]);
+        if (cols[1]*16+cols[0]>=256) {
+            throw new Error(cols+" "+(cols[1]*16+cols[0]));
+        }
+        let bits="0b";
+        for (let dot of line) {
+            let bit=cols.indexOf(dot);
+            if (bit<0) throw new Error(cols + "indexOf " + dot);
+            if (bit>=2) {
+                let c=pals[cols[bit]-1];
+                let df=fgc.distHSLA(c);
+                let db=bgc.distHSLA(c);
+                bit = (df<db ? 1:0);
+            }
+            bits+=bit;
+        }
+        patgen.push(bits-0);
+    }
+}

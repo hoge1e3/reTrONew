@@ -66,6 +66,9 @@ for (klass of mem.ks) {
 }
 text="";
 let outp=new OutPat;
+let outbg=new OutBG;
+waitEvent(outbg,"complete");
+
 printf(`
 endusr:
 ${Object.keys(globals).map \(k){
@@ -78,6 +81,10 @@ spr.inipat:
  jp LDIRVM
 spr.pat:
 ${outp.buf}
+bg.gen:
+${toDB(outbg.patgen)}
+bg.col:
+${toDB(outbg.coltbl)}
 
 end main`);
 /*print(Object.keys(n.decls.fields));
@@ -93,7 +100,19 @@ let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
 
 
 new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
-
+\toDB(bytes) {
+    let buf="",c=[];
+    while(bytes.length) {
+        let b=bytes.shift();
+        c.push("0"+b.toString(16)+"h");
+        if (c.length>=8) {
+            buf+="db "+c.join(", ")+"\n";
+            c=[];
+        }
+    }
+    if (c.length) buf+="db "+c.join(", ")+"\n";
+    return buf;
+}
 \showDiag() {
     //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
     if (problems.length) {

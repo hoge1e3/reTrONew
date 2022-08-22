@@ -4,3 +4,4 @@ let row:Number;
 let col:Number;
 let pos:Number;
 let len:Number;
+let text:String;

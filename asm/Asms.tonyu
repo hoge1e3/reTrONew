@@ -2534,7 +2534,7 @@ def Player.main,0,0
  lb23:
  ld hl,3
  ld de,10
- call locate2
+ call locate
  getfld .y
  ld a,l
  call wrt
