@@ -74,17 +74,42 @@ endusr:
 ${Object.keys(globals).map \(k){
     return globalLabel(k)+":dw 0";
 }.join("\n")}
+macro inivrm, n, dst
+ ld de,dst
+ ld hl,n
+ ld bc,end.##n-n
+ call LDIRVM
+endm
+
 spr.inipat:
- ld de,3800h
- ld hl,spr.pat
- ld bc,${outp.count*32}
- jp LDIRVM
+ inivrm spr.pat, 3800h
+ ret
+
 spr.pat:
 ${outp.buf}
+end.spr.pat:
+
+bg.inipat:
+ inivrm bg.gen, 0000h
+ inivrm bg.gen, 0800h
+ inivrm bg.gen, 1000h
+ inivrm bg.col, 2000h
+ inivrm bg.col, 2800h
+ inivrm bg.col, 3000h
+ inivrm bg.name, 1800h
+ ret
+
 bg.gen:
 ${toDB(outbg.patgen)}
+end.bg.gen:
+
 bg.col:
 ${toDB(outbg.coltbl)}
+end.bg.col:
+
+bg.name:
+ ds 256*3,32
+end.bg.name:
 
 end main`);
 /*print(Object.keys(n.decls.fields));

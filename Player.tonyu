@@ -1,5 +1,5 @@
 while(true) {
-    map_setAt(x,y,35);
+    map_setAt(x,y,1);
     if (getkey("left")) x-=3;
     if (getkey("right")) x+=3;
     if (getkey("up")) y-=3;

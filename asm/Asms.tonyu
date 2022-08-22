@@ -1509,6 +1509,8 @@ spr.inipat:
  ld hl,spr.pat
  ld bc,128
  jp LDIRVM
+bg.inipat:
+ ret
 spr.pat:
 ; --- Slot 0 cat fstand
 ; color 9
@@ -1743,11 +1745,12 @@ endp
 
 macro tnu.run,Main
  ld sp,sp.ini
- call screen1
+ call screen2
  
  showsp
  showlb endusr
  call spr.inipat
+ call bg.inipat
 
  ld hl,th.start
  ld (hl),0cdh
@@ -3317,6 +3320,16 @@ screen1:
  ld c,1
  call WRTVDP
  ret
+
+defsub screen2
+ ld a,2
+ call CHGMOD
+ ld a,(RG1SAV)
+ set 1,a
+ ld b,A
+ ld c,1
+ call WRTVDP
+endsub screen2
  `,
     'mus':`include mem
 mus.ini:
