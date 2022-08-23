@@ -1649,6 +1649,15 @@ macro crashToClass,Class,st,en
  ld de,th.start+en*th.size
  call all
 endm
+macro foreach, Class,st,en,do
+ ld hl,Class
+ const all.class,hl
+ ld hl, do
+ const all.do, hl
+ ld hl,th.start+st*th.size
+ ld de,th.start+en*th.size
+ call all
+endm
 
 defsub all
  ;before:

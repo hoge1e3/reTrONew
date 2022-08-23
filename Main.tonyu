@@ -13,10 +13,8 @@ while(true) {
 }
 function showScore() {
     tmps=$score;
-    i=5;
-    while (i>1) {
+    for (i=5;i>1;i-=1){
         map_set(i,1,tmps%10+48);
         tmps=div(tmps,10);
-        i-=1;
     }
 }
