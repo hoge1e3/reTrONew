@@ -1474,14 +1474,14 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {Seed: 5,PBullet: 10,Player: 4},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
       },
       fiber$config :function* _trc_MBoot_f_config(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,Enemy: 10},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {Seed: 5,PBullet: 10,Player: 4},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
         
       },
       createMainObject :function _trc_MBoot_createMainObject() {
@@ -1508,7 +1508,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2054() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2064() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -1542,7 +1542,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2054() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2064() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -4713,6 +4713,14 @@ Tonyu.klass.define({
           _this.arithEq(n);
           break;
           
+        case "&&":
+          _this.andand(left,right);
+          break;
+          
+        case "||":
+          _this.oror(left,right);
+          break;
+          
         default:
           _this.unsup(n,['Unsupported infix operator \'',op.text,'\''].join(''));
         }
@@ -4771,9 +4779,65 @@ Tonyu.klass.define({
           (yield* _this.fiber$arithEq(_thread, n));
           break;
           
+        case "&&":
+          (yield* _this.fiber$andand(_thread, left, right));
+          break;
+          
+        case "||":
+          (yield* _this.fiber$oror(_thread, left, right));
+          break;
+          
         default:
           (yield* _this.fiber$unsup(_thread, n, ['Unsupported infix operator \'',op.text,'\''].join('')));
         }
+        
+      },
+      andand :function _trc_GenAsm_andand(left,right) {
+        "use strict";
+        var _this=this;
+        
+        let n = _this.genSym();
+        
+        _this.visit(left);
+        _this.printf("andand %s%n",n);
+        _this.visit(right);
+        _this.printf("%s:%n",n);
+      },
+      fiber$andand :function* _trc_GenAsm_f_andand(_thread,left,right) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let n=yield* _this.fiber$genSym(_thread);
+        
+        (yield* _this.fiber$visit(_thread, left));
+        (yield* _this.fiber$printf(_thread, "andand %s%n", n));
+        (yield* _this.fiber$visit(_thread, right));
+        (yield* _this.fiber$printf(_thread, "%s:%n", n));
+        
+      },
+      oror :function _trc_GenAsm_oror(left,right) {
+        "use strict";
+        var _this=this;
+        
+        let n = _this.genSym();
+        
+        _this.visit(left);
+        _this.printf("oror %s%n",n);
+        _this.visit(right);
+        _this.printf("%s:%n",n);
+      },
+      fiber$oror :function* _trc_GenAsm_f_oror(_thread,left,right) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let n=yield* _this.fiber$genSym(_thread);
+        
+        (yield* _this.fiber$visit(_thread, left));
+        (yield* _this.fiber$printf(_thread, "oror %s%n", n));
+        (yield* _this.fiber$visit(_thread, right));
+        (yield* _this.fiber$printf(_thread, "%s:%n", n));
         
       },
       isMemberRef :function _trc_GenAsm_isMemberRef(m) {
@@ -4851,7 +4915,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_6748() {
+            _this.enter({lval: false},(function anonymous_7141() {
               
               _this.visit(tgme[0]);
             }));
@@ -4906,7 +4970,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_6748() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7141() {
               
               _this.visit(tgme[0]);
             })));
@@ -5361,7 +5425,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_11636() {
+        _this.enter({lval: true},(function anonymous_12029() {
           
           _this.visit(left);
         }));
@@ -5378,7 +5442,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_11636() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12029() {
           
           _this.visit(left);
         })));
@@ -5395,7 +5459,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_12451() {
+        _this.enter({lval: true},(function anonymous_12844() {
           
           _this.visit(left);
         }));
@@ -5412,7 +5476,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12451() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12844() {
           
           _this.visit(left);
         })));
@@ -5426,8 +5490,15 @@ Tonyu.klass.define({
           _this.printf("ld hl,%s%n",n.text);
           
         } else {
-          _this.unsup(n,['Unsupported reserved word \'',n.text,'\'.'].join(''));
-          
+          if (n.text==="this") {
+            _this.printf("ld h,a%n");
+            _this.printf("ld l,0%n");
+            return _this;
+            
+          } else {
+            _this.unsup(n,['Unsupported reserved word \'',n.text,'\'.'].join(''));
+            
+          }
         }
       },
       fiber$v_reservedConst :function* _trc_GenAsm_f_v_reservedConst(_thread,n) {
@@ -5439,8 +5510,15 @@ Tonyu.klass.define({
           (yield* _this.fiber$printf(_thread, "ld hl,%s%n", n.text));
           
         } else {
-          (yield* _this.fiber$unsup(_thread, n, ['Unsupported reserved word \'',n.text,'\'.'].join('')));
-          
+          if (n.text==="this") {
+            (yield* _this.fiber$printf(_thread, "ld h,a%n"));
+            (yield* _this.fiber$printf(_thread, "ld l,0%n"));
+            return _this;
+            
+          } else {
+            (yield* _this.fiber$unsup(_thread, n, ['Unsupported reserved word \'',n.text,'\'.'].join('')));
+            
+          }
         }
         
       },
@@ -5887,7 +5965,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"annotation":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"toDB":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"showDiag":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"def":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"unsup":{"nowait":false,"isMain":false,"vtype":{"params":["user.TNode","String"],"returnValue":null}},"v_program":{"nowait":false,"isMain":false,"vtype":{"params":["user.Program"],"returnValue":null}},"v_parenExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.ParenExpr"],"returnValue":null}},"extractSrc":{"nowait":false,"isMain":false,"vtype":{"params":["user.TNode"],"returnValue":null}},"v_exprstmt":{"nowait":false,"isMain":false,"vtype":{"params":["user.Exprstmt"],"returnValue":null}},"v_infix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"isMemberRef":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression"],"returnValue":null}},"v_postfix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Postfix"],"returnValue":null}},"tgMeth":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","user.Token","user.Call"],"returnValue":null}},"myMeth":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess","user.Call"],"returnValue":null}},"cmp":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"arith":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"arith2":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","String","user.Expression"],"returnValue":null}},"arithEq":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"assign":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"v_reservedConst":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"v_number":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"globalLabel":{"nowait":false,"isMain":false,"vtype":{"params":["String"],"returnValue":null}},"v_varAccess":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"genSym":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"v_compound":{"nowait":false,"isMain":false,"vtype":{"params":["user.Compound"],"returnValue":null}},"v_while":{"nowait":false,"isMain":false,"vtype":{"params":["user.While"],"returnValue":null}},"v_if":{"nowait":false,"isMain":false,"vtype":{"params":["user.If"],"returnValue":null}},"v_varDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarDecl"],"returnValue":null}},"v_varsDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarsDecl"],"returnValue":null}},"rangeToAd":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isClassConst":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"v_newExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.NewExpr"],"returnValue":null}}},"fields":{"IDEPrj":{},"anodes":{},"mem":{"vtype":"user.MemberScan"},"lval":{},"symSeq":{"vtype":"Number"},"ide":{},"klass":{},"klassSrc":{},"problems":{},"builtins":{},"globals":{},"keynames":{},"opmap":{},"anode":{},"outp":{"vtype":"user.OutPat"},"outbg":{"vtype":"user.OutBG"},"url":{"vtype":"String"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"annotation":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"toDB":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"showDiag":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"def":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"unsup":{"nowait":false,"isMain":false,"vtype":{"params":["user.TNode","String"],"returnValue":null}},"v_program":{"nowait":false,"isMain":false,"vtype":{"params":["user.Program"],"returnValue":null}},"v_parenExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.ParenExpr"],"returnValue":null}},"extractSrc":{"nowait":false,"isMain":false,"vtype":{"params":["user.TNode"],"returnValue":null}},"v_exprstmt":{"nowait":false,"isMain":false,"vtype":{"params":["user.Exprstmt"],"returnValue":null}},"v_infix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"andand":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","user.Expression"],"returnValue":null}},"oror":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","user.Expression"],"returnValue":null}},"isMemberRef":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression"],"returnValue":null}},"v_postfix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Postfix"],"returnValue":null}},"tgMeth":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","user.Token","user.Call"],"returnValue":null}},"myMeth":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess","user.Call"],"returnValue":null}},"cmp":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"arith":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"arith2":{"nowait":false,"isMain":false,"vtype":{"params":["user.Expression","String","user.Expression"],"returnValue":null}},"arithEq":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"assign":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"v_reservedConst":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"v_number":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"globalLabel":{"nowait":false,"isMain":false,"vtype":{"params":["String"],"returnValue":null}},"v_varAccess":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"genSym":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"v_compound":{"nowait":false,"isMain":false,"vtype":{"params":["user.Compound"],"returnValue":null}},"v_while":{"nowait":false,"isMain":false,"vtype":{"params":["user.While"],"returnValue":null}},"v_if":{"nowait":false,"isMain":false,"vtype":{"params":["user.If"],"returnValue":null}},"v_varDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarDecl"],"returnValue":null}},"v_varsDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarsDecl"],"returnValue":null}},"rangeToAd":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isClassConst":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"v_newExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.NewExpr"],"returnValue":null}}},"fields":{"IDEPrj":{},"anodes":{},"mem":{"vtype":"user.MemberScan"},"lval":{},"symSeq":{"vtype":"Number"},"ide":{},"klass":{},"klassSrc":{},"problems":{},"builtins":{},"globals":{},"keynames":{},"opmap":{},"anode":{},"outp":{"vtype":"user.OutPat"},"outbg":{"vtype":"user.OutBG"},"url":{"vtype":"String"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.ArgList',
@@ -7307,20 +7385,54 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 8,pc: 3});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 7,pc: 4});
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 3,pc: 5});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 10,pc: 6});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 16,c: 8,pc: 3});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 17,c: 7,pc: 4});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 18,c: 3,pc: 5});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 19,c: 10,pc: 6});
+        _this.p=0;
+        _this.c=15;
+        while (true) {
+          Tonyu.checkLoop();
+          if (_this.rnd(40)==0) {
+            _this.x=_this.rnd(32);
+            _this.y=_this.rnd(24);
+            _this.c=_this.map_get(_this.x,_this.y);
+            if (_this.c>=3&&_this.c<=6) {
+              new Tonyu.classes.user.Seed({x: _this.x*16+8,y: _this.y*16+8,pc: _this.c});
+              
+            }
+            
+          }
+          _this.update();
+          
+        }
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 8,pc: 3});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 7,pc: 4});
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 3,pc: 5});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 10,pc: 6});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 16,c: 8,pc: 3});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 17,c: 7,pc: 4});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 18,c: 3,pc: 5});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 19,c: 10,pc: 6});
+        _this.p=0;
+        _this.c=15;
+        while (true) {
+          yield null;
+          if (_this.rnd(40)==0) {
+            _this.x=_this.rnd(32);
+            _this.y=_this.rnd(24);
+            _this.c=(yield* _this.fiber$map_get(_thread, _this.x, _this.y));
+            if (_this.c>=3&&_this.c<=6) {
+              new Tonyu.classes.user.Seed({x: _this.x*16+8,y: _this.y*16+8,pc: _this.c});
+              
+            }
+            
+          }
+          (yield* _this.fiber$update(_thread));
+          
+        }
         
       },
       __dummy: false
@@ -7340,27 +7452,37 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        _this.p=6;
-        _this.c=8;
+        _this.p=7;
+        _this.vx = 0;
+        
+        _this.vy = 0;
+        
+        
+        
         while (true) {
           Tonyu.checkLoop();
+          _this.map_setAt(_this.x,_this.y,_this.pc);
+          if (_this.target.defeatBy) {
+            _this.die();
+            
+          }
           if (_this.screenOut()) {
             _this.die();
           }
-          _this.y-=6;
-          _this.e = _this.crashTo(Tonyu.classes.user.Enemy);
-          
-          if (_this.e) {
-            _this.e.die();
-            _this.die();
-            Tonyu.globals.$score+=10;
-            
+          if (_this.target.x>_this.x) {
+            _this.vx+=1;
           }
-          if (_this.map_getAt(_this.x,_this.y-16)==1) {
-            _this.map_setAt(_this.x,_this.y-16,32);
-            _this.die();
-            
+          if (_this.target.x<_this.x) {
+            _this.vx-=1;
           }
+          if (_this.target.y>_this.y) {
+            _this.vy+=1;
+          }
+          if (_this.target.y<_this.y) {
+            _this.vy-=1;
+          }
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
           _this.update();
           
         }
@@ -7370,45 +7492,46 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _this.p=6;
-        _this.c=8;
+        _this.p=7;
+        _this.vx = 0;
+        
+        _this.vy = 0;
+        
+        
+        
         while (true) {
           yield null;
+          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, _this.pc));
+          if (_this.target.defeatBy) {
+            _this.die();
+            
+          }
           if (_this.screenOut()) {
             _this.die();
           }
-          _this.y-=6;
-          _this.e = _this.crashTo(Tonyu.classes.user.Enemy);
-          
-          if (_this.e) {
-            _this.e.die();
-            _this.die();
-            Tonyu.globals.$score+=10;
-            
+          if (_this.target.x>_this.x) {
+            _this.vx+=1;
           }
-          if (_this.map_getAt(_this.x,_this.y-16)==1) {
-            (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y-16, 32));
-            _this.die();
-            
+          if (_this.target.x<_this.x) {
+            _this.vx-=1;
           }
+          if (_this.target.y>_this.y) {
+            _this.vy+=1;
+          }
+          if (_this.target.y<_this.y) {
+            _this.vy-=1;
+          }
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
           (yield* _this.fiber$update(_thread));
           
         }
         
       },
-      onUpdate :function _trc_PBullet_onUpdate() {
-        "use strict";
-        var _this=this;
-        
-        _this.c+=1;
-        if (_this.c>14) {
-          _this.c=0;
-        }
-      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"onUpdate":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"e":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{"vtype":"Number"},"vy":{"vtype":"Number"},"pc":{},"target":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Player',
@@ -7457,20 +7580,37 @@ Tonyu.klass.define({
             if (_this.y<_this.ty) {
               _this.y+=3;
             }
-            if (_this.rnd(40)==0) {
+            if (_this.rnd(20)==0) {
               _this.tx=_this.rnd(512);
-              _this.ty = _this.rnd(384);
-              
+              _this.ty=_this.rnd(384);
               
             }
             
           }
           _this.pb = _this.crashTo(Tonyu.classes.user.PBullet);
           
-          if (_this.pb) {
-            if (_this.pb.c!=_this.c) {
-              _this.die();
+          if (_this.pb&&_this.pb.pc!=_this.pc) {
+            _this.i = 0;
+            
+            _this.defeatBy = _this.pb.pc;
+            
+            _this.pb.die();
+            while (_this.i<120) {
+              Tonyu.checkLoop();
+              _this.x+=8;
+              _this.update();
+              _this.x-=8;
+              _this.update();
+              _this.i+=1;
+              
             }
+            _this.i=0;
+            
+          }
+          _this.pb=_this.crashTo(Tonyu.classes.user.Seed);
+          if (_this.pb&&_this.pb.pc==_this.pc) {
+            _this.pb.target=_this;
+            _this.pb.spawn();
             
           }
           _this.update();
@@ -7517,20 +7657,37 @@ Tonyu.klass.define({
             if (_this.y<_this.ty) {
               _this.y+=3;
             }
-            if (_this.rnd(40)==0) {
+            if (_this.rnd(20)==0) {
               _this.tx=_this.rnd(512);
-              _this.ty = _this.rnd(384);
-              
+              _this.ty=_this.rnd(384);
               
             }
             
           }
           _this.pb = _this.crashTo(Tonyu.classes.user.PBullet);
           
-          if (_this.pb) {
-            if (_this.pb.c!=_this.c) {
-              _this.die();
+          if (_this.pb&&_this.pb.pc!=_this.pc) {
+            _this.i = 0;
+            
+            _this.defeatBy = _this.pb.pc;
+            
+            _this.pb.die();
+            while (_this.i<120) {
+              yield null;
+              _this.x+=8;
+              (yield* _this.fiber$update(_thread));
+              _this.x-=8;
+              (yield* _this.fiber$update(_thread));
+              _this.i+=1;
+              
             }
+            _this.i=0;
+            
+          }
+          _this.pb=_this.crashTo(Tonyu.classes.user.Seed);
+          if (_this.pb&&_this.pb.pc==_this.pc) {
+            _this.pb.target=_this;
+            _this.pb.spawn();
             
           }
           (yield* _this.fiber$update(_thread));
@@ -7541,7 +7698,92 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"tx":{},"ty":{},"pc":{},"pb":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"tx":{},"ty":{},"pc":{},"pb":{},"i":{"vtype":"Number"},"defeatBy":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.Seed',
+  shortName: 'Seed',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.RActor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Seed_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        if (_this.pc==3) {
+          _this.bc=8;
+        }
+        if (_this.pc==4) {
+          _this.bc=7;
+        }
+        if (_this.pc==5) {
+          _this.bc=3;
+        }
+        if (_this.pc==6) {
+          _this.bc=10;
+        }
+        _this.p=7;
+        while (true) {
+          Tonyu.checkLoop();
+          _this.c=15;
+          _this.updateEx(3);
+          _this.c=_this.bc;
+          _this.updateEx(60);
+          
+        }
+      },
+      fiber$main :function* _trc_Seed_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        if (_this.pc==3) {
+          _this.bc=8;
+        }
+        if (_this.pc==4) {
+          _this.bc=7;
+        }
+        if (_this.pc==5) {
+          _this.bc=3;
+        }
+        if (_this.pc==6) {
+          _this.bc=10;
+        }
+        _this.p=7;
+        while (true) {
+          yield null;
+          _this.c=15;
+          (yield* _this.fiber$updateEx(_thread, 3));
+          _this.c=_this.bc;
+          (yield* _this.fiber$updateEx(_thread, 60));
+          
+        }
+        
+      },
+      spawn :function _trc_Seed_spawn() {
+        "use strict";
+        var _this=this;
+        
+        new Tonyu.classes.user.PBullet({target: _this.target,x: _this.x,y: _this.y,pc: _this.pc,c: _this.c});
+        _this.die();
+      },
+      fiber$spawn :function* _trc_Seed_f_spawn(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        new Tonyu.classes.user.PBullet({target: _this.target,x: _this.x,y: _this.y,pc: _this.pc,c: _this.c});
+        _this.die();
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"spawn":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"pc":{},"bc":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Elem',

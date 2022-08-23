@@ -13,18 +13,30 @@ while(true) {
         if (x<tx) x+=3;
         if (y>ty) y-=3;
         if (y<ty) y+=3;
-        if (rnd(40)==0){
+        if (rnd(20)==0){
             tx=rnd(512);
-            var ty=rnd(384);
-
+            ty=rnd(384);
         }
     }
     var pb=crashTo(PBullet);
-    if (pb) {
-        if(pb.c!=c)
-        die();
+    if (pb && pb.pc!=pc){
+        var i=0;
+        var defeatBy=pb.pc;
+        pb.die();
+        while(i<120) {
+            x+=8;
+            update();
+            x-=8;
+            update();
+            i+=1;
+        }
+        i=0;
     }
-    
+    pb=crashTo(Seed);
+    if (pb && pb.pc==pc) {
+        pb.target=this;
+        pb.spawn();
+    }
     update();
     
 }

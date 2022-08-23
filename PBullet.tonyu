@@ -1,22 +1,21 @@
-p=6;
-c=8;
+p=7;
+var vx=0;
+var vy=0;
+var pc;
+// TODO target is declaed in Actor, 
+// if forgot to var, error will happen in assembler
+var target; 
 while (true) {
+    map_setAt(x,y,pc);
+    if (target.defeatBy) {
+        die();
+    }
     if (screenOut()) die();
-    y-=6;
-    var e=crashTo(Enemy);
-    if (e) {
-        e.die();
-        die();
-        $score+=10;
-    }
-    if (map_getAt(x,y-16)==1){
-        map_setAt(x,y-16,32);
-        die();
-    }
+    if (target.x>x)vx+=1; 
+    if (target.x<x)vx-=1; 
+    if (target.y>y)vy+=1; 
+    if (target.y<y)vy-=1; 
+    x+=vx;
+    y+=vy;
     update();
-}
-\onUpdate() {
-    //var t;
-    c+=1;
-    if (c>14) c=0;
 }

@@ -4,10 +4,23 @@ https://github.com/hoge1e3/reTrONew
 */
 
 new Player{
-x:32, y: 32, p:0, c:8, pc:3};
+x:32, y: 32, p:16, c:8, pc:3};
 new Player{
-x:480, y: 300, p:0, c:7, pc:4};
+x:480, y: 300, p:17, c:7, pc:4};
 new Player{
-x:32, y: 32, p:0, c:3, pc:5};
+x:32, y: 32, p:18, c:3, pc:5};
 new Player{
-x:480, y: 300, p:0, c:10, pc:6};
+x:480, y: 300, p:19, c:10, pc:6};
+
+p=0; c=15;
+while(true) {
+    if (rnd(40)==0) {
+        x=rnd(32);
+        y=rnd(24);
+        c=map_get(x,y);
+        if (c>=3 && c<=6) {
+            new Seed{x:x*16+8,y:y*16+8,pc:c};
+        }
+    }
+    update();
+}

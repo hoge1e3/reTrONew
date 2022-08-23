@@ -5,7 +5,7 @@ extends Boot;
         "spr.scale"=1,
         //"crashTo.size"=32,
         "obj.limits"={
-            PBullet: 5, Enemy: 10
+            Seed: 5, PBullet: 10, Player: 4
         },
         "th.count"=20,
 
