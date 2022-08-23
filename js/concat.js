@@ -7776,13 +7776,6 @@ Tonyu.klass.define({
           if (_this.getkey("space")==1) {
             new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
             
-            _this.r = _this.rnd(10)+1;
-            
-            for ([_this.e] of Tonyu.iterator2(_this.all(Tonyu.classes.user.Enemy),1)) {
-              _this.e.c=_this.r;
-              
-            }
-            
           }
           _this.update();
           
@@ -7819,13 +7812,6 @@ Tonyu.klass.define({
           if (_this.getkey("space")==1) {
             new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
             
-            _this.r = _this.rnd(10)+1;
-            
-            for ([_this.e] of Tonyu.iterator2(_this.all(Tonyu.classes.user.Enemy),1)) {
-              _this.e.c=_this.r;
-              
-            }
-            
           }
           (yield* _this.fiber$update(_thread));
           
@@ -7835,7 +7821,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"e":{},"r":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
 });
 Tonyu.klass.define({
   fullName: 'user.Elem',
