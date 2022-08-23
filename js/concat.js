@@ -1508,7 +1508,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2064() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2124() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -1542,7 +1542,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2064() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2124() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -4246,7 +4246,7 @@ Tonyu.klass.define({
         
         _this.opmap = {"*": "call IMULT.a%n","/": "call IDIV.a%n","%": "call IMOD.a%n","+": "add hl, de%n","-": "subhl de%n"};
         
-        _this.printf(['org 08000h\ninclude tnu\ninclude map\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join(''));
+        _this.printf(['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join(''));
         
         _this.x=256;
         _this.y=20;
@@ -4287,10 +4287,10 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         _this.waitEvent(_this.outbg,"complete");
-        _this.printf(['\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1717(k) {
+        _this.printf(['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1790(k) {
           
           return _this.globalLabel(k)+":dw 0";
-        })).join("\n"),'\nmacro inivrm, n, dst\n ld de,dst\n ld hl,n\n ld bc,end.##n-n\n call LDIRVM\nendm\n\nspr.inipat:\n inivrm spr.pat, 3800h\n ret\n\nspr.pat:\n',_this.outp.buf,'\nend.spr.pat:\n\nbg.inipat:\n inivrm bg.gen, 0000h\n inivrm bg.gen, 0800h\n inivrm bg.gen, 1000h\n inivrm bg.col, 2000h\n inivrm bg.col, 2800h\n inivrm bg.col, 3000h\n inivrm bg.name, 1800h\n ret\n\nbg.gen:\n',_this.toDB(_this.outbg.patgen),'\nend.bg.gen:\n\nbg.col:\n',_this.toDB(_this.outbg.coltbl),'\nend.bg.col:\n\nbg.name:\n ds 256*3,32\nend.bg.name:\n\nend main'].join(''));
+        })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join(''));
         _this.url = "https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
         
         new Tonyu.classes.kernel.Button({top: 420,text: "to MSXPen",onClick: Tonyu.bindFunc(_this,_this.showDiag),fillStyle: Tonyu.globals.$RSprPat.palette[2]});
@@ -4324,7 +4324,7 @@ Tonyu.klass.define({
         
         _this.opmap = {"*": "call IMULT.a%n","/": "call IDIV.a%n","%": "call IMOD.a%n","+": "add hl, de%n","-": "subhl de%n"};
         
-        (yield* _this.fiber$printf(_thread, ['org 08000h\ninclude tnu\ninclude map\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join('')));
+        (yield* _this.fiber$printf(_thread, ['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join('')));
         
         _this.x=256;
         _this.y=20;
@@ -4365,10 +4365,10 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         (yield* _this.fiber$waitEvent(_thread, _this.outbg, "complete"));
-        (yield* _this.fiber$printf(_thread, ['\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1717(k) {
+        (yield* _this.fiber$printf(_thread, ['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1790(k) {
           
           return _this.globalLabel(k)+":dw 0";
-        })).join("\n"),'\nmacro inivrm, n, dst\n ld de,dst\n ld hl,n\n ld bc,end.##n-n\n call LDIRVM\nendm\n\nspr.inipat:\n inivrm spr.pat, 3800h\n ret\n\nspr.pat:\n',_this.outp.buf,'\nend.spr.pat:\n\nbg.inipat:\n inivrm bg.gen, 0000h\n inivrm bg.gen, 0800h\n inivrm bg.gen, 1000h\n inivrm bg.col, 2000h\n inivrm bg.col, 2800h\n inivrm bg.col, 3000h\n inivrm bg.name, 1800h\n ret\n\nbg.gen:\n',_this.toDB(_this.outbg.patgen),'\nend.bg.gen:\n\nbg.col:\n',_this.toDB(_this.outbg.coltbl),'\nend.bg.col:\n\nbg.name:\n ds 256*3,32\nend.bg.name:\n\nend main'].join('')));
+        })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join('')));
         _this.url = "https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
         
         new Tonyu.classes.kernel.Button({top: 420,text: "to MSXPen",onClick: Tonyu.bindFunc(_this,_this.showDiag),fillStyle: Tonyu.globals.$RSprPat.palette[2]});
@@ -4455,13 +4455,13 @@ Tonyu.klass.define({
         var _this=this;
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3127(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3275(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3240() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3391() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3472() {
+          }))),["button",{onclick: (function anonymous_3630() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4469,7 +4469,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4024() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4203() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4491,13 +4491,13 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3127(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3275(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3240() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3391() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3472() {
+          }))),["button",{onclick: (function anonymous_3630() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4505,7 +4505,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4024() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4203() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4915,7 +4915,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_7141() {
+            _this.enter({lval: false},(function anonymous_7446() {
               
               _this.visit(tgme[0]);
             }));
@@ -4970,7 +4970,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7141() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7446() {
               
               _this.visit(tgme[0]);
             })));
@@ -5425,7 +5425,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_12029() {
+        _this.enter({lval: true},(function anonymous_12503() {
           
           _this.visit(left);
         }));
@@ -5442,7 +5442,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12029() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12503() {
           
           _this.visit(left);
         })));
@@ -5459,7 +5459,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_12844() {
+        _this.enter({lval: true},(function anonymous_13358() {
           
           _this.visit(left);
         }));
@@ -5476,7 +5476,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12844() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13358() {
           
           _this.visit(left);
         })));
