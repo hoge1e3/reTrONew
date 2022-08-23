@@ -7307,70 +7307,26 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$player=new Tonyu.classes.user.Player({x: 256,y: 300,p: Tonyu.globals.$pat_spr+4,c: 15});
-        _this.i = 0;
-        
-        Tonyu.globals.$score=0;
-        while (true) {
-          Tonyu.checkLoop();
-          new Tonyu.classes.user.Enemy({x: _this.rnd(512),y: 0,p: 5,c: 7});
-          _this.updateEx(30);
-          _this.showScore();
-          
-        }
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 8,pc: 3});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 7,pc: 4});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 3,pc: 5});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 10,pc: 6});
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$player=new Tonyu.classes.user.Player({x: 256,y: 300,p: Tonyu.globals.$pat_spr+4,c: 15});
-        _this.i = 0;
-        
-        Tonyu.globals.$score=0;
-        while (true) {
-          yield null;
-          new Tonyu.classes.user.Enemy({x: _this.rnd(512),y: 0,p: 5,c: 7});
-          (yield* _this.fiber$updateEx(_thread, 30));
-          (yield* _this.fiber$showScore(_thread));
-          
-        }
-        
-      },
-      showScore :function _trc_Main_showScore() {
-        "use strict";
-        var _this=this;
-        
-        _this.tmps=Tonyu.globals.$score;
-        _this.i=5;
-        while (_this.i>1) {
-          Tonyu.checkLoop();
-          _this.map_set(_this.i,1,_this.tmps%10+48);
-          _this.tmps=_this.div(_this.tmps,10);
-          _this.i-=1;
-          
-        }
-      },
-      fiber$showScore :function* _trc_Main_f_showScore(_thread) {
-        "use strict";
-        var _this=this;
-        //var _arguments=Tonyu.A(arguments);
-        
-        _this.tmps=Tonyu.globals.$score;
-        _this.i=5;
-        while (_this.i>1) {
-          yield null;
-          (yield* _this.fiber$map_set(_thread, _this.i, 1, _this.tmps%10+48));
-          _this.tmps=(yield* _this.fiber$div(_thread, _this.tmps, 10));
-          _this.i-=1;
-          
-        }
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 8,pc: 3});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 7,pc: 4});
+        new Tonyu.classes.user.Player({x: 32,y: 32,p: 0,c: 3,pc: 5});
+        new Tonyu.classes.user.Player({x: 480,y: 300,p: 0,c: 10,pc: 6});
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"showScore":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"i":{"vtype":"Number"},"tmps":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
 });
 Tonyu.klass.define({
   fullName: 'user.PBullet',
@@ -7466,31 +7422,55 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        _this.tx = _this.rnd(512);
+        
+        _this.ty = _this.rnd(384);
+        
+        
         while (true) {
           Tonyu.checkLoop();
-          _this.map_setAt(_this.x,_this.y,Tonyu.globals.$pat_font+1);
-          if (_this.getkey("left")) {
-            _this.x-=3;
-          }
-          if (_this.getkey("right")) {
-            _this.x+=3;
-          }
-          if (_this.getkey("up")) {
-            _this.y-=3;
-          }
-          if (_this.getkey("down")) {
-            _this.y+=3;
-          }
-          if (_this.crashTo(Tonyu.classes.user.Enemy)) {
-            _this.die();
+          _this.map_setAt(_this.x,_this.y,_this.pc);
+          if (_this.c==8) {
+            if (_this.getkey("left")) {
+              _this.x-=3;
+            }
+            if (_this.getkey("right")) {
+              _this.x+=3;
+            }
+            if (_this.getkey("up")) {
+              _this.y-=3;
+            }
+            if (_this.getkey("down")) {
+              _this.y+=3;
+            }
+            
+          } else {
+            if (_this.x>_this.tx) {
+              _this.x-=3;
+            }
+            if (_this.x<_this.tx) {
+              _this.x+=3;
+            }
+            if (_this.y>_this.ty) {
+              _this.y-=3;
+            }
+            if (_this.y<_this.ty) {
+              _this.y+=3;
+            }
+            if (_this.rnd(40)==0) {
+              _this.tx=_this.rnd(512);
+              _this.ty = _this.rnd(384);
+              
+              
+            }
             
           }
-          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
-            _this.die();
-            
-          }
-          if (_this.getkey("space")==1) {
-            new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
+          _this.pb = _this.crashTo(Tonyu.classes.user.PBullet);
+          
+          if (_this.pb) {
+            if (_this.pb.c!=_this.c) {
+              _this.die();
+            }
             
           }
           _this.update();
@@ -7502,31 +7482,55 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
+        _this.tx = _this.rnd(512);
+        
+        _this.ty = _this.rnd(384);
+        
+        
         while (true) {
           yield null;
-          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, Tonyu.globals.$pat_font+1));
-          if (_this.getkey("left")) {
-            _this.x-=3;
-          }
-          if (_this.getkey("right")) {
-            _this.x+=3;
-          }
-          if (_this.getkey("up")) {
-            _this.y-=3;
-          }
-          if (_this.getkey("down")) {
-            _this.y+=3;
-          }
-          if (_this.crashTo(Tonyu.classes.user.Enemy)) {
-            _this.die();
+          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, _this.pc));
+          if (_this.c==8) {
+            if (_this.getkey("left")) {
+              _this.x-=3;
+            }
+            if (_this.getkey("right")) {
+              _this.x+=3;
+            }
+            if (_this.getkey("up")) {
+              _this.y-=3;
+            }
+            if (_this.getkey("down")) {
+              _this.y+=3;
+            }
+            
+          } else {
+            if (_this.x>_this.tx) {
+              _this.x-=3;
+            }
+            if (_this.x<_this.tx) {
+              _this.x+=3;
+            }
+            if (_this.y>_this.ty) {
+              _this.y-=3;
+            }
+            if (_this.y<_this.ty) {
+              _this.y+=3;
+            }
+            if (_this.rnd(40)==0) {
+              _this.tx=_this.rnd(512);
+              _this.ty = _this.rnd(384);
+              
+              
+            }
             
           }
-          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
-            _this.die();
-            
-          }
-          if (_this.getkey("space")==1) {
-            new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
+          _this.pb = _this.crashTo(Tonyu.classes.user.PBullet);
+          
+          if (_this.pb) {
+            if (_this.pb.c!=_this.c) {
+              _this.die();
+            }
             
           }
           (yield* _this.fiber$update(_thread));
@@ -7537,7 +7541,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"tx":{},"ty":{},"pc":{},"pb":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Elem',
