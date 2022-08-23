@@ -250,10 +250,27 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         case "*=":case "/=":case "%=":
         arithEq(n);
         break;
+        case "&&":andand(left,right);break;
+        case "||":oror(left,right);break;
         default:
         unsup(n,`Unsupported infix operator '${op.text}'`);
     }
 }
+\andand(left: Expression, right:Expression) {
+    let n=genSym();
+    visit(left);
+    printf("andand %s%n",n);
+    visit(right);
+    printf("%s:%n",n);
+}
+\oror(left: Expression, right:Expression) {
+    let n=genSym();
+    visit(left);
+    printf("oror %s%n",n);
+    visit(right);
+    printf("%s:%n",n);
+}
+
 \isMemberRef(m:Expression) {
     if (m.type!=="postfix") return null;
     let tgme:Postfix=m;
@@ -502,6 +519,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 \v_reservedConst(n:Token) {
     if (n.text==="true" || n.text==="false") {
         printf("ld hl,%s%n",n.text);
+    } else if (n.text==="this") {
+        printf("ld h,a%n");
+        printf("ld l,0%n");
+        return;
     } else {
         unsup(n,`Unsupported reserved word '${n.text}'.`);
     }
