@@ -1622,12 +1622,14 @@ endsub crashTo.setXY
 def RActor.crashTo,1,0
  call crashTo.setXY
  getarg 1
- const crashTo.kls,hl
+ const all.class,hl
  call isobj.a
  jr c, cr1
+  ld hl, crashTo1
+  const all.do, hl
   ld hl, th.start
   ld de, th.end
-  call crashToC
+  call all
   jr endc
  cr1:
   getthis 0
@@ -1640,16 +1642,28 @@ macro crashToClass,Class,st,en
  ; a=this
  call crashTo.setXY
  ld hl,Class
- const crashTo.kls,hl
+ const all.class,hl
+ ld hl, crashTo1
+ const all.do, hl
  ld hl,th.start+st*th.size
  ld de,th.start+en*th.size
- call crashToC
+ call all
+endm
+macro foreach, Class,st,en,do
+ ld hl,Class
+ const all.class,hl
+ ld hl, do
+ const all.do, hl
+ ld hl,th.start+st*th.size
+ ld de,th.start+en*th.size
+ call all
 endm
 
-defsub crashToC
+defsub all
  ;before:
  ; call crashTo.setXY
- ; const crashTo.kls,Class
+ ; const all.class,Class
+ ; const all.do, 
  ;params:
  ; hl start
  ; de end
@@ -1666,20 +1680,21 @@ defsub crashToC
   ; skip object not instance of *Class*
   push hl
   ld a,h
-  ldconst de,crashTo.kls
+  ldconst de,all.class
   call instanceof
   pop hl
   continue nz
-  ; do crashTo1
+  ; do all.do
   getthis 0
-  call crashTo1
+  call 0
+  all.do:
   break c
   continue
  fe:
  getthis 0
  ret c
  ld hl,null
-endsub crashToC
+endsub all
 
 defsub crashTo1
  ;hl=tg

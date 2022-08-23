@@ -1,4 +1,4 @@
-extends null;
+extends ForHead;
 includes TNode;
 let init:Stmt;
 let cond:Expression?;

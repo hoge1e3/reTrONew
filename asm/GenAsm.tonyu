@@ -583,6 +583,66 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     printf("jp %s%n",sh);
     printf("%s:%n",se);
 }
+
+\v_for(n:For){
+    let inFor:ForHead=n.inFor;
+    let loop:Stmt=n.loop;
+    if (inFor.type==="normalFor") {
+        let h:NormalFor=inFor;
+        let init:Stmt=h.init;
+        let cond:Expression?=h.cond;
+        let next:Expression?=h.next;
+        let sh=genSym();
+        let se=genSym();
+        visit(init);
+        printf("%s:%n",sh);
+        visit(cond);
+        printf("jpf %s%n",se);
+        visit(loop);
+        visit(next);
+        printf("jp %s%n",sh);
+        printf("%s:%n",se);
+    } else {
+        let h:Forin=inFor;
+        let isVar:Token?=h.isVar;
+        let vars:Token[]=h.vars;
+        let inof:Token=h.inof;
+        let set:Expression=h.set;
+        let klass=isAll(set);
+        if (!klass) {
+            unsup(set,"only 'for (e of all(Class))' is allowed ");
+            return;
+        }
+        //foreach, Class,st,en,do
+        let range=mem.objRange(klass);
+        let _do=genSym(),nx=genSym();
+        printf("foreach %s, %d, %d, %s%n",klass.shortName,range[0],range[1],_do);
+        printf("jp %s%n",nx);
+        printf("%s:%{",_do);
+        let va=annotation(vars[0]);
+        //print (va);
+        if (va.scopeInfo.type==="field") {
+            printf("setfld .%s%n", vars[0].text);
+        } else {
+            unsup(vars,"only field supports");
+        }
+        visit(loop);
+        printf("continue%n");
+        printf("%}%s:%n",nx);
+    }
+}
+\isAll(set:Expression) {
+    if (set.type!=="postfix") return false;
+    let p:Postfix=set;
+    if (p.op.type!=="call") return false;
+    let c:Call=p.op;
+    if (p.left.type!=="varAccess") return false;
+    let a:VarAccess=p.left;
+    if (a.name.text!=="all") return false;
+    if (c.args.length!==1) return false;
+    let k=c.args[0];
+    return k.type==="varAccess" && isClassConst(k);
+}
 \v_if(n:If){
     let cond:Expression=n.cond;
     let then:Stmt=n.then;

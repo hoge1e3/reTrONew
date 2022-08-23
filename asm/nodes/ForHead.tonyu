@@ -1,1 +1,2 @@
 extends null;
+let type:String;
