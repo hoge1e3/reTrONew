@@ -19,16 +19,16 @@ let dotAlign=1;
     sprpat.palette [n-1]=c;
 }
 \map_setAt(x,y,p) {
-    $map.set( x>>(3+spr_scale) , y>>(3+spr_scale), $pat_font+p);
+    $map.set( x>>(3+spr_scale) , y>>(3+spr_scale), $pat_font_orig+p);
 }
 \map_getAt(x,y) {
-    return $map.get( x>>(3+spr_scale) , y>>(3+spr_scale))-$pat_font;
+    return $map.get( x>>(3+spr_scale) , y>>(3+spr_scale))-$pat_font_orig;
 }
 \map_set(x,y,p) {
-    $map.set( x , y, $pat_font+p);
+    $map.set( x , y, $pat_font_orig+p);
 }
 \map_get(x,y) {
-    return $map.get( x , y)-$pat_font;
+    return $map.get( x , y)-$pat_font_orig;
 }
 \div(x,y) {
     return floor(x/y);

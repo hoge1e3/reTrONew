@@ -45,6 +45,8 @@ extends Boot;
     $RSprPat=new RSprPat;
     $MScreen.setBGColor($RSprPat.palette[3]);
     $Screen.setBGColor($RSprPat.palette[6]);
+    $pat_font_orig=$pat_font;
+    $pat_font=0;
     $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0};
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
     $exporter=new GenAsm;

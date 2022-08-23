@@ -71,7 +71,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        let def = ['Actor.noovr,Class\n fld .class,Class\n meth Class,main\n fld.bottom Object\n fld .x, 0\n fld .y, -1024\n fld .p, 0\n fld .c, 3\n fld.bottom Sprite\n meth Actor,onUpdate\n meth Actor,update\n meth Actor,screenOut \n meth Actor,die\n meth Actor,updateEx\n meth Actor,crashTo\n fld.bottom Actor\nendm\n'].join('');
+        let def = ['Actor.noovr,Class\r\n fld .class,Class\r\n meth Class,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, -1024\r\n fld .p, 0\r\n fld .c, 3\r\n fld.bottom Sprite\r\n meth Actor,onUpdate\r\n meth Actor,update\r\n meth Actor,screenOut \r\n meth Actor,die\r\n meth Actor,updateEx\r\n meth Actor,crashTo\r\n fld.bottom Actor\r\nendm\r\n'].join('');
         
         let fldp = /fld \.(\w+)/;
         
@@ -99,7 +99,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        let def = ['Actor.noovr,Class\n fld .class,Class\n meth Class,main\n fld.bottom Object\n fld .x, 0\n fld .y, -1024\n fld .p, 0\n fld .c, 3\n fld.bottom Sprite\n meth Actor,onUpdate\n meth Actor,update\n meth Actor,screenOut \n meth Actor,die\n meth Actor,updateEx\n meth Actor,crashTo\n fld.bottom Actor\nendm\n'].join('');
+        let def = ['Actor.noovr,Class\r\n fld .class,Class\r\n meth Class,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, -1024\r\n fld .p, 0\r\n fld .c, 3\r\n fld.bottom Sprite\r\n meth Actor,onUpdate\r\n meth Actor,update\r\n meth Actor,screenOut \r\n meth Actor,die\r\n meth Actor,updateEx\r\n meth Actor,crashTo\r\n fld.bottom Actor\r\nendm\r\n'].join('');
         
         let fldp = /fld \.(\w+)/;
         
@@ -1498,6 +1498,8 @@ Tonyu.klass.define({
         Tonyu.globals.$RSprPat=new Tonyu.classes.user.RSprPat;
         Tonyu.globals.$MScreen.setBGColor(Tonyu.globals.$RSprPat.palette[3]);
         Tonyu.globals.$Screen.setBGColor(Tonyu.globals.$RSprPat.palette[6]);
+        Tonyu.globals.$pat_font_orig=Tonyu.globals.$pat_font;
+        Tonyu.globals.$pat_font=0;
         Tonyu.globals.$map=new Tonyu.classes.kernel.Map2({chipWidth: 8,chipHeight: 8,row: 24,col: 32,layer: Tonyu.globals.$MLayer,x: 0,y: 0});
         Tonyu.globals.$exporter=new Tonyu.classes.user.GenAsm;
         let ide = Tonyu.globals.$Boot.getIDE();
@@ -1506,7 +1508,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2007() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2054() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -1530,6 +1532,8 @@ Tonyu.klass.define({
         Tonyu.globals.$RSprPat=new Tonyu.classes.user.RSprPat;
         Tonyu.globals.$MScreen.setBGColor(Tonyu.globals.$RSprPat.palette[3]);
         Tonyu.globals.$Screen.setBGColor(Tonyu.globals.$RSprPat.palette[6]);
+        Tonyu.globals.$pat_font_orig=Tonyu.globals.$pat_font;
+        Tonyu.globals.$pat_font=0;
         Tonyu.globals.$map=new Tonyu.classes.kernel.Map2({chipWidth: 8,chipHeight: 8,row: 24,col: 32,layer: Tonyu.globals.$MLayer,x: 0,y: 0});
         Tonyu.globals.$exporter=new Tonyu.classes.user.GenAsm;
         let ide = Tonyu.globals.$Boot.getIDE();
@@ -1538,7 +1542,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2007() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2054() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -4015,56 +4019,56 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$map.set(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale),Tonyu.globals.$pat_font+p);
+        Tonyu.globals.$map.set(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale),Tonyu.globals.$pat_font_orig+p);
       },
       fiber$map_setAt :function* _trc_RSprite_f_map_setAt(_thread,x,y,p) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$map.set(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale),Tonyu.globals.$pat_font+p);
+        Tonyu.globals.$map.set(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale),Tonyu.globals.$pat_font_orig+p);
         
       },
       map_getAt :function _trc_RSprite_map_getAt(x,y) {
         "use strict";
         var _this=this;
         
-        return Tonyu.globals.$map.get(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale))-Tonyu.globals.$pat_font;
+        return Tonyu.globals.$map.get(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale))-Tonyu.globals.$pat_font_orig;
       },
       fiber$map_getAt :function* _trc_RSprite_f_map_getAt(_thread,x,y) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        return Tonyu.globals.$map.get(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale))-Tonyu.globals.$pat_font;
+        return Tonyu.globals.$map.get(x>>(3+_this.spr_scale),y>>(3+_this.spr_scale))-Tonyu.globals.$pat_font_orig;
         
       },
       map_set :function _trc_RSprite_map_set(x,y,p) {
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$map.set(x,y,Tonyu.globals.$pat_font+p);
+        Tonyu.globals.$map.set(x,y,Tonyu.globals.$pat_font_orig+p);
       },
       fiber$map_set :function* _trc_RSprite_f_map_set(_thread,x,y,p) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$map.set(x,y,Tonyu.globals.$pat_font+p);
+        Tonyu.globals.$map.set(x,y,Tonyu.globals.$pat_font_orig+p);
         
       },
       map_get :function _trc_RSprite_map_get(x,y) {
         "use strict";
         var _this=this;
         
-        return Tonyu.globals.$map.get(x,y)-Tonyu.globals.$pat_font;
+        return Tonyu.globals.$map.get(x,y)-Tonyu.globals.$pat_font_orig;
       },
       fiber$map_get :function* _trc_RSprite_f_map_get(_thread,x,y) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        return Tonyu.globals.$map.get(x,y)-Tonyu.globals.$pat_font;
+        return Tonyu.globals.$map.get(x,y)-Tonyu.globals.$pat_font_orig;
         
       },
       div :function _trc_RSprite_div(x,y) {
@@ -7464,7 +7468,7 @@ Tonyu.klass.define({
         
         while (true) {
           Tonyu.checkLoop();
-          _this.map_setAt(_this.x,_this.y,1);
+          _this.map_setAt(_this.x,_this.y,Tonyu.globals.$pat_font+1);
           if (_this.getkey("left")) {
             _this.x-=3;
           }
@@ -7500,7 +7504,7 @@ Tonyu.klass.define({
         
         while (true) {
           yield null;
-          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, 1));
+          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, Tonyu.globals.$pat_font+1));
           if (_this.getkey("left")) {
             _this.x-=3;
           }
