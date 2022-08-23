@@ -12,6 +12,6 @@ while(true) {
     
 }
 \spawn() {
-    new PBullet{target, x,y, pc,c};
+    new PBullet{target, x,y, pc};
     die();
 }

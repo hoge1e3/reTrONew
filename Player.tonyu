@@ -16,13 +16,20 @@ while(true) {
         if (rnd(20)==0){
             tx=rnd(512);
             ty=rnd(384);
+            for (s of all(Seed)) {
+                if (s.pc==pc) {
+                    tx=s.x;
+                    ty=s.y;
+                }
+            }
         }
     }
-    var pb=crashTo(PBullet);
-    if (pb && pb.pc!=pc){
+    var s;
+    s=crashTo(PBullet);
+    if (s && s.pc!=pc){
         var i=0;
-        var defeatBy=pb.pc;
-        pb.die();
+        var defeatBy=s.pc;
+        s.die();
         while(i<120) {
             x+=8;
             update();
@@ -30,12 +37,13 @@ while(true) {
             update();
             i+=1;
         }
+        defeatBy=0;
         i=0;
     }
-    pb=crashTo(Seed);
-    if (pb && pb.pc==pc) {
-        pb.target=this;
-        pb.spawn();
+    s=crashTo(Seed);
+    if (s && s.pc==pc) {
+        s.target=this;
+        s.spawn();
     }
     update();
     

@@ -2,6 +2,11 @@ p=7;
 var vx=0;
 var vy=0;
 var pc;
+if (pc==3) c=8;
+if (pc==4) c=7;
+if (pc==5) c=3;
+if (pc==6) c=10;
+
 // TODO target is declaed in Actor, 
 // if forgot to var, error will happen in assembler
 var target; 
