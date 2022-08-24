@@ -2,25 +2,19 @@
 For details:
 https://github.com/hoge1e3/reTrONew
 */
-
-new Player{
-x:32, y: 32, p:16, c:8, pc:3};
-new Player{
-x:480, y: 300, p:17, c:7, pc:4};
-new Player{
-x:32, y: 32, p:18, c:3, pc:5};
-new Player{
-x:480, y: 300, p:19, c:10, pc:6};
-
-p=0; c=15;
+$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
+var i=0, tmps;
+$score=0;
 while(true) {
-    if (rnd(40)==0) {
-        x=rnd(32);
-        y=rnd(24);
-        c=map_get(x,y);
-        if (c>=3 && c<=6) {
-            new PBullet{x:x*16+8,y:y*16+8,pc:c};
-        }
+    new Enemy{x:rnd(512), y:0, p:5, c:7};
+    updateEx(30);
+    showScore();
+    //i+=1;
+}
+function showScore() {
+    tmps=$score;
+    for (i=5;i>1;i-=1){
+        map_set(i,1,tmps%10+48);
+        tmps=div(tmps,10);
     }
-    update();
 }

@@ -1,42 +1,25 @@
-var tx=rnd(512);
-var ty=rnd(384);
-var pc;
 while(true) {
-    map_setAt(x,y,pc);
-    if (c==8) {
-        if (getkey("left")) x-=3;
-        if (getkey("right")) x+=3;
-        if (getkey("up")) y-=3;
-        if (getkey("down")) y+=3;
-    } else {
-        if (x>tx) x-=3;
-        if (x<tx) x+=3;
-        if (y>ty) y-=3;
-        if (y<ty) y+=3;
-        if (rnd(20)==0){
-            tx=rnd(512);
-            ty=rnd(384);
-            for (var s of all(PBullet)) {
-                if (s.pc==pc && s.i>=0) {
-                    tx=s.x;
-                    ty=s.y;
-                }
-            }
-        }
+    map_setAt(x,y,$pat_font+1);
+    if (getkey("left")) x-=3;
+    if (getkey("right")) x+=3;
+    if (getkey("up")) y-=3;
+    if (getkey("down")) y+=3;
+    // TODO combine these crashTo with hierarchical index
+    //   AbstractEnemy <- {Enemy, EBullet}
+    if (crashTo(Enemy)) {
+        die();
     }
-    var defeatBy;
-    if (defeatBy){
-        var i=0;
-        while(i<120) {
-            x+=8;
-            update();
-            x-=8;
-            update();
-            i+=1;
-        }
-        defeatBy=0;
-        i=0;
+    if (crashTo(EBullet)) {
+        die();
+    }
+    if (getkey("space")==1) {
+        new PBullet{x,y};
+        /*var e;
+        var r=rnd(10)+1;
+        for (e of all(Enemy)) {
+            e.c=r;
+        }*/
     }
     update();
-    // somewhat
+    
 }
