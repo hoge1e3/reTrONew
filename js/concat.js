@@ -10,7 +10,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        _this.data = {'main': ['org 09000h\n\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude sp\ninclude vdp\ninclude th\n\n\n;===your code \n\nmain:\nld a,5\nlp:\ndec b\nshow a\niff nc,nx\njr lp\nnx:\n\nret\nend main'].join(''),'math': ['include ctrl\n\n;16bit shifts\nmacro slhl\n sla l\n rl h\nendm\nmacro srahl\n sra h\n rr l\nendm\nmacro srlhl\n srl h\n rr l\nendm\nmacro slde\n sla e\n rl d\nendm\nmacro srade\n sra d\n rr e\nendm\nmacro srlde\n srl d\n rr e\nendm\nmacro slbc\n sla c\n rl b\nendm\nmacro srabc\n sra b\n rr c\nendm\nmacro srlbc\n srl b\n rr c\nendm\n\n\n; for xrnd\nmacro sldehl,n\n  local loop\n  ld b,n\n loop:\n  sla d\n  rl e\n  rl h\n  rl l\n  djnz loop\nendm\nmacro srdehl,n\n local loop\n ld b,n\n loop:\n  srl l\n  rr h\n  rr e\n  rr d\n djnz loop\nendm\n \nmacro xorrm,re,me\n  ld A,(me)\n  xor re\n  ld (me),a\nendm\n\nmacro subhl,rp\n and a\n sbc hl,rp\nendm\n\nmacro cpde.a\n rst dcompr\nendm\n\n\nmarker.b xrnd.a\nxrnd.a:\nproc \n local rhl,rde,rdhlde\n ; s[0] ^= s[0] << 13\n call rdhlde\n sldehl 13\n call wrtxor\n ; s[0] ^= s[0] >> 17\n call rdhlde\n srdehl 17\n call wrtxor\n ; s[0] ^= s[0] << 5;\n call rdhlde\n sldehl 5\n call wrtxor\n ret\n \n rdhlde:\n  ld hl,1234\n rhl:\n  ld de,5678\n rde:\n  ret\n \n wrtxor:\n  xorrm h,rhl-1\n  xorrm l,rhl-2\n  xorrm d,rde-1\n  xorrm e,rde-2\n  ret\nendp\nmarker.e xrnd.a\n\n\nmarker.b rnd\nrnd:\n push af\n call rnd.a\n pop af\n ret\nmarker.e rnd\nmarker.b rnd.a\nrnd.a:\n ld de,07fffh\n call IDIV.a\n push hl\n call xrnd.a\n res 7,h\n ex de,hl\n pop hl\n inc hl\n call IDIV.a\n ret\nmarker.e rnd.a\n\nmarker.b abs\nabs:\n bit 7,h\n ret z\nneghl:\n ld de,0 \n ex de,hl \n subhl de\n ret\nmarker.e abs\n\n '].join(''),'bool': ['include math\ninclude ctrl\ntrue equ -1\nfalse equ 0\n\nmacro rethl,val,flg\n local tru\n if not nul flg\n  iff flg ,tru\n endif\n ld hl,val\n ret\n tru:\nendm\n\nhleqde:\n subhl de\n rethl true,z\n rethl false\n\nhlnede:\n subhl de\n rethl true,nz\n rethl false\n \nhlgtde:\n subhl de\n rethl false,z\n bit 7,h\n rethl true,z\n rethl false\n\nhlltde:\n subhl de\n bit 7,h\n rethl true,nz\n rethl false\n \nhlgede:\n subhl de\n rethl true,z\n bit 7,h\n rethl true,z\n rethl false\n\nhllede:\n subhl de\n rethl true,z\n bit 7,h\n rethl true,nz\n rethl false\n \nproc\nziffalse:\n local resa\n ld (resa-1),a\n call ziffalse.a\n ld A,0\n resa:\n ret\nziffalse.a:\n ld a,0\n cp h\n ret nz\n cp l\n ret\nendp\n\nmacro jpf,to\n call ziffalse\n jp z,to\nendm\n\nmacro andand,fls\n jpf fls\nendm\nmacro oror,tru\n call ziffalse\n jp nz,tru\nendm\n\nmacro flagtobool,fl\n local yes,skp\n jr fl, yes\n ld hl,false\n jr skp\n yes:\n ld hl,true\n skp: \nendm'].join(''),'mem': ['include const\n;\nrdslt:\n ex de,hl\n rept 5\n srl d;page*2\n endm\n CALL RSLREG\n ld e,d\n rdslt1:\n  RRCA\n  dec e\n  jp nz,rdslt1\n AND    00000011B\n LD C,A;000000Pr\n LD B,0\n LD HL,EXPTBL\n ADD HL,BC\n LD C,A;000000Pr\n LD A,(HL)\n AND 80H;expand flag\n OR C\n LD C,A;e00000Pr\n rept 4;const\n INC HL\n endm\n LD A,(HL);exp reg\n ld e,d\n rdslt2:\n  srl a\n  dec e\n  jp nz,rdslt2\n;000000Ex\n sla a\n sla a\n ;    0000Ex00\n and  00001100b\n OR C;e000ExPr\n ret\nmemini:\n CALL RSLREG\n rept 4\n  RRCA\n endm\n AND    00000011B\n LD C,A;000000Pr\n LD B,0\n LD HL,EXPTBL\n ADD HL,BC\n LD C,A;000000Pr\n LD A,(HL)\n AND 80H;expand flag\n OR C\n LD C,A;e00000Pr\n rept 4;const\n INC HL\n endm\n LD A,(HL);exp reg\n rept 4; page*2\n srl a\n endm;000000Ex\n sla a\n sla a\n ;    0000Ex00\n and  00001100b\n OR C;e000ExPr\n LD Hl,04000H\n jp ENASLT\n\nmacro peekw ,regv,regm\n  local w\n  ld (w-2),regm\n  ld regv,(0)\n  w:\nendm\n\nmacro pokew ,regm,regv\n  local w\n  ld (w-2),regm\n  ld (0),regv\n  w:\nendm\nmacro movw,dst,src,rp\n if nul rp\n  push hl\n  movw dst,src,hl\n  pop hl\n else\n  ld rp,src\n  ld dst,rp\n endif \nendm\n\nmacro popa\n  ex (sp),hl\n  ld a,h\n  pop HL\nendm\n\nmacro pushall\n push af\n push bc\n push de\n push hl\nendm\nmacro popall\n pop hl\n pop de\n pop bc\n pop af\nendm\n \n\nmacro pushi, n,rp\n local rrr\n if nul rp\n  ld (rrr-2),hl\n  ld hl,n\n  push hl\n  ld hl,0\n  rrr:\n else\n  ld rp,n\n  push rp\n endif\nendm\nmacro const,n,reg\n ld (n-2),reg\nendm\nmacro ldconst,reg,n\n ld reg,0\n n:\nendm\nmacro peekconst,reg,n\n ld reg,(0)\n n:\nendm\n'].join(''),'const': ['\n;wrt equ 0a2h\ndcompr equ 0020H\nsp.ini equ 0dc00h\nstksize equ 512\n\nth.size equ 256\nth.count equ 20\nth.start equ th.end-th.size*th.count\nth.end equ sp.ini-stksize\n\nth.bottom equ 0\n\nspr.scale equ 1\nspr.xmax equ 256<<spr.scale\nspr.ymax equ 192<<spr.scale\n\nENASLT EQU 0024H\nRSLREG EQU 0138H\nEXPTBL EQU 0FCC1H\nSETWRT equ 0053H\nLDIRVM equ 005CH\nWRTVDP equ 0047H\nRG1SAV equ 0F3E0H\nRDVDP  equ 013EH\nSNSMAT.a equ 0141h\n\nCHGMOD equ 005FH\n\nIMULT.a equ 3193H;HL ← DE*HL\nIDIV.a equ 31E6H;HL ← DE/HL\nIMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) \n\nWRTPSG  equ 0093H\n\nCSRY equ 0F3DCH\nCSRX equ 0F3DDH\n\nnull equ 0\n\nmacro marker.b, n\n last.marker: defl $\nendm\nmacro marker.e, n\n len.##n: defl $-last.marker\nendm\n'].join(''),'ctrl': ['include const\nfreeze:\nhalt\njr freeze\n\nmacro for ,lbend\n ; uses a\n ; c: breaked\n proc\n  local s,lb\n  lb:\n  call dcompr; uses a\n  jp nc,lbend\n  push HL\n  push de\n  push bc\n  call s\n  pop bc\n  pop de\n  pop HL\n  jp c,lbend\n  add HL,bc\n  jr lb\n  s:\n endp\nendm\n\nmacro repti ,n,lbend\n proc\n  local s,lb, lbend2\n  push bc\n  ld b,n\n  lb:\n  push bc\n  call s\n  pop bc\n  jr c,lbend2\n  djnz lb\n  lbend2:\n  pop bc\n  jp lbend \n  s:\n endp\nendm\n\n\nmacro reptb ,lbend\n  local s,lb\n inc b\n djnz lb\n jp lbend\n lb:\n  push bc\n  call s\n  pop bc\n  jp c,lbend\n djnz lb\n jp lbend \n s:\nendm\n\n\n\nmacro callsva,pp\n local sva\n ld (sva-1),a\n call pp\n ld a,0\n sva:\nendm\nbcis0:\n callsva bcis0.a\n ret\nbcis0.a:\n ld a,b\n and a\n ret nz\n ld a,c\n and a\n ret\n\nmacro reptbc ,lbend\n local s,lb\n call bcis0\n jp z,lbend \n lb:\n  push bc\n  call s\n  pop bc\n  jp c,lbend\n  dec bc\n  call bcis0\n jr nz, lb\n jp lbend \n s:\nendm\n\n\niff.NZ equ 0\niff.Z  equ 1\niff.NC equ 2\niff.C  equ 3\n\nmacro iff,cnd,to\n local iff.\n if iff.##cnd eq iff.NZ\n  jr z,to\n endif\n if iff.##cnd eq iff.Z\n  jr nz,to\n endif\n if iff.##cnd eq iff.NC\n  jr c,to\n endif\n if iff.##cnd eq iff.C\n  jr nc,to\n endif\n ;jr cnd, skip\n ;jr to\n ;skip:\nendm\n\nmacro break,cnd\n if NUL cnd\n  scf\n  ret\n else\n  proc \n   local jj\n   iff cnd ,jj\n   break\n  jj:\n  endp\n endif\nendm\nmacro continue,cnd\n if NUL cnd \n  or a\n  ret\n else\n  proc \n   local jj\n   iff cnd,jj\n   continue\n  jj:\n  endp\n endif\nendm\n\n\nmacro djnzr,reg, j\n dec reg\n jr NZ,j\nendm\n\nmacro callhl\n local LCD\n ld (LCD-2),HL\n call LCD\n LCD:\nendm\n\nmacro stride,lim,to\n if (low $)<lim\n  exitm\n endif\n ds 256+to-(low $),0cdh\nendm'].join(''),'th': ['include ctrl\ninclude sp\ninclude vdp\ninclude mem\ninclude math\ninclude debug\n\nth.ofs.stp equ 256-4\nth.ofs.sp equ th.ofs.stp+1\nth.ofs.spini equ th.ofs.stp\nfld.top equ th.ofs.spini-2\nth.st.blank equ 0c9h\nth.st.active equ 31h\n\n;macro th.for,lb\n; ld HL,th.start\n; ld de,th.end\n; ld bc,th.size\n; for lb\n;endm\nmacro th.for.a, nx, st, en\n if nul st\n  th.for.a nx, 0, th.count\n  exitm\n endif\n local do, loop\n ld a,st+(high th.start)\n loop:\n  cp en+(high th.start)\n  jp nc, nx\n  push af\n  ld h,a\n  ld l,0\n  call do\n  popa\n  ld h,a\n  ld l,0\n  jp c, nx\n  inc a\n jr loop\n do:\nendm\n\nmacro th.new.range,st,en\n ld bc,st\n ld(th.new.start),bc\n ld bc,en\n ld(th.new.end),bc\nendm\n\ndefsub th.isblank.a\n ; h= thread\n ; z if true\n ld l, th.ofs.stp\n ld a,(hl)\n cp th.st.blank\nendsub th.isblank.a\n\ndefsub th.new\n; nc for alloc fail\nproc \n local lbend\n db 21h\n th.new.start:\n dw th.start\n db 11h\n th.new.end:\n dw th.end\n ld bc,th.size\n for lbend\n  ; TODO th.ofs.stp\n  call th.isblank.a\n  break z\n  continue\n lbend:\n ret nc\n ; TODO th.ofs.stp\n ld L,th.ofs.stp\n ld (HL),31h\n inc HL\n ld (HL),th.ofs.spini\n ld a,h\n inc HL\n ld (hl),a\n inc HL\n ld (HL),0c9h\n ld l,th.bottom\n scf\n ret\nendp\nendsub th.new\n\ndefsub th.init\nproc\n local lbend\n th.for.a lbend\n  ; TODO th.ofs.stp\n  ld L, th.ofs.stp\n  ld (HL),th.st.blank\n  continue\n lbend:\n ; disable timer\n ld HL,0fd9fh\n ld (hl),0c9h\n call susint\n ret\nendp\nendsub th.init\n\ndefsub th.stepall\n th.for.a thnx\n  ;todo th.ofs.stp\n  ld (th.cur),hl\n  call th.isblank.a\n  continue z\n  call th.step\n  continue\n thnx:\nendsub th.stepall\n\ndefsub th.step\n sp2mem adrssp+1\n ld HL,(th.cur)\n ld l,th.ofs.stp\n ;call susint\n jp (hl)\nendsub th.step\n\ndefsub th.yield\n ld hl,(th.cur)\n ld l,th.ofs.sp\n sp2mem\n adrssp:\n ld sp,0\n jp doint\nendsub th.yield\n\ndefsub th.term\n ld hl,(th.cur)\n ; TODO th.ofs.stp\n ld L,th.ofs.stp\n ld (hl),th.st.blank\n jr adrssp\nendsub th.term\n\nmacro th.with.do, to\n local pr\n th.with pr\n jr to\n pr:\nendm\n\nmacro th.with.setdst, reg\n ld (th.jpdest-2),reg\nendm\nmacro th.with,pr\n movw (th.jpdest-2), pr\n call th.with.s\nendm\nmacro th.with.ret\n jp th.ewith\nendm\n\ndefsub th.with.s\n sp2mem th.wrssp-2\n ld l, th.ofs.sp\n ld (th.updsp-2),hl\n mem2sp\n jp 0\n th.jpdest:\nth.ewith:\n ld (0),sp\n th.updsp:\n ld sp,0\n th.wrssp:\nendsub th.with.s\n \n\n \n \ndefsub th.push\n ;push bc to thread hl\n th.with tpsbc\n ret\n tpsbc:\n  push bc\n  th.with.ret 0\nendsub th.push\n\n\ndefwork th.cur\n dw 0\nendwork th.cur\n\ndefsub th.loop\n ; hook before stepall\n db 0cdh\n h.thent:\n dw th.nop\n ; save prev timecnt\n ld a,(timecnt)\n push af\n ; Do stepall\n call th.stepall\n ; hook after stepall\n db 0cdh\n h.thlop:\n dw th.nop\n ; wait until timecnt changes\n pop af\n bwat:\n  ld hl,timecnt\n  cp (hl)\n  jr nz,bbwat\n  push af\n  call doint\n  pop af\n  jr bwat\n bbwat:\n ; repeat\n jr th.loop\nendsub th.loop\n\nth.nop:\n ret\n\n\nmacro th.pushi, val\n ld bc,val\n call th.push\nendm\n\n'].join(''),'sub': [].join(''),'debug': ['include math\n;debug\nmacro show,reg\n ld (hexval+1),reg\n call showhex\nendm\nmacro showm ,ad\n push hl\n ld HL,(ad)\n show HL\n pop HL\nendm\nmacro showlb,lb\n push hl\n ld hl,lb\n ld (hexval+1),hl\n call showhex\n pop hl\nendm\nshowhex:\nproc\n local loop\n push af\n push bc\n push HL\n hexval:\n ld hl,0\n ld b,4\n loop:\n  xor a\n  rept 4\n   slhl\n   rla\n  endm\n  call showhex1\n djnz loop\n ld a,32\n call wrt\n pop HL\n pop bc\n pop af\n ret\nendp\nshowhex1:\nproc\n local els\n cp 10\n jp nc, els\n add a,48\n jp wrt\n els:\n add a,65-10\n jp wrt\nendp\nabort:\n call wrt\n db 018h,0feh\nret\n\nmacro trace,v\n if not nul v\n  push af\n  ld a,v\n  ld (trad),a\n  pop af\n endif\n call trace.s\nendm\ntrace.s:\n push af\n push hl\n ld a,(trad)\n ld hl,1ae0h\n call wrt\n call 4dh\n inc a\n ld (trad),a\n ld a,32\n call wrt \n pop hl\n pop af\n ret\ntrad:\n db 65\n\nshowz:\n push af\n jr z,showz.s\n ld a,"N"\n call wrt\n showz.s:\n ld a,"Z"\n call wrt\n ld a,32\n call wrt\n pop af\n ret\n \n\nshowc:\n push af\n jr c,showc.s\n ld a,"N"\n call wrt\n showc.s:\n ld a,"C"\n call wrt\n ld a,32\n call wrt\n pop af\n ret\n \n\n\n\n\n\nmacro unreach, mesg\n trace mesg\n dw 0x18,0xfe\nendm\nmacro head, lb\n unreach lb\n marker.b lb\n lb:\nendm\n\nmacro defsub, n\n head n\nendm\nmacro endsub, n\n ret\n marker.e n\nendm\nmacro defwork, n\n head n\nendm\nmacro endwork, n\n marker.e n\nendm\n\ndefsub wrt\nproc\n local sk\n push hl\n push af\n ld hl,1800h\n cursor:\n call 4dh\n inc hl\n ld a,h\n cp 1bh\n jr c,sk\n  ld h,18h\n sk:\n ld (cursor-2),hl\n pop af\n pop hl\n ret\nendp\nendsub wrt\n'].join(''),'sp': ['include mem\ninclude debug\nmacro sp.get\n ld HL,0\n ADD hl, sp\nendm\nmacro sp.set\n ld sp,hl\nendm\nmacro mem2sp,ad\n local rs\n if nul ad\n  ld (rs-2),hl\n  ld sp,(0)\n  rs:\n else\n  ld sp,(ad)\n endif\nendm\nmacro sp2mem,ad\n local spad\n if nul ad\n  ld (spad-2),hl\n  ld (0),sp\n  spad:\n else\n  ld (ad),sp\n endif\nendm\n\nmacro showsp\n ld (sptmp),sp\n showm sptmp\nendm\nsptmp:\ndw 0\nmacro showstk\n showsp\n ld (sva),a\n ld a,":"\n call wrt\n ld a,(sva)\n ex (sp),hl\n show hl\n ex (sp),hl\nendm\nsva: db 0'].join(''),'oop': ['include mem\ninclude th\ninclude assert\n\n;a2 a1  oldpc oldix lcl1 lcl2\nargidx equ 2\nmacro getarg ,n\n ld l,(ix+argidx+n*2)\n ld h,(ix+argidx+n*2+1)\nendm\n\nmacro setlcl ,n\n ld (IX-(n*2-1)),h\n ld (ix-n*2),l\nendm\n\nmacro getlcl ,n\n ld h,(IX-(n*2-1))\n ld l,(ix-n*2)\nendm\n\nmacro addarg\n push hl\n; hl=arg  stktp=af\n;ex (sp),hl\n;ld a,h\n;push af\nendm\n\n\n\nmacro pusharg ,n\n getarg n\n push HL\nendm\n\nmacro pushlcl ,n\n getlcl n\n push HL\nendm\n\nmacro enter ,locals\n push ix\n ld ix,0\n add ix,sp\n rept locals\n  push HL\n endm\nendm\n\nmacro pops ,n\n rept n*2\n  inc sp\n endm\nendm\n\n\nmacro exit,n\n ld sp,ix\n pop ix\n if n!=0\n  exx\n  pop bc\n  pops n\n  push bc\n  exx\n endif\n ret\nendm\n\nmacro pushthis\n getthis\n push af\nendm\nmacro popthis\n popa\n ld (this),a\nendm\n\n\nmacro invoketg.a,fld,args\n; pushthis before arg push\n; hl=target \n ld a,h\n ld (this),a\n getfld fld\n callhl\n; pops args\n; popthis after \nendm\n\nmacro invoke,fld\n getfld fld\n callhl\n; pops args\n getthis\nendm\n\nmacro getfld, n\n local ad\n ld (ad-1),a\n ld hl,(n)\n ad:\nendm\n\nmacro setfld, n\n local ad\n ld (ad-1),a\n ld (n),hl\n ad:\nendm\n\nmacro getfldtg,n\n;hl=tg\n ld l,n\n peekw hl,hl\nendm\n\nmacro setfldtg,n\n; stk=val hl=tg\n ld l,n\n pop de\n pokew hl,de\nendm\n\nmacro getfldtg, n\n; hl=target\n ld d,h\n ld e,n\n peekw HL,de\nendm\n\nmacro tgconst,n\n ld (n-1),a\nendm\nmacro tgconst.g ,r16,n,fld\n ld r16,(fld)\n n:\nendm\nmacro tgconst.s ,n,fld,r16\n ld (fld),r16\n n:\nendm\n\n\nmacro curth2this\n ld a,(th.cur+1)\n ld (this),a\nendm\nmacro getthis\n ld a,(this)\nendm\n\nmacro new,Class,flds,st,en\n if nul st\n  th.new.range th.start, th.end\n else\n  th.new.range th.start+st*th.size, th.start+en*th.size\n endif\n pushi flds, bc\n pushi Class, bc\n call o.new\nendm\n\ndefsub o.new\nproc\n local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end\n ; {val .f} n &initbl retad\n pop hl;retad\n ld (retad-2),hl\n ; set initbl for th.with\n pop hl;&initbl\n th.with.setdst hl\n ; save this\n ld (svthis-1),a\n ; allocate thread\n call th.new\n jr nc, allocfail\n push hl; thread address\n call th.with.s; call &initbl\n pop hl; thread address\n ld a,h; set this as thread\n ; init fields\n pop bc; n of {val .f}\n inc c\n loop:\n  dec c\n  jr z,lpend\n  pop hl; .f\n  ld h,a\n  ld (w-2),hl\n  pop hl; val\n  ld (w),hl\n  w:\n jr loop\n lpend:\n ; return h as this\n ld h,a\n finally:\n  ;restore a before call o.new\n  ld a,0\n  svthis:\n  ;return \n  jp 0\n  retad:\n allocfail:\n  ; drop {val .f}\n  pop bc; n of {val .f}\n  ld b,c\n  inc c\n  lp2:\n   dec c\n   jr z, lp2end\n   pop hl\n   pop hl\n  jr lp2\n  lp2end:\n  ld hl,null;  todo null\n  jr finally\nendp\nendsub o.new\n\nmacro new.arg, n, v\n if not nul v\n  ld hl,v\n endif\n push hl\n pushi n,bc\nendm\n \nmacro o.assert.eq,fld, v\n local aa\n assert.do aa\n  getfld fld\n  assert.eq v\n  ret\n aa:\nendm\n\nthis:\ndb 0\n\nmacro fld.def,n\n n equ fldidx\n fldidx:defl fldidx-2\nendm\nmacro class,Class,super\n unreach "c"\n marker.b 0\n dw super\n fldidx:defl fld.top; todo fld.top\n Class:\n  fld .class,Class\nendm\nmacro fld.bottom,Class\n if defined Class##.bottom \n  if Class##.bottom ne fldidx\n   .error bottom ne fldidx\n  endif\n else\n Class##.bottom:defl fldidx\n endif\nendm \nmacro fld,n,v\n if defined n\n  if n ne fldidx\n   .error n ne fldidx\n  else \n   fldidx:defl fldidx-2\n  endif\n else\n  fld.def n\n endif\n pushi v,bc\nendm\nmacro unuse\n fldidx:defl fldidx-2\n pushi 0,bc\nendm\nmacro meth,Class,n\n fld .##n, Class##.##n\nendm\nmacro met2,Class,n\n fld n, Class##n\nendm\n\nclass Object,null\n fld .main,null\n fld.bottom Object\n marker.e Object\n\n\ndefsub o.boot\n curth2this\n invoke .main,0\nendsub o.boot\n\n\nmacro yield\n pushthis\n push ix\n call th.yield\n pop ix\n popthis\nendm\n\nmacro def,n,args,lcls\nhead n\n def.args:defl args\n def.locals:defl lcls\n if args>0 or lcls>0\n  enter lcls\n endif\nendm\nmacro enddef,n\n if def.args>0 or def.locals>0\n  exit def.args\n else\n  ret\n endif\n marker.e n\nendm\n\ndefsub isobj.a\n ;hl=obj?\n ;cy=true\n ld a,h\n cp high th.start\n jr c,notobj\n cp high th.end\n jr nc,notobj\n scf\n ret\n notobj:\n and a\nendsub isobj.a\n\ndefsub instanceof\n ; a=this de=Class\n ; z: true\n getfld .class\n jp is.subclass.a\nendsub instanceof\n\ndefsub get.superclass\n ; hl=Class\n dec hl\n dec hl\n peekw hl,hl\nendsub get.superclass\n\ndefsub is.subclass.a\nproc \n local top\n ; hl=Subclass\n ; de=Superclass\n ; z:true\n top:\n cpde.a 0\n ret z\n call get.superclass\n push de\n ld de,null\n cpde.a 0\n pop de\n jr nz,top\n cpde.a 0\nendp\nendsub is.subclass.a\n '].join(''),'spr': ['include const\ninclude th\ninclude mem\ninclude oop\ninclude sub\n\nclass Sprite,Object\n fld .main, 0\n fld.bottom Object\n fld .x, 100\n fld .y, 100\n fld .p, 0\n fld .c, 2\n fld.bottom Sprite\n marker.e Sprite\n \nmacro outwrt\n  out (98h),a\nendm\n\n\nmacro spr.unscale\n ; HL -> A\n rept spr.scale\n  srlhl\n endm\n LD A,L\n sub 8 \nendm\n\ndefsub spr.puts\nproc\n local t1,t2,t3,t4\n ld hl, 1b00h\n call SETWRT\n th.for.a sprl\n  ld a,h\n  tgconst t1\n  tgconst t2\n  tgconst t3\n  tgconst t4\n\n  tgconst.g hl,t1,.y \n  spr.unscale 0\n  outwrt 0\n  \n  tgconst.g hl,t2,.x \n  spr.unscale 0\n  outwrt 0\n  \n  tgconst.g a,t3,.p \n  sla a\n  sla a\n  outwrt 0\n  \n  tgconst.g a,t4,.c \n  outwrt 0\n  continue\n sprl:\nendp\nendsub spr.puts\n \n '].join(''),'sprpat': ['include const\n\n;aaa\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,128\n jp LDIRVM\nbg.inipat:\n ret\nspr.pat:\n; --- Slot 0 cat fstand\n; color 9\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\nDB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\nDB $98,$FC,$FE,$FE,$F6,$F0,$60,$70\n; \n; --- Slot 1 cat fwalk1\n; color 9\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\nDB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\nDB $98,$FC,$FE,$FE,$D4,$78,$F0,$00\n; \n; --- Slot 2 cat fwalk2\n; color 9\nDB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36\nDB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00\nDB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8\nDB $30,$FC,$FE,$FE,$F7,$F7,$60,$60\n; \n; --- Slot 3 cat omg\n; color 9\nDB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D\nDB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00\nDB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C\nDB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00\n\nds 60*32\n'].join(''),'tnu': ['\ninclude spr\ninclude bool\ninclude key\n\n;.onUpdate equ .c-2\n;.update equ .onUpdate-2\n;.screenOut equ .update-2\n;.die equ .screenOut-2\n;.updateEx equ .die-2\n\nmacro end.const, n\n pushi RActor.wait,bc\n pushi o.boot,bc\n th.with.ret 0 \n marker.e n\nendm\n\nmacro RActor.noovr,Class\n meth Class,main\n fld.bottom Object\n fld .x, 0\n fld .y, -1024\n fld .p, 0\n fld .c, 3\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\nendm\n\nclass RActor,Sprite\n RActor.noovr RActor\n end.const RActor\nRActor.main:\n enter 0\n exit 0\nRActor.update:\n invoke .onUpdate\n yield\n ret \nRActor.onUpdate:\n ret\nRActor.screenOut:\nproc\n local true\n getfld .x\n bit 1,h\n jr nz, true\n getfld .y\n ld de,192*2\n cpde.a\n getthis\n jr nc,true\n ld hl,0\n xor a\n ret\n true:\n ld hl,1\n scf\n ret\nendp\nRActor.wait:\nproc\n local lbl\n lbl:\n invoke .update\n jr lbl\nendp\ndef RActor.die,0,0\n ld h,a\n ld l,th.ofs.stp\n ld (hl),th.st.blank\n ld hl, 0\n setfld .c\nenddef RActor.die\n\ndef RActor.updateEx,1,0\nproc \n local n\n; enter 0\n getarg 1\n ld b,h\n ld c,l\n reptbc n\n  invoke .update\n  continue\n n:\nendp\nenddef RActor.updateEx\n\ncrashTo.size equ 8<<spr.scale\n\nproc\n local gx,gy,t1,t2\n local endc,cr1\n local fe\n\ndefsub crashTo.setXY\n getfld .x\n const gx,hl\n getfld .y\n const gy,hl\nendsub crashTo.setXY\n\n\ndef RActor.crashTo,1,0\n call crashTo.setXY\n getarg 1\n const cr.class,hl\n call isobj.a\n jr c, cr1\n  unreach "C"\n  ; "Cannot call target.crashTo(Class) "\n  ;ld hl, th.start\n  ;ld de, th.end\n  ;call crashTo1\n  ;jr endc\n cr1:\n  getthis 0\n  call crashTo1\n  flagtobool c\n endc:\nenddef RActor.crashTo\n\nmacro crashToClass,Class,st,en\n local nx,found\n ; a=this\n call crashTo.setXY\n foreach.a Class,st,en,nx\n  call crashTo1\n  break c\n  continue\n nx:\n getthis 0\n jr c, found\n  ld hl,null\n found:\nendm\n\nmacro foreach.a, Class,st,en,nxt\n th.for.a nxt, st, en\n  all.skip Class\nendm\n\n\nmacro all.skip.blank.self\n ; skip blank\n  ; TODO th.ofs.stp\n  call th.isblank.a\n  continue z\n  ; skip hl==this\n  getthis 0\n  cp h\n  continue z\nendm\nmacro all.skip.isnot,Class\n  ; skip object not instance of *Class*\n  push hl\n  ld a,h\n  ld de,Class\n  call instanceof\n  getthis 0\n  pop hl\n  continue nz\nendm\nmacro all.skip, Class\n all.skip.blank.self 0\n all.skip.isnot Class\nendm\n\ndefsub crashToC.abolished\n ;before:\n ; call crashTo.setXY\n ; const cr.class,Class\n ; hl start\n ; de end\n ld bc,th.size\n for fe\n  all.skip.blank.self 0\n  ; skip object not instance of *Class*\n  push hl\n  ld a,h\n  ldconst de,cr.class\n  call instanceof\n  pop hl\n  continue nz\n  ; do crashTo1\n  getthis 0\n  call crashTo1\n  break c\n  continue\n fe:\n getthis 0\n ret c\n ld hl,null\nendsub crashToC.abolished\n\ndefsub crashTo1\n ; call crashTo.setXY before\n ;hl=tg\n ;cy:true\n ;hl is used\n push af\n ld a,h\n tgconst t1\n tgconst t2\n pop af\n tgconst.g hl,t1,.x\n ldconst bc,gx\n subhl bc\n call abs\n ld bc,crashTo.size\n subhl bc\n ret nc\n\n tgconst.g hl,t2,.y\n ldconst bc,gy\n subhl bc\n call abs\n ld bc,crashTo.size\n subhl bc\nendsub crashTo1\n\nendp\n\n\nmacro tnu.run,Main\n ld sp,sp.ini\n call screen2\n \n showsp\n showlb endusr\n call spr.inipat\n call bg.inipat\n\n ld hl,th.start\n ld (hl),0cdh\n ld de,th.start+1\n ld bc,th.size*th.count-1\n ldir\n \n call th.init\n ;call mus.ini\n new Main, 0\n movw (h.thlop),spr.puts\n movw (h.thent),keyall\n jp th.loop\nendm\n\n;aaaa'].join(''),'key': ['include debug\n\ndefsub keyall\nproc\n;show hl\n local lp\n ld hl,keymat1\n ld de,keymat2\n ld bc,11\n ldir\n ld a,0\n ld hl,keymat1\n lp:\n push af\n call SNSMAT.a\n xor 255\n ld (hl),a\n pop af\n inc hl\n inc a\n cp 11\n jr c,lp\nendp\nendsub keyall\n\ndefwork keymat1\nds 11\nendwork keymat1\ndefwork keymat2\nds 11\nendwork keymat2\n\n\nproc\ndefsub getkey.a\nlocal chkmat\nex de,hl\nld hl,keymat1\ncall chkmat\nld hl,0\nret z\nld hl,keymat2\ncall chkmat\nld hl,1\nret z\ninc hl\nendsub getkey.a\n\ndefsub chkmat\npush de\nld a,d\nld d,0\nadd hl,de\nand (hl)\npop de\nendsub chkmat\n\ndefsub getkey\npush af\ncall getkey.a\npop af\nendsub getkey\n\nendp'].join(''),'map': ['include sub\ninclude math\ninclude tnu\n\ndefsub map.adr\n ; hl=chipx\n ; de=chipy\n rept 5\n  slde 0\n endm\n add hl,de\n ld de,1800h\n add hl,de\nendsub map.adr\n\ndefsub map.set.a\n ;  a=data\n call map.adr\n call 4dh\nendsub map.set.a\n\ndefsub map.get.a\n call map.adr\n call 4ah \nendsub map.get.a\n\ndefsub map.adrat.a\n ; hl=spr_x\n ; de=spr_y\n spr.unscale 0\n srl a\n srl a\n srl a\n push af\n ex de,hl\n spr.unscale 0\n srl a\n srl a\n srl a\n ld d,0\n ld e,a\n pop hl\n ld l,h\n ld h,0\n inc hl\n inc de\n call map.adr\nendsub map.adrat.a\n\ndefsub map.getat.a\n call map.adrat.a\n call 4ah\nendsub map.getat.a\n\ndefsub map.setat.a\n ; a=data\n push af\n call map.adrat.a\n pop af\n call 4dh\nendsub map.setat.a\n\ndefsub locate\n ; hl=chipx\n ; de=chipy\n call map.adr\n ld (cursor-2),hl\nendsub locate\n'].join(''),'maze': [].join(''),'t1': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude tnu\ninclude sp\n\n;===your code \n\nright:dw 0\n\nmain:\ntnu.run Main\ndef Main.main,0,0\nnew.arg .vx,1\nnew.arg .vy,0\nnew.arg .x,0\nnew.arg .y,100\nnew Cat,4\n\nnew.arg .x,100\nnew.arg .y,100\nnew Target,2\n\nld (right),hl\nld a,h\nld de,RActor\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Target\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Cat\ncall instanceof\ncall showz\n\n\nld hl,1\nsetfld .c\nenddef 0\n\nclass Main,RActor\n RActor.noovr Main\n end.const Main\nclass Target,RActor\n RActor.noovr Target\n met2 Target,.push\n end.const Target\ndef Target.main,0,0\nenddef\nclass Cat,RActor\n RActor.noovr Cat\n fld .vy, 0\n fld .vx, 0\n fld.bottom Cat\n end.const Cat\ndef Cat.main,0,0\n blp:\n  ld hl,0108h\n  call getkey\n  jpf nomov\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  nomov:\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  ld hl,(right)\n  push hl\n  invoke .crashTo\n  jpf cr\n   ; r.x+=10\n   ld hl,(right)\n   getfldtg .x\n   ld de,10\n   add hl,de\n   push hl\n   ld hl,(right)\n   setfldtg .x\n   ; r.push()\n   pushthis 0\n   ld hl,(right)\n   invoketg.a .push\n   popthis 0\n  cr:\n  invoke .update\n jp blp\nenddef\n; test t1\ndef Target.push,0,0\n ld hl,3\n setfld .p\n repti 30,pse\n  getfld .x\n  inc hl\n  setfld .x\n  invoke .update\n  continue\n pse:\n ld hl,0\n setfld .p\nenddef\n\nendusr: \ninclude sprpat\n\nend main\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t2': ['org 08000h\ninclude tnu\ninclude bool\ninclude map\n\nmain:\ntnu.run Main\n;range 0-5\nclass EBullet,RActor\n meth EBullet,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .vx,0\n fld .vy,0\n end.const 0\ndef EBullet.main,0,0\n ;p=7;\n ld hl,7\n setfld .p\n ;c=15;\n ld hl,15\n setfld .c\n lb1:\n ld hl,true\n jpf lb2\n ;x+=vx;\n getfld .vx\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n ;y+=vy;\n getfld .vy\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n invoke .screenOut\n jpf lb4\n ;die();\n invoke .die\n jp lb3\n lb4:\n lb3:\n ;update();\n invoke .update\n jp lb1\n lb2:\n ret\n;range 5-15\nclass Enemy,RActor\n meth Enemy,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .vx,0\n fld .bvx,0\n fld .bvy,0\n fld .bdist,0\n meth Enemy,fire\n end.const 0\ndef Enemy.main,0,0\n lb5:\n ld hl,200\n push hl\n getfld .y\n pop de\n call hlltde\n jpf lb6\n ;y+=2;\n ld hl,2\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n ;update();\n invoke .update\n jp lb5\n lb6:\n ld hl,(gbl_player)\n getfldtg .x\n push hl\n getfld .x\n pop de\n call hlgtde\n jpf lb8\n ;vx=0-2;\n ld hl,2\n push hl\n ld hl,0\n pop de\n subhl de\n setfld .vx\n jp lb7\n lb8:\n ;vx=2;\n ld hl,2\n setfld .vx\n lb7:\n ;fire();\n invoke .fire\n lb9:\n ld hl,true\n jpf lb10\n invoke .screenOut\n jpf lb12\n ;die();\n invoke .die\n jp lb11\n lb12:\n lb11:\n ;y+=2;\n ld hl,2\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n ;x+=vx;\n getfld .vx\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n ;update();\n invoke .update\n jp lb9\n lb10:\n ret\ndef Enemy.fire,0,0\n ;bvx=$player.x-x;\n getfld .x\n push hl\n ld hl,(gbl_player)\n getfldtg .x\n pop de\n subhl de\n setfld .bvx\n ;bvy=$player.y-y;\n getfld .y\n push hl\n ld hl,(gbl_player)\n getfldtg .y\n pop de\n subhl de\n setfld .bvy\n ;bdist=abs(bvx)+abs(bvy);\n getfld .bvy\n call abs\n push hl\n getfld .bvx\n call abs\n pop de\n add hl, de\n setfld .bdist\n ;bdist/=8;\n pushthis\n getfld .bdist\n push hl\n ld hl,8\n pop de\n call IDIV.a\n popthis\n setfld .bdist\n ;bvx/=bdist;\n pushthis\n getfld .bvx\n push hl\n getfld .bdist\n pop de\n call IDIV.a\n popthis\n setfld .bvx\n ;bvy/=bdist;\n pushthis\n getfld .bvy\n push hl\n getfld .bdist\n pop de\n call IDIV.a\n popthis\n setfld .bvy\n ;new EBullet{        x,y,vx:bvx,vy:bvy    };\n getfld .x\n new.arg .x\n getfld .y\n new.arg .y\n getfld .bvx\n new.arg .vx\n getfld .bvy\n new.arg .vy\n new EBullet,4,0,5\n ret\n;range 0-5\nclass Main,RActor\n meth Main,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .i,0\n end.const 0\ndef Main.main,0,0\n ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};\n ld hl,256\n new.arg .x\n ld hl,300\n new.arg .y\n ld hl,4\n push hl\n ld hl,(gbl_pat_spr)\n pop de\n add hl, de\n new.arg .p\n ld hl,15\n new.arg .c\n new Player,4,0,5\n ld (gbl_player),hl\n ld hl,0\n setfld .i\n lb13:\n ld hl,20\n push hl\n getfld .i\n pop de\n call hlltde\n jpf lb14\n ;new Enemy{x:rnd(512), y:0, p:5, c:7};\n ld hl,512\n call rnd\n new.arg .x\n ld hl,0\n new.arg .y\n ld hl,5\n new.arg .p\n ld hl,7\n new.arg .c\n new Enemy,4,5,15\n ;updateEx(30);\n ld hl,30\n push hl\n invoke .updateEx\n jp lb13\n lb14:\n ret\n;range 15-20\nclass PBullet,RActor\n meth PBullet,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth PBullet,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .e,0\n end.const 0\ndef PBullet.main,0,0\n ;p=6;\n ld hl,6\n setfld .p\n ;c=8;\n ld hl,8\n setfld .c\n lb15:\n ld hl,true\n jpf lb16\n invoke .screenOut\n jpf lb18\n ;die();\n invoke .die\n jp lb17\n lb18:\n lb17:\n ;y-=6;\n ld hl,6\n push hl\n getfld .y\n pop de\n subhl de\n setfld .y\n crashToClass Enemy, 5, 15\n setfld .e\n getfld .e\n jpf lb20\n ;e.die();\n pushthis 0\n getfld .e\n invoketg.a .die\n popthis 0\n ;die();\n invoke .die\n jp lb19\n lb20:\n lb19:\n ;update();\n invoke .update\n jp lb15\n lb16:\n ret\ndef PBullet.onUpdate,0,0\n ;c+=1;\n ld hl,1\n push hl\n getfld .c\n pop de\n add hl, de\n setfld .c\n ld hl,14\n push hl\n getfld .c\n pop de\n call hlgtde\n jpf lb22\n ;c=0;\n ld hl,0\n setfld .c\n jp lb21\n lb22:\n lb21:\n ret\n;range 0-5\nclass Player,RActor\n meth Player,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n end.const 0\ndef Player.main,0,0\n lb23:\n ld hl,3\n ld de,10\n call locate\n getfld .y\n ld a,l\n call wrt\n ld a,h\n call wrt\n getthis 0\n \n ex de,hl\n getfld .x\n ld a,35\n call map.setat.a\n getthis 0\n ld hl,true\n jpf lb24\n ld hl, 4104\n call getkey\n jpf lb26\n ;x-=3;\n ld hl,3\n push hl\n getfld .x\n pop de\n subhl de\n setfld .x\n jp lb25\n lb26:\n lb25:\n ld hl, 32776\n call getkey\n jpf lb28\n ;x+=3;\n ld hl,3\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n jp lb27\n lb28:\n lb27:\n ld hl, 8200\n call getkey\n jpf lb30\n ;y-=3;\n ld hl,3\n push hl\n getfld .y\n pop de\n subhl de\n setfld .y\n jp lb29\n lb30:\n lb29:\n ld hl, 16392\n call getkey\n jpf lb32\n ;y+=3;\n ld hl,3\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n jp lb31\n lb32:\n lb31:\n crashToClass Enemy, 5, 15\n jpf lb34\n ;die();\n invoke .die\n jp lb33\n lb34:\n lb33:\n crashToClass EBullet, 0, 5\n jpf lb36\n ;die();\n invoke .die\n jp lb35\n lb36:\n lb35:\n ld hl,1\n push hl\n ld hl, 264\n call getkey\n pop de\n call hleqde\n jpf lb38\n ;new PBullet{x,y};\n getfld .x\n new.arg .x\n getfld .y\n new.arg .y\n new PBullet,2,15,20\n foreach.a Enemy,5,14,nxx\n  ld a,h\n  ld hl,8\n  setfld .c\n  continue \n nxx:\n getthis 0\n \n \n jp lb37\n lb38:\n lb37:\n ;update();\n invoke .update\n jp lb23\n lb24:\n ret\nenddef 0\nendusr:\ngbl_player:dw 0\ngbl_pat_spr:dw 0\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,2048\n jp LDIRVM\nspr.pat:\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0\ndb $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0\ndb $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60\ndb $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0\ndb $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0\ndb $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0\ndb $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0\ndb $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c\ndb $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18\ndb $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0\ndb $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0\ndb $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0\ndb $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0\nbg.inipat:\n ret\n\n\nend main'].join(''),'t3': ['org 09000h\n\ninclude tnu\ninclude mus\ninclude sprpat\n\n;===your code \n\nmain:\nld sp,(8000h)\n\ncall screen1\n\nshowsp\nshowlb endusr\n\nld hl,8000h\nld (hl),0cdh\nld de,8001h\nld bc,th.size*th.count-1\nldir\n\n\ncall th.init\ncall spr.inipat\n;call mus.ini\n\n\nnew Main, 0\nshow hl\n\n\nmovw (h.thlop),spr.puts\njp th.loop\n\nclass Main, RActor\n meth Main,main\n fld.bottom Object\n fld .x,100\n fld .y,300\n fld .p,0\n fld .c,3\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\n fld.bottom Main\n end.const\n\nMain.main:\n olp:\n  getthis\n  invoke .update\n  call xrnd.a\n  ld a,h\n  and 15\n  jr nz,doap\n   getthis\n   getfld .x\n   new.arg .x\n   getfld .y\n   new.arg .y\n   ld hl,7\n   call rnd.a\n   ld de,3\n   sbc hl,de\n   new.arg .vx\n   ld hl,5\n   call rnd.a\n   ld de,15\n   sbc hl,de\n   new.arg .vy\n   new Bullet, 4\n   call dstk\n  doap:\n  ld a,8\n  call SNSMAT.a\n  and 1\n  jr z,golf\n  \n  getthis\n  getfld .x\n  inc hl\n  inc hl\n  setfld .x\n  ld de,400\n  cpde.a\n  jp c, olp\n  golf:\n  ld hl,0\n  getthis\n  setfld .x\n jp olp\n\n\nclass Bullet,RActor\n meth Bullet,main\n fld.bottom Object\n fld .x, 0\n fld .y, 0\n fld .p, 2\n fld .c, 15\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\n fld .vy, -10\n fld .vx, 0\n fld.bottom Bullet\n end.const \n \nBullet.main:\n blp:\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  getfld .vy\n  inc hl\n  setfld .vy\n\n  invoke .update\n  invoke .screenOut\n  jp c, bdie\n  getfld .vy\n  bit 7,h\n  jr nz,blp\n  ld de,5\n  cpde.a\n  jr c,blp\n \n  call dstk\n  getthis\n  ld hl,3\n  setfld .p\n  pushi 10,bc\n  invoke .updateEx\n\n bleft:\n  getthis\n  ld hl,2\n  setfld .p\n  getfld .x\n  dec hl\n  dec hl\n  setfld .x\n  getfld .y\n  dec hl\n  setfld .y\n  invoke .update\n  invoke .screenOut\n  jr c, bdie\n  jr bleft\n bdie:\n  invoke .die\n  ret \n\n  \ndstk:\n push af\n ld hl,th.start+256*3\n getthis\n ld h,a\n ld de,1900h\n ld bc,256\n call LDIRVM\n pop af\n ret\n \nendusr:\nend main'].join(''),'t4': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude tnu\ninclude sp\n\n;===your code \n\nright:dw 0\n\nmain:\ntnu.run Main\ndef Main.main,0,0\nnew.arg .vx,1\nnew.arg .vy,0\nnew.arg .x,0\nnew.arg .y,100\nnew Cat,4\n\nnew.arg .x,100\nnew.arg .y,100\nnew Target,2\n\nnew.arg .x,200\nnew.arg .y,100\nnew Target,2\n\n\nnew.arg .x,150\nnew.arg .y,100\nnew.arg .c,8\nnew NTarget,3\n\nld (right),hl\nld a,h\nld de,Actor\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Target\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Cat\ncall instanceof\ncall showz\n\n\nld hl,1\nsetfld .c\nenddef 0\n\nclass Main,Actor\n Actor.noovr Main\n end.const 0\nclass Target,Actor\n Actor.noovr Target\n met2 Target,.push\n end.const 0\nclass NTarget,Actor\n Actor.noovr NTarget\n end.const 0\ndef NTarget.main,0,0\n ret\nenddef\n\ndef Target.main,0,0\nenddef\nclass Cat,Actor\n Actor.noovr Cat\n fld .vy, 0\n fld .vx, 0\n fld.bottom Cat\n end.const 0\ndef Cat.main,0,0\n blp:\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  ld hl,Target\n  push hl\n  invoke .crashTo\n  jpf cr\n   ; r.x+=10\n   const setg,hl\n   getfldtg .y\n   ld de,30\n   add hl,de\n   push hl\n   ldconst hl,setg\n   setfldtg .y\n  cr:\n  invoke .update\n jp blp\nenddef\ndef Target.push,0,0\n ld hl,3\n setfld .p\n repti 30,pse\n  getfld .y\n  inc hl\n  setfld .y\n  invoke .update\n  continue\n pse:\n ld hl,0\n setfld .p\nenddef\n\nendusr: \nend main\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t5': ['org 9000h\n\n\ninclude key\n\nmain:\ncall keyall\nld hl,0108h\ncall getkey\nshow hl\nld hl,0107h\ncall getkey\nshow hl\n\n\nhalt\njp main'].join(''),'gen': ['org 09000h\ninclude tnu\ninclude bool\n\nmain:\ntnu.run Main\nclass Main,Actor\n Actor.noovr Main\n end.const 0\ndef Main.main,0,0\n\n showlb .main\n showlb .crashTo\nenddef 0\nendusr:\nend main'].join(''),'dac': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n\nDECSUB equ 268CH;DAC ← DAC-ARG\nDECADD equ 269AH;DAC ← DAC+ARG\nDECNRM equ 26FAH;DAC を正規化する (*1)\nDECROU equ 273CH;DAC を四捨五入する\nDECMUL equ 27E6H;DAC ← DAC*DAC\nDECDIV equ 289FH;DAC ← DAC/DAC\nMAF equ 2C4DH;ARG ← DAC\nMAM equ 2C50H;ARG ← [HL]\nMOV8DH equ 2C53H;[DE] ← [HL]\nMFA equ 2C59H;DAC ← ARG\nMFM equ 2C5CH;[HL] ← DAC\nMMF equ 2C67H;[HL] ← DAC\nMOV8HD equ 2C6AH;[HL] ← [DE]\nXTF equ 2C6FH;[SP] ←→ DAC\nPHA equ 2CC7H;ARG → [SP]\nPHF equ 2CCCH;DAC → [SP]\nPPA equ 2CDCH;[SP] → ARG\nPPF equ 2CE1H;[SP] → DAC\nPUSHF equ 2EB1H;DAC → [SP]\nMOVFM equ 2EBEH;DAC ← [HL]\nMOVFR equ 2EC1H;DAC ← (CBED)\nMOVRF equ 2ECCH;(CBED) ← DAC\nMOVRMI equ 2ED6H;(CBDE) ← [HL]\nMOVRM equ 2EDFH;(BCDE) ← [HL]\nMOVMF equ 2EE8H;[HL] ← DAC\nMOVE equ 2EEBH;[HL] ← [DE]\nVMOVAM equ 2EEFH;ARG ← [HL]\nMOVVFM equ 2EF2H;[DE] ← [HL]\nVMOVE equ 2EF3H;[HL] ← [DE]\nVMOVFA equ 2F05H;DAC ← ARG\nVMOVFM equ 2F08H;DAC ← [HL]\nVMOVAF equ 2F0DH;ARG ← DAC\nVMOVMF equ 2F10H;[HL] ← DAC\n\nVALTYP equ 0F663H;1\nDAC equ 0F7F6H;16\nARG equ 0F847H;16\nFOUT equ 3425H\n\ndefsub int2dac\n push af\n ld a,2\n ld (VALTYP),a\n ld (DAC+2),HL\n pop af\nendsub int2dac\n;===your code \n\nmain:\nld hl,12345\ncall int2dac\nld hl,str\ncall FOUT\n\nld b,10\nreptb nxt\n ld a,(hl)\n cp 0\n break z\n call wrt2\n inc hl\n continue\nnxt:\nret\nstr:\n\n\n'].join(''),'setvrm': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n;===your code \n\nmain:\nld hl,1800h\ncall SETWRT\nld a,35\nrepti 5, ed\ninc a\nout (98h),a\ncontinue\ned:\nret'].join(''),'assert': ['include mem\ninclude math\ninclude debug\n\na.reg.trc:\ndw 0\na.reg.adr:\ndw 0\na.reg.min:\ndw 0\na.reg.val:\ndw 0\na.reg.max:\ndw 0\nmacro a.regi,n,v\n push hl\n ld hl,v\n ld (a.reg.##n),hl\n pop hl\nendm\nmacro a.regr,n,v\n ld (a.reg.##n),v\nendm\n\nmacro a.dummy\n local a.reg.,trc,adr,min,val,nax\nendm\n \n\nmacro assert.eq,o\n storelastpc\n pushall \n if not nul o\n  a.regi val, o\n endif\n ld de,(a.reg.val)\n ld(a.reg.val),hl\n ld(a.reg.min),de\n ld(a.reg.max),de\n cpde\n jp nz,assert.fail\n popall\nendm\n\nmacro assert.do,nx\n storelastpc\n pushall\n call to\n popall\n jr nx\n to:\nendm\n\nmacro storelastpc\n push hl\n call getpc\n ld (lastpc),hl\n pop hl\nendm\nlastpc:\n dw 0\n \ngetpc:\n pop hl\n push hl\n ret\n\nassert.fail:\n ld hl,0deadh\n show hl\n showm a.reg.trc\n showm a.reg.min\n showm a.reg.val\n showm a.reg.max\n showm a.reg.adr\n showm lastpc\n call freeze\nmacro assert.meqw,ad,val\n a.regi adr,ad\n push hl\n ld hl,(ad)\n assert.eq val\n pop hl\nendm\n '].join(''),'stksz': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n\n;===your code \n\nsz equ 256\n  \nmain:\nld hl,0fd9fh\nld (hl),0c9h\n rept sz/2\n  push hl\n endm\n rept sz/2\n  pop hl\n endm\n\nloop:\n getsp\n ld de,-sz\n add hl,de\n ld de,1800h\n ld bc,sz\n call LDIRVM\n ld hl,0\n halt\n jp loop\n \n \n '].join(''),'vdp': [';https://www.msx.org/wiki/VDP_Status_Registers\n;st 0 bit 7\n;read 1\n\n;https://www.msx.org/wiki/VDP_Mode_Registers\n;ctrl 1 bit 5 set 0\ninclude const\n\nsusint:\n ld a,(RG1SAV)\n res 5,a\n ld b,A\n ld c,1\n jp WRTVDP\n;rstint:\n ld a,(RG1SAV)\n set 5,a\n ld b,A\n ld c,1\n jp WRTVDP\ninted:\n call RDVDP\n bit 7,a\n ret\ndoint:\n call inted\n jr z, norst\n ld hl,timecnt\n inc (hl)\n call h.tntimi\n norst:\n ;call rstint\n ret\nh.tntimi:\n ld A,(timecnt)\n ld hl,1ae0h\n call 4dh\n ret\n ds 16\n \ntimecnt:\ndb 0\nmacro vdptest\nlocal stk1,stk2,stk3,vl\nstk1:\n ds 256,35\nstk2:\n ds 256,42\nstk3:\n\nvl:\n call susint\n ld sp,stk2\n ld hl,stk1\n ld de,1800h\n ld bc,256\n call LDIRVM\n \n \n ld sp,stk3\n call doint\n ld hl,stk2\n ld de,1900h\n ld bc,256\n call LDIRVM\n jp vl\nendm\n \nscreen1:\n ld a,1\n call CHGMOD\n ld a,(RG1SAV)\n set 1,a\n ld b,A\n ld c,1\n call WRTVDP\n ret\n\ndefsub screen2\n ld a,2\n call CHGMOD\n ld a,(RG1SAV)\n set 1,a\n ld b,A\n ld c,1\n call WRTVDP\nendsub screen2\n '].join(''),'mus': ['include mem\nmus.ini:\n di\n ld hl,0fd9fh\n ld (hl),0c3h\n movw (0fd9fh+1),mus\n ei\n ret\nmus:\nproc\nlocal we\n push af\n push de\n ld a,(we-1)\n xor 15\n ld (we-1),a \n ld a,8\n ld e,15\n we:\n call WRTPSG\n pop af \n pop de\n ret\nendp'].join('')};
+        _this.data = {'main': ['org 09000h\r\n\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude sp\r\ninclude vdp\r\ninclude th\r\n\r\n\r\n;===your code \r\n\r\nmain:\r\nld a,5\r\nlp:\r\ndec b\r\nshow a\r\niff nc,nx\r\njr lp\r\nnx:\r\n\r\nret\r\nend main'].join(''),'math': ['include ctrl\r\n\r\n;16bit shifts\r\nmacro slhl\r\n sla l\r\n rl h\r\nendm\r\nmacro srahl\r\n sra h\r\n rr l\r\nendm\r\nmacro srlhl\r\n srl h\r\n rr l\r\nendm\r\nmacro slde\r\n sla e\r\n rl d\r\nendm\r\nmacro srade\r\n sra d\r\n rr e\r\nendm\r\nmacro srlde\r\n srl d\r\n rr e\r\nendm\r\nmacro slbc\r\n sla c\r\n rl b\r\nendm\r\nmacro srabc\r\n sra b\r\n rr c\r\nendm\r\nmacro srlbc\r\n srl b\r\n rr c\r\nendm\r\n\r\n\r\n; for xrnd\r\nmacro sldehl,n\r\n  local loop\r\n  ld b,n\r\n loop:\r\n  sla d\r\n  rl e\r\n  rl h\r\n  rl l\r\n  djnz loop\r\nendm\r\nmacro srdehl,n\r\n local loop\r\n ld b,n\r\n loop:\r\n  srl l\r\n  rr h\r\n  rr e\r\n  rr d\r\n djnz loop\r\nendm\r\n \r\nmacro xorrm,re,me\r\n  ld A,(me)\r\n  xor re\r\n  ld (me),a\r\nendm\r\n\r\nmacro subhl,rp\r\n and a\r\n sbc hl,rp\r\nendm\r\n\r\nmacro cpde.a\r\n rst dcompr\r\nendm\r\n\r\n\r\nmarker.b xrnd.a\r\nxrnd.a:\r\nproc \r\n local rhl,rde,rdhlde\r\n ; s[0] ^= s[0] << 13\r\n call rdhlde\r\n sldehl 13\r\n call wrtxor\r\n ; s[0] ^= s[0] >> 17\r\n call rdhlde\r\n srdehl 17\r\n call wrtxor\r\n ; s[0] ^= s[0] << 5;\r\n call rdhlde\r\n sldehl 5\r\n call wrtxor\r\n ret\r\n \r\n rdhlde:\r\n  ld hl,1234\r\n rhl:\r\n  ld de,5678\r\n rde:\r\n  ret\r\n \r\n wrtxor:\r\n  xorrm h,rhl-1\r\n  xorrm l,rhl-2\r\n  xorrm d,rde-1\r\n  xorrm e,rde-2\r\n  ret\r\nendp\r\nmarker.e xrnd.a\r\n\r\n\r\nmarker.b rnd\r\nrnd:\r\n push af\r\n call rnd.a\r\n pop af\r\n ret\r\nmarker.e rnd\r\nmarker.b rnd.a\r\nrnd.a:\r\n ld de,07fffh\r\n call IDIV.a\r\n push hl\r\n call xrnd.a\r\n res 7,h\r\n ex de,hl\r\n pop hl\r\n inc hl\r\n call IDIV.a\r\n ret\r\nmarker.e rnd.a\r\n\r\nmarker.b abs\r\nabs:\r\n bit 7,h\r\n ret z\r\nneghl:\r\n ld de,0 \r\n ex de,hl \r\n subhl de\r\n ret\r\nmarker.e abs\r\n\r\n '].join(''),'bool': ['include math\r\ninclude ctrl\r\ntrue equ -1\r\nfalse equ 0\r\n\r\nmacro rethl,val,flg\r\n local tru\r\n if not nul flg\r\n  iff flg ,tru\r\n endif\r\n ld hl,val\r\n ret\r\n tru:\r\nendm\r\n\r\nhleqde:\r\n subhl de\r\n rethl true,z\r\n rethl false\r\n\r\nhlnede:\r\n subhl de\r\n rethl true,nz\r\n rethl false\r\n \r\nhlgtde:\r\n subhl de\r\n rethl false,z\r\n bit 7,h\r\n rethl true,z\r\n rethl false\r\n\r\nhlltde:\r\n subhl de\r\n bit 7,h\r\n rethl true,nz\r\n rethl false\r\n \r\nhlgede:\r\n subhl de\r\n rethl true,z\r\n bit 7,h\r\n rethl true,z\r\n rethl false\r\n\r\nhllede:\r\n subhl de\r\n rethl true,z\r\n bit 7,h\r\n rethl true,nz\r\n rethl false\r\n \r\nproc\r\nziffalse:\r\n local resa\r\n ld (resa-1),a\r\n call ziffalse.a\r\n ld A,0\r\n resa:\r\n ret\r\nziffalse.a:\r\n ld a,0\r\n cp h\r\n ret nz\r\n cp l\r\n ret\r\nendp\r\n\r\nmacro jpf,to\r\n call ziffalse\r\n jp z,to\r\nendm\r\n\r\nmacro andand,fls\r\n jpf fls\r\nendm\r\nmacro oror,tru\r\n call ziffalse\r\n jp nz,tru\r\nendm\r\n\r\nmacro flagtobool,fl\r\n local yes,skp\r\n jr fl, yes\r\n ld hl,false\r\n jr skp\r\n yes:\r\n ld hl,true\r\n skp: \r\nendm'].join(''),'mem': ['include const\r\n;\r\nrdslt:\r\n ex de,hl\r\n rept 5\r\n srl d;page*2\r\n endm\r\n CALL RSLREG\r\n ld e,d\r\n rdslt1:\r\n  RRCA\r\n  dec e\r\n  jp nz,rdslt1\r\n AND    00000011B\r\n LD C,A;000000Pr\r\n LD B,0\r\n LD HL,EXPTBL\r\n ADD HL,BC\r\n LD C,A;000000Pr\r\n LD A,(HL)\r\n AND 80H;expand flag\r\n OR C\r\n LD C,A;e00000Pr\r\n rept 4;const\r\n INC HL\r\n endm\r\n LD A,(HL);exp reg\r\n ld e,d\r\n rdslt2:\r\n  srl a\r\n  dec e\r\n  jp nz,rdslt2\r\n;000000Ex\r\n sla a\r\n sla a\r\n ;    0000Ex00\r\n and  00001100b\r\n OR C;e000ExPr\r\n ret\r\nmemini:\r\n CALL RSLREG\r\n rept 4\r\n  RRCA\r\n endm\r\n AND    00000011B\r\n LD C,A;000000Pr\r\n LD B,0\r\n LD HL,EXPTBL\r\n ADD HL,BC\r\n LD C,A;000000Pr\r\n LD A,(HL)\r\n AND 80H;expand flag\r\n OR C\r\n LD C,A;e00000Pr\r\n rept 4;const\r\n INC HL\r\n endm\r\n LD A,(HL);exp reg\r\n rept 4; page*2\r\n srl a\r\n endm;000000Ex\r\n sla a\r\n sla a\r\n ;    0000Ex00\r\n and  00001100b\r\n OR C;e000ExPr\r\n LD Hl,04000H\r\n jp ENASLT\r\n\r\nmacro peekw ,regv,regm\r\n  local w\r\n  ld (w-2),regm\r\n  ld regv,(0)\r\n  w:\r\nendm\r\n\r\nmacro pokew ,regm,regv\r\n  local w\r\n  ld (w-2),regm\r\n  ld (0),regv\r\n  w:\r\nendm\r\nmacro movw,dst,src,rp\r\n if nul rp\r\n  push hl\r\n  movw dst,src,hl\r\n  pop hl\r\n else\r\n  ld rp,src\r\n  ld dst,rp\r\n endif \r\nendm\r\n\r\nmacro popa\r\n  ex (sp),hl\r\n  ld a,h\r\n  pop HL\r\nendm\r\n\r\nmacro pushall\r\n push af\r\n push bc\r\n push de\r\n push hl\r\nendm\r\nmacro popall\r\n pop hl\r\n pop de\r\n pop bc\r\n pop af\r\nendm\r\n \r\n\r\nmacro pushi, n,rp\r\n local rrr\r\n if nul rp\r\n  ld (rrr-2),hl\r\n  ld hl,n\r\n  push hl\r\n  ld hl,0\r\n  rrr:\r\n else\r\n  ld rp,n\r\n  push rp\r\n endif\r\nendm\r\nmacro const,n,reg\r\n ld (n-2),reg\r\nendm\r\nmacro ldconst,reg,n\r\n ld reg,0\r\n n:\r\nendm\r\nmacro peekconst,reg,n\r\n ld reg,(0)\r\n n:\r\nendm\r\n'].join(''),'const': ['\r\n;wrt equ 0a2h\r\ndcompr equ 0020H\r\nsp.ini equ 0dc00h\r\nstksize equ 512\r\n\r\nth.size equ 256\r\nth.count equ 20\r\nth.start equ th.end-th.size*th.count\r\nth.end equ sp.ini-stksize\r\n\r\nth.bottom equ 0\r\n\r\nspr.scale equ 1\r\nspr.xmax equ 256<<spr.scale\r\nspr.ymax equ 192<<spr.scale\r\n\r\nENASLT EQU 0024H\r\nRSLREG EQU 0138H\r\nEXPTBL EQU 0FCC1H\r\nSETWRT equ 0053H\r\nLDIRVM equ 005CH\r\nWRTVDP equ 0047H\r\nRG1SAV equ 0F3E0H\r\nRDVDP  equ 013EH\r\nSNSMAT.a equ 0141h\r\n\r\nCHGMOD equ 005FH\r\n\r\nIMULT.a equ 3193H;HL ← DE*HL\r\nIDIV.a equ 31E6H;HL ← DE/HL\r\nIMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) \r\n\r\nWRTPSG  equ 0093H\r\n\r\nCSRY equ 0F3DCH\r\nCSRX equ 0F3DDH\r\n\r\nnull equ 0\r\n\r\nmacro marker.b, n\r\n last.marker: defl $\r\nendm\r\nmacro marker.e, n\r\n len.##n: defl $-last.marker\r\nendm\r\n'].join(''),'ctrl': ['include const\r\nfreeze:\r\nhalt\r\njr freeze\r\n\r\nmacro for ,lbend\r\n ; uses a\r\n ; c: breaked\r\n proc\r\n  local s,lb\r\n  lb:\r\n  call dcompr; uses a\r\n  jp nc,lbend\r\n  push HL\r\n  push de\r\n  push bc\r\n  call s\r\n  pop bc\r\n  pop de\r\n  pop HL\r\n  jp c,lbend\r\n  add HL,bc\r\n  jr lb\r\n  s:\r\n endp\r\nendm\r\n\r\nmacro repti ,n,lbend\r\n proc\r\n  local s,lb, lbend2\r\n  push bc\r\n  ld b,n\r\n  lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jr c,lbend2\r\n  djnz lb\r\n  lbend2:\r\n  pop bc\r\n  jp lbend \r\n  s:\r\n endp\r\nendm\r\n\r\n\r\nmacro reptb ,lbend\r\n  local s,lb\r\n inc b\r\n djnz lb\r\n jp lbend\r\n lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jp c,lbend\r\n djnz lb\r\n jp lbend \r\n s:\r\nendm\r\n\r\n\r\n\r\nmacro callsva,pp\r\n local sva\r\n ld (sva-1),a\r\n call pp\r\n ld a,0\r\n sva:\r\nendm\r\nbcis0:\r\n callsva bcis0.a\r\n ret\r\nbcis0.a:\r\n ld a,b\r\n and a\r\n ret nz\r\n ld a,c\r\n and a\r\n ret\r\n\r\nmacro reptbc ,lbend\r\n local s,lb\r\n call bcis0\r\n jp z,lbend \r\n lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jp c,lbend\r\n  dec bc\r\n  call bcis0\r\n jr nz, lb\r\n jp lbend \r\n s:\r\nendm\r\n\r\n\r\niff.NZ equ 0\r\niff.Z  equ 1\r\niff.NC equ 2\r\niff.C  equ 3\r\n\r\nmacro iff,cnd,to\r\n local iff.\r\n if iff.##cnd eq iff.NZ\r\n  jr z,to\r\n endif\r\n if iff.##cnd eq iff.Z\r\n  jr nz,to\r\n endif\r\n if iff.##cnd eq iff.NC\r\n  jr c,to\r\n endif\r\n if iff.##cnd eq iff.C\r\n  jr nc,to\r\n endif\r\n ;jr cnd, skip\r\n ;jr to\r\n ;skip:\r\nendm\r\n\r\nmacro break,cnd\r\n if NUL cnd\r\n  scf\r\n  ret\r\n else\r\n  proc \r\n   local jj\r\n   iff cnd ,jj\r\n   break\r\n  jj:\r\n  endp\r\n endif\r\nendm\r\nmacro continue,cnd\r\n if NUL cnd \r\n  or a\r\n  ret\r\n else\r\n  proc \r\n   local jj\r\n   iff cnd,jj\r\n   continue\r\n  jj:\r\n  endp\r\n endif\r\nendm\r\n\r\n\r\nmacro djnzr,reg, j\r\n dec reg\r\n jr NZ,j\r\nendm\r\n\r\nmacro callhl\r\n local LCD\r\n ld (LCD-2),HL\r\n call LCD\r\n LCD:\r\nendm\r\n\r\nmacro stride,lim,to\r\n if (low $)<lim\r\n  exitm\r\n endif\r\n ds 256+to-(low $),0cdh\r\nendm'].join(''),'th': ['include ctrl\r\ninclude sp\r\ninclude vdp\r\ninclude mem\r\ninclude math\r\ninclude debug\r\n\r\nth.ofs.stp equ 256-4\r\nth.ofs.sp equ th.ofs.stp+1\r\nth.ofs.spini equ th.ofs.stp\r\nfld.top equ th.ofs.spini-2\r\nth.st.blank equ 0c9h\r\nth.st.active equ 31h\r\n\r\n;macro th.for,lb\r\n; ld HL,th.start\r\n; ld de,th.end\r\n; ld bc,th.size\r\n; for lb\r\n;endm\r\nmacro th.for.a, nx, st, en\r\n if nul st\r\n  th.for.a nx, 0, th.count\r\n  exitm\r\n endif\r\n local do, loop\r\n ld a,st+(high th.start)\r\n loop:\r\n  cp en+(high th.start)\r\n  jp nc, nx\r\n  push af\r\n  ld h,a\r\n  ld l,0\r\n  call do\r\n  popa\r\n  ld h,a\r\n  ld l,0\r\n  jp c, nx\r\n  inc a\r\n jr loop\r\n do:\r\nendm\r\n\r\nmacro th.new.range,st,en\r\n ld bc,st\r\n ld(th.new.start),bc\r\n ld bc,en\r\n ld(th.new.end),bc\r\nendm\r\n\r\ndefsub th.isblank.a\r\n ; h= thread\r\n ; z if true\r\n ld l, th.ofs.stp\r\n ld a,(hl)\r\n cp th.st.blank\r\nendsub th.isblank.a\r\n\r\ndefsub th.new\r\n; nc for alloc fail\r\nproc \r\n local lbend\r\n db 21h\r\n th.new.start:\r\n dw th.start\r\n db 11h\r\n th.new.end:\r\n dw th.end\r\n ld bc,th.size\r\n for lbend\r\n  ; TODO th.ofs.stp\r\n  call th.isblank.a\r\n  break z\r\n  continue\r\n lbend:\r\n ret nc\r\n ; TODO th.ofs.stp\r\n ld L,th.ofs.stp\r\n ld (HL),31h\r\n inc HL\r\n ld (HL),th.ofs.spini\r\n ld a,h\r\n inc HL\r\n ld (hl),a\r\n inc HL\r\n ld (HL),0c9h\r\n ld l,th.bottom\r\n scf\r\n ret\r\nendp\r\nendsub th.new\r\n\r\ndefsub th.init\r\nproc\r\n local lbend\r\n th.for.a lbend\r\n  ; TODO th.ofs.stp\r\n  ld L, th.ofs.stp\r\n  ld (HL),th.st.blank\r\n  continue\r\n lbend:\r\n ; disable timer\r\n ld HL,0fd9fh\r\n ld (hl),0c9h\r\n call susint\r\n ret\r\nendp\r\nendsub th.init\r\n\r\ndefsub th.stepall\r\n th.for.a thnx\r\n  ;todo th.ofs.stp\r\n  ld (th.cur),hl\r\n  call th.isblank.a\r\n  continue z\r\n  call th.step\r\n  continue\r\n thnx:\r\nendsub th.stepall\r\n\r\ndefsub th.step\r\n sp2mem adrssp+1\r\n ld HL,(th.cur)\r\n ld l,th.ofs.stp\r\n ;call susint\r\n jp (hl)\r\nendsub th.step\r\n\r\ndefsub th.yield\r\n ld hl,(th.cur)\r\n ld l,th.ofs.sp\r\n sp2mem\r\n adrssp:\r\n ld sp,0\r\n jp doint\r\nendsub th.yield\r\n\r\ndefsub th.term\r\n ld hl,(th.cur)\r\n ; TODO th.ofs.stp\r\n ld L,th.ofs.stp\r\n ld (hl),th.st.blank\r\n jr adrssp\r\nendsub th.term\r\n\r\nmacro th.with.do, to\r\n local pr\r\n th.with pr\r\n jr to\r\n pr:\r\nendm\r\n\r\nmacro th.with.setdst, reg\r\n ld (th.jpdest-2),reg\r\nendm\r\nmacro th.with,pr\r\n movw (th.jpdest-2), pr\r\n call th.with.s\r\nendm\r\nmacro th.with.ret\r\n jp th.ewith\r\nendm\r\n\r\ndefsub th.with.s\r\n sp2mem th.wrssp-2\r\n ld l, th.ofs.sp\r\n ld (th.updsp-2),hl\r\n mem2sp\r\n jp 0\r\n th.jpdest:\r\nth.ewith:\r\n ld (0),sp\r\n th.updsp:\r\n ld sp,0\r\n th.wrssp:\r\nendsub th.with.s\r\n \r\n\r\n \r\n \r\ndefsub th.push\r\n ;push bc to thread hl\r\n th.with tpsbc\r\n ret\r\n tpsbc:\r\n  push bc\r\n  th.with.ret 0\r\nendsub th.push\r\n\r\n\r\ndefwork th.cur\r\n dw 0\r\nendwork th.cur\r\n\r\ndefsub th.loop\r\n ; hook before stepall\r\n db 0cdh\r\n h.thent:\r\n dw th.nop\r\n ; save prev timecnt\r\n ld a,(timecnt)\r\n push af\r\n ; Do stepall\r\n call th.stepall\r\n ; hook after stepall\r\n db 0cdh\r\n h.thlop:\r\n dw th.nop\r\n ; wait until timecnt changes\r\n pop af\r\n bwat:\r\n  ld hl,timecnt\r\n  cp (hl)\r\n  jr nz,bbwat\r\n  push af\r\n  call doint\r\n  pop af\r\n  jr bwat\r\n bbwat:\r\n ; repeat\r\n jr th.loop\r\nendsub th.loop\r\n\r\nth.nop:\r\n ret\r\n\r\n\r\nmacro th.pushi, val\r\n ld bc,val\r\n call th.push\r\nendm\r\n\r\n'].join(''),'sub': [].join(''),'debug': ['include math\r\n;debug\r\nmacro show,reg\r\n ld (hexval+1),reg\r\n call showhex\r\nendm\r\nmacro showm ,ad\r\n push hl\r\n ld HL,(ad)\r\n show HL\r\n pop HL\r\nendm\r\nmacro showlb,lb\r\n push hl\r\n ld hl,lb\r\n ld (hexval+1),hl\r\n call showhex\r\n pop hl\r\nendm\r\nshowhex:\r\nproc\r\n local loop\r\n push af\r\n push bc\r\n push HL\r\n hexval:\r\n ld hl,0\r\n ld b,4\r\n loop:\r\n  xor a\r\n  rept 4\r\n   slhl\r\n   rla\r\n  endm\r\n  call showhex1\r\n djnz loop\r\n ld a,32\r\n call wrt\r\n pop HL\r\n pop bc\r\n pop af\r\n ret\r\nendp\r\nshowhex1:\r\nproc\r\n local els\r\n cp 10\r\n jp nc, els\r\n add a,48\r\n jp wrt\r\n els:\r\n add a,65-10\r\n jp wrt\r\nendp\r\nabort:\r\n call wrt\r\n db 018h,0feh\r\nret\r\n\r\nmacro trace,v\r\n if not nul v\r\n  push af\r\n  ld a,v\r\n  ld (trad),a\r\n  pop af\r\n endif\r\n call trace.s\r\nendm\r\ntrace.s:\r\n push af\r\n push hl\r\n ld a,(trad)\r\n ld hl,1ae0h\r\n call wrt\r\n call 4dh\r\n inc a\r\n ld (trad),a\r\n ld a,32\r\n call wrt \r\n pop hl\r\n pop af\r\n ret\r\ntrad:\r\n db 65\r\n\r\nshowz:\r\n push af\r\n jr z,showz.s\r\n ld a,"N"\r\n call wrt\r\n showz.s:\r\n ld a,"Z"\r\n call wrt\r\n ld a,32\r\n call wrt\r\n pop af\r\n ret\r\n \r\n\r\nshowc:\r\n push af\r\n jr c,showc.s\r\n ld a,"N"\r\n call wrt\r\n showc.s:\r\n ld a,"C"\r\n call wrt\r\n ld a,32\r\n call wrt\r\n pop af\r\n ret\r\n \r\n\r\n\r\n\r\n\r\n\r\nmacro unreach, mesg\r\n trace mesg\r\n dw 0x18,0xfe\r\nendm\r\nmacro head, lb\r\n unreach lb\r\n marker.b lb\r\n lb:\r\nendm\r\n\r\nmacro defsub, n\r\n head n\r\nendm\r\nmacro endsub, n\r\n ret\r\n marker.e n\r\nendm\r\nmacro defwork, n\r\n head n\r\nendm\r\nmacro endwork, n\r\n marker.e n\r\nendm\r\n\r\ndefsub wrt\r\nproc\r\n local sk\r\n push hl\r\n push af\r\n ld hl,1800h\r\n cursor:\r\n call 4dh\r\n inc hl\r\n ld a,h\r\n cp 1bh\r\n jr c,sk\r\n  ld h,18h\r\n sk:\r\n ld (cursor-2),hl\r\n pop af\r\n pop hl\r\n ret\r\nendp\r\nendsub wrt\r\n'].join(''),'sp': ['include mem\r\ninclude debug\r\nmacro sp.get\r\n ld HL,0\r\n ADD hl, sp\r\nendm\r\nmacro sp.set\r\n ld sp,hl\r\nendm\r\nmacro mem2sp,ad\r\n local rs\r\n if nul ad\r\n  ld (rs-2),hl\r\n  ld sp,(0)\r\n  rs:\r\n else\r\n  ld sp,(ad)\r\n endif\r\nendm\r\nmacro sp2mem,ad\r\n local spad\r\n if nul ad\r\n  ld (spad-2),hl\r\n  ld (0),sp\r\n  spad:\r\n else\r\n  ld (ad),sp\r\n endif\r\nendm\r\n\r\nmacro showsp\r\n ld (sptmp),sp\r\n showm sptmp\r\nendm\r\nsptmp:\r\ndw 0\r\nmacro showstk\r\n showsp\r\n ld (sva),a\r\n ld a,":"\r\n call wrt\r\n ld a,(sva)\r\n ex (sp),hl\r\n show hl\r\n ex (sp),hl\r\nendm\r\nsva: db 0'].join(''),'oop': ['include mem\r\ninclude th\r\ninclude assert\r\n\r\n;a2 a1  oldpc oldix lcl1 lcl2\r\nargidx equ 2\r\nmacro getarg ,n\r\n ld l,(ix+argidx+n*2)\r\n ld h,(ix+argidx+n*2+1)\r\nendm\r\n\r\nmacro setlcl ,n\r\n ld (IX-(n*2-1)),h\r\n ld (ix-n*2),l\r\nendm\r\n\r\nmacro getlcl ,n\r\n ld h,(IX-(n*2-1))\r\n ld l,(ix-n*2)\r\nendm\r\n\r\nmacro addarg\r\n push hl\r\n; hl=arg  stktp=af\r\n;ex (sp),hl\r\n;ld a,h\r\n;push af\r\nendm\r\n\r\n\r\n\r\nmacro pusharg ,n\r\n getarg n\r\n push HL\r\nendm\r\n\r\nmacro pushlcl ,n\r\n getlcl n\r\n push HL\r\nendm\r\n\r\nmacro enter ,locals\r\n push ix\r\n ld ix,0\r\n add ix,sp\r\n rept locals\r\n  push HL\r\n endm\r\nendm\r\n\r\nmacro pops ,n\r\n rept n*2\r\n  inc sp\r\n endm\r\nendm\r\n\r\n\r\nmacro exit,n\r\n ld sp,ix\r\n pop ix\r\n if n!=0\r\n  exx\r\n  pop bc\r\n  pops n\r\n  push bc\r\n  exx\r\n endif\r\n ret\r\nendm\r\n\r\nmacro pushthis\r\n getthis\r\n push af\r\nendm\r\nmacro popthis\r\n popa\r\n ld (this),a\r\nendm\r\n\r\n\r\nmacro invoketg.a,fld,args\r\n; pushthis before arg push\r\n; hl=target \r\n ld a,h\r\n ld (this),a\r\n getfld fld\r\n callhl\r\n; pops args\r\n; popthis after \r\nendm\r\n\r\nmacro invoke,fld\r\n getfld fld\r\n callhl\r\n; pops args\r\n getthis\r\nendm\r\n\r\nmacro getfld, n\r\n local ad\r\n ld (ad-1),a\r\n ld hl,(n)\r\n ad:\r\nendm\r\n\r\nmacro setfld, n\r\n local ad\r\n ld (ad-1),a\r\n ld (n),hl\r\n ad:\r\nendm\r\n\r\nmacro getfldtg,n\r\n;hl=tg\r\n ld l,n\r\n peekw hl,hl\r\nendm\r\n\r\nmacro setfldtg,n\r\n; stk=val hl=tg\r\n ld l,n\r\n pop de\r\n pokew hl,de\r\nendm\r\n\r\nmacro getfldtg, n\r\n; hl=target\r\n ld d,h\r\n ld e,n\r\n peekw HL,de\r\nendm\r\n\r\nmacro tgconst,n\r\n ld (n-1),a\r\nendm\r\nmacro tgconst.g ,r16,n,fld\r\n ld r16,(fld)\r\n n:\r\nendm\r\nmacro tgconst.s ,n,fld,r16\r\n ld (fld),r16\r\n n:\r\nendm\r\n\r\n\r\nmacro curth2this\r\n ld a,(th.cur+1)\r\n ld (this),a\r\nendm\r\nmacro getthis\r\n ld a,(this)\r\nendm\r\n\r\nmacro new,Class,flds,st,en\r\n if nul st\r\n  th.new.range th.start, th.end\r\n else\r\n  th.new.range th.start+st*th.size, th.start+en*th.size\r\n endif\r\n pushi flds, bc\r\n pushi Class, bc\r\n call o.new\r\nendm\r\n\r\ndefsub o.new\r\nproc\r\n local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end\r\n ; {val .f} n &initbl retad\r\n pop hl;retad\r\n ld (retad-2),hl\r\n ; set initbl for th.with\r\n pop hl;&initbl\r\n th.with.setdst hl\r\n ; save this\r\n ld (svthis-1),a\r\n ; allocate thread\r\n call th.new\r\n jr nc, allocfail\r\n push hl; thread address\r\n call th.with.s; call &initbl\r\n pop hl; thread address\r\n ld a,h; set this as thread\r\n ; init fields\r\n pop bc; n of {val .f}\r\n inc c\r\n loop:\r\n  dec c\r\n  jr z,lpend\r\n  pop hl; .f\r\n  ld h,a\r\n  ld (w-2),hl\r\n  pop hl; val\r\n  ld (w),hl\r\n  w:\r\n jr loop\r\n lpend:\r\n ; return h as this\r\n ld h,a\r\n finally:\r\n  ;restore a before call o.new\r\n  ld a,0\r\n  svthis:\r\n  ;return \r\n  jp 0\r\n  retad:\r\n allocfail:\r\n  ; drop {val .f}\r\n  pop bc; n of {val .f}\r\n  ld b,c\r\n  inc c\r\n  lp2:\r\n   dec c\r\n   jr z, lp2end\r\n   pop hl\r\n   pop hl\r\n  jr lp2\r\n  lp2end:\r\n  ld hl,null;  todo null\r\n  jr finally\r\nendp\r\nendsub o.new\r\n\r\nmacro new.arg, n, v\r\n if not nul v\r\n  ld hl,v\r\n endif\r\n push hl\r\n pushi n,bc\r\nendm\r\n \r\nmacro o.assert.eq,fld, v\r\n local aa\r\n assert.do aa\r\n  getfld fld\r\n  assert.eq v\r\n  ret\r\n aa:\r\nendm\r\n\r\nthis:\r\ndb 0\r\n\r\nmacro fld.def,n\r\n n equ fldidx\r\n fldidx:defl fldidx-2\r\nendm\r\nmacro class,Class,super\r\n unreach "c"\r\n marker.b 0\r\n dw super\r\n fldidx:defl fld.top; todo fld.top\r\n Class:\r\n  fld .class,Class\r\nendm\r\nmacro fld.bottom,Class\r\n if defined Class##.bottom \r\n  if Class##.bottom ne fldidx\r\n   .error bottom ne fldidx\r\n  endif\r\n else\r\n Class##.bottom:defl fldidx\r\n endif\r\nendm \r\nmacro fld,n,v\r\n if defined n\r\n  if n ne fldidx\r\n   .error n ne fldidx\r\n  else \r\n   fldidx:defl fldidx-2\r\n  endif\r\n else\r\n  fld.def n\r\n endif\r\n pushi v,bc\r\nendm\r\nmacro unuse\r\n fldidx:defl fldidx-2\r\n pushi 0,bc\r\nendm\r\nmacro meth,Class,n\r\n fld .##n, Class##.##n\r\nendm\r\nmacro met2,Class,n\r\n fld n, Class##n\r\nendm\r\n\r\nclass Object,null\r\n fld .main,null\r\n fld.bottom Object\r\n marker.e Object\r\n\r\n\r\ndefsub o.boot\r\n curth2this\r\n invoke .main,0\r\nendsub o.boot\r\n\r\n\r\nmacro yield\r\n pushthis\r\n push ix\r\n call th.yield\r\n pop ix\r\n popthis\r\nendm\r\n\r\nmacro def,n,args,lcls\r\nhead n\r\n def.args:defl args\r\n def.locals:defl lcls\r\n if args>0 or lcls>0\r\n  enter lcls\r\n endif\r\nendm\r\nmacro enddef,n\r\n if def.args>0 or def.locals>0\r\n  exit def.args\r\n else\r\n  ret\r\n endif\r\n marker.e n\r\nendm\r\n\r\ndefsub isobj.a\r\n ;hl=obj?\r\n ;cy=true\r\n ld a,h\r\n cp high th.start\r\n jr c,notobj\r\n cp high th.end\r\n jr nc,notobj\r\n scf\r\n ret\r\n notobj:\r\n and a\r\nendsub isobj.a\r\n\r\ndefsub instanceof\r\n ; a=this de=Class\r\n ; z: true\r\n getfld .class\r\n jp is.subclass.a\r\nendsub instanceof\r\n\r\ndefsub get.superclass\r\n ; hl=Class\r\n dec hl\r\n dec hl\r\n peekw hl,hl\r\nendsub get.superclass\r\n\r\ndefsub is.subclass.a\r\nproc \r\n local top\r\n ; hl=Subclass\r\n ; de=Superclass\r\n ; z:true\r\n top:\r\n cpde.a 0\r\n ret z\r\n call get.superclass\r\n push de\r\n ld de,null\r\n cpde.a 0\r\n pop de\r\n jr nz,top\r\n cpde.a 0\r\nendp\r\nendsub is.subclass.a\r\n '].join(''),'spr': ['include const\r\ninclude th\r\ninclude mem\r\ninclude oop\r\ninclude sub\r\n\r\nclass Sprite,Object\r\n fld .main, 0\r\n fld.bottom Object\r\n fld .x, 100\r\n fld .y, 100\r\n fld .p, 0\r\n fld .c, 2\r\n fld.bottom Sprite\r\n marker.e Sprite\r\n \r\nmacro outwrt\r\n  out (98h),a\r\nendm\r\n\r\n\r\nmacro spr.unscale\r\n ; HL -> A\r\n rept spr.scale\r\n  srlhl\r\n endm\r\n LD A,L\r\n sub 8 \r\nendm\r\n\r\ndefsub spr.puts\r\nproc\r\n local t1,t2,t3,t4\r\n ld hl, 1b00h\r\n call SETWRT\r\n th.for.a sprl\r\n  ld a,h\r\n  tgconst t1\r\n  tgconst t2\r\n  tgconst t3\r\n  tgconst t4\r\n\r\n  tgconst.g hl,t1,.y \r\n  spr.unscale 0\r\n  outwrt 0\r\n  \r\n  tgconst.g hl,t2,.x \r\n  spr.unscale 0\r\n  outwrt 0\r\n  \r\n  tgconst.g a,t3,.p \r\n  sla a\r\n  sla a\r\n  outwrt 0\r\n  \r\n  tgconst.g a,t4,.c \r\n  outwrt 0\r\n  continue\r\n sprl:\r\nendp\r\nendsub spr.puts\r\n \r\n '].join(''),'sprpat': ['include const\r\n\r\n;aaa\r\nspr.inipat:\r\n ld de,3800h\r\n ld hl,spr.pat\r\n ld bc,128\r\n jp LDIRVM\r\nbg.inipat:\r\n ret\r\nspr.pat:\r\n; --- Slot 0 cat fstand\r\n; color 9\r\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\r\nDB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C\r\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\r\nDB $98,$FC,$FE,$FE,$F6,$F0,$60,$70\r\n; \r\n; --- Slot 1 cat fwalk1\r\n; color 9\r\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\r\nDB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06\r\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\r\nDB $98,$FC,$FE,$FE,$D4,$78,$F0,$00\r\n; \r\n; --- Slot 2 cat fwalk2\r\n; color 9\r\nDB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36\r\nDB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00\r\nDB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8\r\nDB $30,$FC,$FE,$FE,$F7,$F7,$60,$60\r\n; \r\n; --- Slot 3 cat omg\r\n; color 9\r\nDB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D\r\nDB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00\r\nDB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C\r\nDB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00\r\n\r\nds 60*32\r\n'].join(''),'tnu': ['\r\ninclude spr\r\ninclude bool\r\ninclude key\r\n\r\n;.onUpdate equ .c-2\r\n;.update equ .onUpdate-2\r\n;.screenOut equ .update-2\r\n;.die equ .screenOut-2\r\n;.updateEx equ .die-2\r\n\r\nmacro end.const, n\r\n pushi RActor.wait,bc\r\n pushi o.boot,bc\r\n th.with.ret 0 \r\n marker.e n\r\nendm\r\n\r\nmacro RActor.noovr,Class\r\n meth Class,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, -1024\r\n fld .p, 0\r\n fld .c, 3\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\nendm\r\n\r\nclass RActor,Sprite\r\n RActor.noovr RActor\r\n end.const RActor\r\nRActor.main:\r\n enter 0\r\n exit 0\r\nRActor.update:\r\n invoke .onUpdate\r\n yield\r\n ret \r\nRActor.onUpdate:\r\n ret\r\nRActor.screenOut:\r\nproc\r\n local true\r\n getfld .x\r\n bit 1,h\r\n jr nz, true\r\n getfld .y\r\n ld de,192*2\r\n cpde.a\r\n getthis\r\n jr nc,true\r\n ld hl,0\r\n xor a\r\n ret\r\n true:\r\n ld hl,1\r\n scf\r\n ret\r\nendp\r\nRActor.wait:\r\nproc\r\n local lbl\r\n lbl:\r\n invoke .update\r\n jr lbl\r\nendp\r\ndef RActor.die,0,0\r\n ld h,a\r\n ld l,th.ofs.stp\r\n ld (hl),th.st.blank\r\n ld hl, 0\r\n setfld .c\r\nenddef RActor.die\r\n\r\ndef RActor.updateEx,1,0\r\nproc \r\n local n\r\n; enter 0\r\n getarg 1\r\n ld b,h\r\n ld c,l\r\n reptbc n\r\n  invoke .update\r\n  continue\r\n n:\r\nendp\r\nenddef RActor.updateEx\r\n\r\ncrashTo.size equ 8<<spr.scale\r\n\r\nproc\r\n local gx,gy,t1,t2\r\n local endc,cr1\r\n local fe\r\n\r\ndefsub crashTo.setXY\r\n getfld .x\r\n const gx,hl\r\n getfld .y\r\n const gy,hl\r\nendsub crashTo.setXY\r\n\r\n\r\ndef RActor.crashTo,1,0\r\n call crashTo.setXY\r\n getarg 1\r\n const cr.class,hl\r\n call isobj.a\r\n jr c, cr1\r\n  unreach "C"\r\n  ; "Cannot call target.crashTo(Class) "\r\n  ;ld hl, th.start\r\n  ;ld de, th.end\r\n  ;call crashTo1\r\n  ;jr endc\r\n cr1:\r\n  getthis 0\r\n  call crashTo1\r\n  flagtobool c\r\n endc:\r\nenddef RActor.crashTo\r\n\r\nmacro crashToClass,Class,st,en\r\n local nx,found\r\n ; a=this\r\n call crashTo.setXY\r\n foreach.a Class,st,en,nx\r\n  call crashTo1\r\n  break c\r\n  continue\r\n nx:\r\n getthis 0\r\n jr c, found\r\n  ld hl,null\r\n found:\r\nendm\r\n\r\nmacro foreach.a, Class,st,en,nxt\r\n th.for.a nxt, st, en\r\n  all.skip Class\r\nendm\r\n\r\n\r\nmacro all.skip.blank.self\r\n ; skip blank\r\n  ; TODO th.ofs.stp\r\n  call th.isblank.a\r\n  continue z\r\n  ; skip hl==this\r\n  getthis 0\r\n  cp h\r\n  continue z\r\nendm\r\nmacro all.skip.isnot,Class\r\n  ; skip object not instance of *Class*\r\n  push hl\r\n  ld a,h\r\n  ld de,Class\r\n  call instanceof\r\n  getthis 0\r\n  pop hl\r\n  continue nz\r\nendm\r\nmacro all.skip, Class\r\n all.skip.blank.self 0\r\n all.skip.isnot Class\r\nendm\r\n\r\ndefsub crashToC.abolished\r\n ;before:\r\n ; call crashTo.setXY\r\n ; const cr.class,Class\r\n ; hl start\r\n ; de end\r\n ld bc,th.size\r\n for fe\r\n  all.skip.blank.self 0\r\n  ; skip object not instance of *Class*\r\n  push hl\r\n  ld a,h\r\n  ldconst de,cr.class\r\n  call instanceof\r\n  pop hl\r\n  continue nz\r\n  ; do crashTo1\r\n  getthis 0\r\n  call crashTo1\r\n  break c\r\n  continue\r\n fe:\r\n getthis 0\r\n ret c\r\n ld hl,null\r\nendsub crashToC.abolished\r\n\r\ndefsub crashTo1\r\n ; call crashTo.setXY before\r\n ;hl=tg\r\n ;cy:true\r\n ;hl is used\r\n push af\r\n ld a,h\r\n tgconst t1\r\n tgconst t2\r\n pop af\r\n tgconst.g hl,t1,.x\r\n ldconst bc,gx\r\n subhl bc\r\n call abs\r\n ld bc,crashTo.size\r\n subhl bc\r\n ret nc\r\n\r\n tgconst.g hl,t2,.y\r\n ldconst bc,gy\r\n subhl bc\r\n call abs\r\n ld bc,crashTo.size\r\n subhl bc\r\nendsub crashTo1\r\n\r\nendp\r\n\r\n\r\nmacro tnu.run,Main\r\n ld sp,sp.ini\r\n call screen2\r\n \r\n showsp\r\n showlb endusr\r\n call spr.inipat\r\n call bg.inipat\r\n\r\n ld hl,th.start\r\n ld (hl),0cdh\r\n ld de,th.start+1\r\n ld bc,th.size*th.count-1\r\n ldir\r\n \r\n call th.init\r\n ;call mus.ini\r\n new Main, 0\r\n movw (h.thlop),spr.puts\r\n movw (h.thent),keyall\r\n jp th.loop\r\nendm\r\n\r\n;aaaa'].join(''),'key': ['include debug\r\n\r\ndefsub keyall\r\nproc\r\n;show hl\r\n local lp\r\n ld hl,keymat1\r\n ld de,keymat2\r\n ld bc,11\r\n ldir\r\n ld a,0\r\n ld hl,keymat1\r\n lp:\r\n push af\r\n call SNSMAT.a\r\n xor 255\r\n ld (hl),a\r\n pop af\r\n inc hl\r\n inc a\r\n cp 11\r\n jr c,lp\r\nendp\r\nendsub keyall\r\n\r\ndefwork keymat1\r\nds 11\r\nendwork keymat1\r\ndefwork keymat2\r\nds 11\r\nendwork keymat2\r\n\r\n\r\nproc\r\ndefsub getkey.a\r\nlocal chkmat\r\nex de,hl\r\nld hl,keymat1\r\ncall chkmat\r\nld hl,0\r\nret z\r\nld hl,keymat2\r\ncall chkmat\r\nld hl,1\r\nret z\r\ninc hl\r\nendsub getkey.a\r\n\r\ndefsub chkmat\r\npush de\r\nld a,d\r\nld d,0\r\nadd hl,de\r\nand (hl)\r\npop de\r\nendsub chkmat\r\n\r\ndefsub getkey\r\npush af\r\ncall getkey.a\r\npop af\r\nendsub getkey\r\n\r\nendp'].join(''),'map': ['include sub\r\ninclude math\r\ninclude tnu\r\n\r\ndefsub map.adr\r\n ; hl=chipx\r\n ; de=chipy\r\n rept 5\r\n  slde 0\r\n endm\r\n add hl,de\r\n ld de,1800h\r\n add hl,de\r\nendsub map.adr\r\n\r\ndefsub map.set.a\r\n ;  a=data\r\n call map.adr\r\n call 4dh\r\nendsub map.set.a\r\n\r\ndefsub map.get.a\r\n call map.adr\r\n call 4ah \r\nendsub map.get.a\r\n\r\ndefsub map.adrat.a\r\n ; hl=spr_x\r\n ; de=spr_y\r\n spr.unscale 0\r\n srl a\r\n srl a\r\n srl a\r\n push af\r\n ex de,hl\r\n spr.unscale 0\r\n srl a\r\n srl a\r\n srl a\r\n ld d,0\r\n ld e,a\r\n pop hl\r\n ld l,h\r\n ld h,0\r\n inc hl\r\n inc de\r\n call map.adr\r\nendsub map.adrat.a\r\n\r\ndefsub map.getat.a\r\n call map.adrat.a\r\n call 4ah\r\nendsub map.getat.a\r\n\r\ndefsub map.setat.a\r\n ; a=data\r\n push af\r\n call map.adrat.a\r\n pop af\r\n call 4dh\r\nendsub map.setat.a\r\n\r\ndefsub locate\r\n ; hl=chipx\r\n ; de=chipy\r\n call map.adr\r\n ld (cursor-2),hl\r\nendsub locate\r\n'].join(''),'maze': [].join(''),'t1': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude tnu\r\ninclude sp\r\n\r\n;===your code \r\n\r\nright:dw 0\r\n\r\nmain:\r\ntnu.run Main\r\ndef Main.main,0,0\r\nnew.arg .vx,1\r\nnew.arg .vy,0\r\nnew.arg .x,0\r\nnew.arg .y,100\r\nnew Cat,4\r\n\r\nnew.arg .x,100\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\nld (right),hl\r\nld a,h\r\nld de,RActor\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Target\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Cat\r\ncall instanceof\r\ncall showz\r\n\r\n\r\nld hl,1\r\nsetfld .c\r\nenddef 0\r\n\r\nclass Main,RActor\r\n RActor.noovr Main\r\n end.const Main\r\nclass Target,RActor\r\n RActor.noovr Target\r\n met2 Target,.push\r\n end.const Target\r\ndef Target.main,0,0\r\nenddef\r\nclass Cat,RActor\r\n RActor.noovr Cat\r\n fld .vy, 0\r\n fld .vx, 0\r\n fld.bottom Cat\r\n end.const Cat\r\ndef Cat.main,0,0\r\n blp:\r\n  ld hl,0108h\r\n  call getkey\r\n  jpf nomov\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  nomov:\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  ld hl,(right)\r\n  push hl\r\n  invoke .crashTo\r\n  jpf cr\r\n   ; r.x+=10\r\n   ld hl,(right)\r\n   getfldtg .x\r\n   ld de,10\r\n   add hl,de\r\n   push hl\r\n   ld hl,(right)\r\n   setfldtg .x\r\n   ; r.push()\r\n   pushthis 0\r\n   ld hl,(right)\r\n   invoketg.a .push\r\n   popthis 0\r\n  cr:\r\n  invoke .update\r\n jp blp\r\nenddef\r\n; test t1\r\ndef Target.push,0,0\r\n ld hl,3\r\n setfld .p\r\n repti 30,pse\r\n  getfld .x\r\n  inc hl\r\n  setfld .x\r\n  invoke .update\r\n  continue\r\n pse:\r\n ld hl,0\r\n setfld .p\r\nenddef\r\n\r\nendusr: \r\ninclude sprpat\r\n\r\nend main\r\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\r\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t2': ['org 08000h\r\ninclude tnu\r\ninclude bool\r\ninclude map\r\n\r\nmain:\r\ntnu.run Main\r\n;range 0-5\r\nclass EBullet,RActor\r\n meth EBullet,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .vx,0\r\n fld .vy,0\r\n end.const 0\r\ndef EBullet.main,0,0\r\n ;p=7;\r\n ld hl,7\r\n setfld .p\r\n ;c=15;\r\n ld hl,15\r\n setfld .c\r\n lb1:\r\n ld hl,true\r\n jpf lb2\r\n ;x+=vx;\r\n getfld .vx\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n ;y+=vy;\r\n getfld .vy\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n invoke .screenOut\r\n jpf lb4\r\n ;die();\r\n invoke .die\r\n jp lb3\r\n lb4:\r\n lb3:\r\n ;update();\r\n invoke .update\r\n jp lb1\r\n lb2:\r\n ret\r\n;range 5-15\r\nclass Enemy,RActor\r\n meth Enemy,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .vx,0\r\n fld .bvx,0\r\n fld .bvy,0\r\n fld .bdist,0\r\n meth Enemy,fire\r\n end.const 0\r\ndef Enemy.main,0,0\r\n lb5:\r\n ld hl,200\r\n push hl\r\n getfld .y\r\n pop de\r\n call hlltde\r\n jpf lb6\r\n ;y+=2;\r\n ld hl,2\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n ;update();\r\n invoke .update\r\n jp lb5\r\n lb6:\r\n ld hl,(gbl_player)\r\n getfldtg .x\r\n push hl\r\n getfld .x\r\n pop de\r\n call hlgtde\r\n jpf lb8\r\n ;vx=0-2;\r\n ld hl,2\r\n push hl\r\n ld hl,0\r\n pop de\r\n subhl de\r\n setfld .vx\r\n jp lb7\r\n lb8:\r\n ;vx=2;\r\n ld hl,2\r\n setfld .vx\r\n lb7:\r\n ;fire();\r\n invoke .fire\r\n lb9:\r\n ld hl,true\r\n jpf lb10\r\n invoke .screenOut\r\n jpf lb12\r\n ;die();\r\n invoke .die\r\n jp lb11\r\n lb12:\r\n lb11:\r\n ;y+=2;\r\n ld hl,2\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n ;x+=vx;\r\n getfld .vx\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n ;update();\r\n invoke .update\r\n jp lb9\r\n lb10:\r\n ret\r\ndef Enemy.fire,0,0\r\n ;bvx=$player.x-x;\r\n getfld .x\r\n push hl\r\n ld hl,(gbl_player)\r\n getfldtg .x\r\n pop de\r\n subhl de\r\n setfld .bvx\r\n ;bvy=$player.y-y;\r\n getfld .y\r\n push hl\r\n ld hl,(gbl_player)\r\n getfldtg .y\r\n pop de\r\n subhl de\r\n setfld .bvy\r\n ;bdist=abs(bvx)+abs(bvy);\r\n getfld .bvy\r\n call abs\r\n push hl\r\n getfld .bvx\r\n call abs\r\n pop de\r\n add hl, de\r\n setfld .bdist\r\n ;bdist/=8;\r\n pushthis\r\n getfld .bdist\r\n push hl\r\n ld hl,8\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bdist\r\n ;bvx/=bdist;\r\n pushthis\r\n getfld .bvx\r\n push hl\r\n getfld .bdist\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bvx\r\n ;bvy/=bdist;\r\n pushthis\r\n getfld .bvy\r\n push hl\r\n getfld .bdist\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bvy\r\n ;new EBullet{        x,y,vx:bvx,vy:bvy    };\r\n getfld .x\r\n new.arg .x\r\n getfld .y\r\n new.arg .y\r\n getfld .bvx\r\n new.arg .vx\r\n getfld .bvy\r\n new.arg .vy\r\n new EBullet,4,0,5\r\n ret\r\n;range 0-5\r\nclass Main,RActor\r\n meth Main,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .i,0\r\n end.const 0\r\ndef Main.main,0,0\r\n ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};\r\n ld hl,256\r\n new.arg .x\r\n ld hl,300\r\n new.arg .y\r\n ld hl,4\r\n push hl\r\n ld hl,(gbl_pat_spr)\r\n pop de\r\n add hl, de\r\n new.arg .p\r\n ld hl,15\r\n new.arg .c\r\n new Player,4,0,5\r\n ld (gbl_player),hl\r\n ld hl,0\r\n setfld .i\r\n lb13:\r\n ld hl,20\r\n push hl\r\n getfld .i\r\n pop de\r\n call hlltde\r\n jpf lb14\r\n ;new Enemy{x:rnd(512), y:0, p:5, c:7};\r\n ld hl,512\r\n call rnd\r\n new.arg .x\r\n ld hl,0\r\n new.arg .y\r\n ld hl,5\r\n new.arg .p\r\n ld hl,7\r\n new.arg .c\r\n new Enemy,4,5,15\r\n ;updateEx(30);\r\n ld hl,30\r\n push hl\r\n invoke .updateEx\r\n jp lb13\r\n lb14:\r\n ret\r\n;range 15-20\r\nclass PBullet,RActor\r\n meth PBullet,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth PBullet,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .e,0\r\n end.const 0\r\ndef PBullet.main,0,0\r\n ;p=6;\r\n ld hl,6\r\n setfld .p\r\n ;c=8;\r\n ld hl,8\r\n setfld .c\r\n lb15:\r\n ld hl,true\r\n jpf lb16\r\n invoke .screenOut\r\n jpf lb18\r\n ;die();\r\n invoke .die\r\n jp lb17\r\n lb18:\r\n lb17:\r\n ;y-=6;\r\n ld hl,6\r\n push hl\r\n getfld .y\r\n pop de\r\n subhl de\r\n setfld .y\r\n crashToClass Enemy, 5, 15\r\n setfld .e\r\n getfld .e\r\n jpf lb20\r\n ;e.die();\r\n pushthis 0\r\n getfld .e\r\n invoketg.a .die\r\n popthis 0\r\n ;die();\r\n invoke .die\r\n jp lb19\r\n lb20:\r\n lb19:\r\n ;update();\r\n invoke .update\r\n jp lb15\r\n lb16:\r\n ret\r\ndef PBullet.onUpdate,0,0\r\n ;c+=1;\r\n ld hl,1\r\n push hl\r\n getfld .c\r\n pop de\r\n add hl, de\r\n setfld .c\r\n ld hl,14\r\n push hl\r\n getfld .c\r\n pop de\r\n call hlgtde\r\n jpf lb22\r\n ;c=0;\r\n ld hl,0\r\n setfld .c\r\n jp lb21\r\n lb22:\r\n lb21:\r\n ret\r\n;range 0-5\r\nclass Player,RActor\r\n meth Player,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n end.const 0\r\ndef Player.main,0,0\r\n lb23:\r\n ld hl,3\r\n ld de,10\r\n call locate\r\n getfld .y\r\n ld a,l\r\n call wrt\r\n ld a,h\r\n call wrt\r\n getthis 0\r\n \r\n ex de,hl\r\n getfld .x\r\n ld a,35\r\n call map.setat.a\r\n getthis 0\r\n ld hl,true\r\n jpf lb24\r\n ld hl, 4104\r\n call getkey\r\n jpf lb26\r\n ;x-=3;\r\n ld hl,3\r\n push hl\r\n getfld .x\r\n pop de\r\n subhl de\r\n setfld .x\r\n jp lb25\r\n lb26:\r\n lb25:\r\n ld hl, 32776\r\n call getkey\r\n jpf lb28\r\n ;x+=3;\r\n ld hl,3\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n jp lb27\r\n lb28:\r\n lb27:\r\n ld hl, 8200\r\n call getkey\r\n jpf lb30\r\n ;y-=3;\r\n ld hl,3\r\n push hl\r\n getfld .y\r\n pop de\r\n subhl de\r\n setfld .y\r\n jp lb29\r\n lb30:\r\n lb29:\r\n ld hl, 16392\r\n call getkey\r\n jpf lb32\r\n ;y+=3;\r\n ld hl,3\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n jp lb31\r\n lb32:\r\n lb31:\r\n crashToClass Enemy, 5, 15\r\n jpf lb34\r\n ;die();\r\n invoke .die\r\n jp lb33\r\n lb34:\r\n lb33:\r\n crashToClass EBullet, 0, 5\r\n jpf lb36\r\n ;die();\r\n invoke .die\r\n jp lb35\r\n lb36:\r\n lb35:\r\n ld hl,1\r\n push hl\r\n ld hl, 264\r\n call getkey\r\n pop de\r\n call hleqde\r\n jpf lb38\r\n ;new PBullet{x,y};\r\n getfld .x\r\n new.arg .x\r\n getfld .y\r\n new.arg .y\r\n new PBullet,2,15,20\r\n foreach.a Enemy,5,14,nxx\r\n  ld a,h\r\n  ld hl,8\r\n  setfld .c\r\n  continue \r\n nxx:\r\n getthis 0\r\n \r\n \r\n jp lb37\r\n lb38:\r\n lb37:\r\n ;update();\r\n invoke .update\r\n jp lb23\r\n lb24:\r\n ret\r\nenddef 0\r\nendusr:\r\ngbl_player:dw 0\r\ngbl_pat_spr:dw 0\r\nspr.inipat:\r\n ld de,3800h\r\n ld hl,spr.pat\r\n ld bc,2048\r\n jp LDIRVM\r\nspr.pat:\r\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c\r\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70\r\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6\r\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0\r\ndb $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0\r\ndb $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60\r\ndb $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0\r\ndb $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0\r\ndb $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0\r\ndb $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0\r\ndb $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c\r\ndb $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18\r\ndb $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0\r\ndb $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0\r\ndb $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0\r\ndb $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0\r\nbg.inipat:\r\n ret\r\n\r\n\r\nend main'].join(''),'t3': ['org 09000h\r\n\r\ninclude tnu\r\ninclude mus\r\ninclude sprpat\r\n\r\n;===your code \r\n\r\nmain:\r\nld sp,(8000h)\r\n\r\ncall screen1\r\n\r\nshowsp\r\nshowlb endusr\r\n\r\nld hl,8000h\r\nld (hl),0cdh\r\nld de,8001h\r\nld bc,th.size*th.count-1\r\nldir\r\n\r\n\r\ncall th.init\r\ncall spr.inipat\r\n;call mus.ini\r\n\r\n\r\nnew Main, 0\r\nshow hl\r\n\r\n\r\nmovw (h.thlop),spr.puts\r\njp th.loop\r\n\r\nclass Main, RActor\r\n meth Main,main\r\n fld.bottom Object\r\n fld .x,100\r\n fld .y,300\r\n fld .p,0\r\n fld .c,3\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\n fld.bottom Main\r\n end.const\r\n\r\nMain.main:\r\n olp:\r\n  getthis\r\n  invoke .update\r\n  call xrnd.a\r\n  ld a,h\r\n  and 15\r\n  jr nz,doap\r\n   getthis\r\n   getfld .x\r\n   new.arg .x\r\n   getfld .y\r\n   new.arg .y\r\n   ld hl,7\r\n   call rnd.a\r\n   ld de,3\r\n   sbc hl,de\r\n   new.arg .vx\r\n   ld hl,5\r\n   call rnd.a\r\n   ld de,15\r\n   sbc hl,de\r\n   new.arg .vy\r\n   new Bullet, 4\r\n   call dstk\r\n  doap:\r\n  ld a,8\r\n  call SNSMAT.a\r\n  and 1\r\n  jr z,golf\r\n  \r\n  getthis\r\n  getfld .x\r\n  inc hl\r\n  inc hl\r\n  setfld .x\r\n  ld de,400\r\n  cpde.a\r\n  jp c, olp\r\n  golf:\r\n  ld hl,0\r\n  getthis\r\n  setfld .x\r\n jp olp\r\n\r\n\r\nclass Bullet,RActor\r\n meth Bullet,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, 0\r\n fld .p, 2\r\n fld .c, 15\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\n fld .vy, -10\r\n fld .vx, 0\r\n fld.bottom Bullet\r\n end.const \r\n \r\nBullet.main:\r\n blp:\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  getfld .vy\r\n  inc hl\r\n  setfld .vy\r\n\r\n  invoke .update\r\n  invoke .screenOut\r\n  jp c, bdie\r\n  getfld .vy\r\n  bit 7,h\r\n  jr nz,blp\r\n  ld de,5\r\n  cpde.a\r\n  jr c,blp\r\n \r\n  call dstk\r\n  getthis\r\n  ld hl,3\r\n  setfld .p\r\n  pushi 10,bc\r\n  invoke .updateEx\r\n\r\n bleft:\r\n  getthis\r\n  ld hl,2\r\n  setfld .p\r\n  getfld .x\r\n  dec hl\r\n  dec hl\r\n  setfld .x\r\n  getfld .y\r\n  dec hl\r\n  setfld .y\r\n  invoke .update\r\n  invoke .screenOut\r\n  jr c, bdie\r\n  jr bleft\r\n bdie:\r\n  invoke .die\r\n  ret \r\n\r\n  \r\ndstk:\r\n push af\r\n ld hl,th.start+256*3\r\n getthis\r\n ld h,a\r\n ld de,1900h\r\n ld bc,256\r\n call LDIRVM\r\n pop af\r\n ret\r\n \r\nendusr:\r\nend main'].join(''),'t4': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude tnu\r\ninclude sp\r\n\r\n;===your code \r\n\r\nright:dw 0\r\n\r\nmain:\r\ntnu.run Main\r\ndef Main.main,0,0\r\nnew.arg .vx,1\r\nnew.arg .vy,0\r\nnew.arg .x,0\r\nnew.arg .y,100\r\nnew Cat,4\r\n\r\nnew.arg .x,100\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\nnew.arg .x,200\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\n\r\nnew.arg .x,150\r\nnew.arg .y,100\r\nnew.arg .c,8\r\nnew NTarget,3\r\n\r\nld (right),hl\r\nld a,h\r\nld de,Actor\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Target\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Cat\r\ncall instanceof\r\ncall showz\r\n\r\n\r\nld hl,1\r\nsetfld .c\r\nenddef 0\r\n\r\nclass Main,Actor\r\n Actor.noovr Main\r\n end.const 0\r\nclass Target,Actor\r\n Actor.noovr Target\r\n met2 Target,.push\r\n end.const 0\r\nclass NTarget,Actor\r\n Actor.noovr NTarget\r\n end.const 0\r\ndef NTarget.main,0,0\r\n ret\r\nenddef\r\n\r\ndef Target.main,0,0\r\nenddef\r\nclass Cat,Actor\r\n Actor.noovr Cat\r\n fld .vy, 0\r\n fld .vx, 0\r\n fld.bottom Cat\r\n end.const 0\r\ndef Cat.main,0,0\r\n blp:\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  ld hl,Target\r\n  push hl\r\n  invoke .crashTo\r\n  jpf cr\r\n   ; r.x+=10\r\n   const setg,hl\r\n   getfldtg .y\r\n   ld de,30\r\n   add hl,de\r\n   push hl\r\n   ldconst hl,setg\r\n   setfldtg .y\r\n  cr:\r\n  invoke .update\r\n jp blp\r\nenddef\r\ndef Target.push,0,0\r\n ld hl,3\r\n setfld .p\r\n repti 30,pse\r\n  getfld .y\r\n  inc hl\r\n  setfld .y\r\n  invoke .update\r\n  continue\r\n pse:\r\n ld hl,0\r\n setfld .p\r\nenddef\r\n\r\nendusr: \r\nend main\r\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\r\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t5': ['org 9000h\r\n\r\n\r\ninclude key\r\n\r\nmain:\r\ncall keyall\r\nld hl,0108h\r\ncall getkey\r\nshow hl\r\nld hl,0107h\r\ncall getkey\r\nshow hl\r\n\r\n\r\nhalt\r\njp main'].join(''),'gen': ['org 09000h\r\ninclude tnu\r\ninclude bool\r\n\r\nmain:\r\ntnu.run Main\r\nclass Main,Actor\r\n Actor.noovr Main\r\n end.const 0\r\ndef Main.main,0,0\r\n\r\n showlb .main\r\n showlb .crashTo\r\nenddef 0\r\nendusr:\r\nend main'].join(''),'dac': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n\r\nDECSUB equ 268CH;DAC ← DAC-ARG\r\nDECADD equ 269AH;DAC ← DAC+ARG\r\nDECNRM equ 26FAH;DAC を正規化する (*1)\r\nDECROU equ 273CH;DAC を四捨五入する\r\nDECMUL equ 27E6H;DAC ← DAC*DAC\r\nDECDIV equ 289FH;DAC ← DAC/DAC\r\nMAF equ 2C4DH;ARG ← DAC\r\nMAM equ 2C50H;ARG ← [HL]\r\nMOV8DH equ 2C53H;[DE] ← [HL]\r\nMFA equ 2C59H;DAC ← ARG\r\nMFM equ 2C5CH;[HL] ← DAC\r\nMMF equ 2C67H;[HL] ← DAC\r\nMOV8HD equ 2C6AH;[HL] ← [DE]\r\nXTF equ 2C6FH;[SP] ←→ DAC\r\nPHA equ 2CC7H;ARG → [SP]\r\nPHF equ 2CCCH;DAC → [SP]\r\nPPA equ 2CDCH;[SP] → ARG\r\nPPF equ 2CE1H;[SP] → DAC\r\nPUSHF equ 2EB1H;DAC → [SP]\r\nMOVFM equ 2EBEH;DAC ← [HL]\r\nMOVFR equ 2EC1H;DAC ← (CBED)\r\nMOVRF equ 2ECCH;(CBED) ← DAC\r\nMOVRMI equ 2ED6H;(CBDE) ← [HL]\r\nMOVRM equ 2EDFH;(BCDE) ← [HL]\r\nMOVMF equ 2EE8H;[HL] ← DAC\r\nMOVE equ 2EEBH;[HL] ← [DE]\r\nVMOVAM equ 2EEFH;ARG ← [HL]\r\nMOVVFM equ 2EF2H;[DE] ← [HL]\r\nVMOVE equ 2EF3H;[HL] ← [DE]\r\nVMOVFA equ 2F05H;DAC ← ARG\r\nVMOVFM equ 2F08H;DAC ← [HL]\r\nVMOVAF equ 2F0DH;ARG ← DAC\r\nVMOVMF equ 2F10H;[HL] ← DAC\r\n\r\nVALTYP equ 0F663H;1\r\nDAC equ 0F7F6H;16\r\nARG equ 0F847H;16\r\nFOUT equ 3425H\r\n\r\ndefsub int2dac\r\n push af\r\n ld a,2\r\n ld (VALTYP),a\r\n ld (DAC+2),HL\r\n pop af\r\nendsub int2dac\r\n;===your code \r\n\r\nmain:\r\nld hl,12345\r\ncall int2dac\r\nld hl,str\r\ncall FOUT\r\n\r\nld b,10\r\nreptb nxt\r\n ld a,(hl)\r\n cp 0\r\n break z\r\n call wrt2\r\n inc hl\r\n continue\r\nnxt:\r\nret\r\nstr:\r\n\r\n\r\n'].join(''),'setvrm': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n;===your code \r\n\r\nmain:\r\nld hl,1800h\r\ncall SETWRT\r\nld a,35\r\nrepti 5, ed\r\ninc a\r\nout (98h),a\r\ncontinue\r\ned:\r\nret'].join(''),'assert': ['include mem\r\ninclude math\r\ninclude debug\r\n\r\na.reg.trc:\r\ndw 0\r\na.reg.adr:\r\ndw 0\r\na.reg.min:\r\ndw 0\r\na.reg.val:\r\ndw 0\r\na.reg.max:\r\ndw 0\r\nmacro a.regi,n,v\r\n push hl\r\n ld hl,v\r\n ld (a.reg.##n),hl\r\n pop hl\r\nendm\r\nmacro a.regr,n,v\r\n ld (a.reg.##n),v\r\nendm\r\n\r\nmacro a.dummy\r\n local a.reg.,trc,adr,min,val,nax\r\nendm\r\n \r\n\r\nmacro assert.eq,o\r\n storelastpc\r\n pushall \r\n if not nul o\r\n  a.regi val, o\r\n endif\r\n ld de,(a.reg.val)\r\n ld(a.reg.val),hl\r\n ld(a.reg.min),de\r\n ld(a.reg.max),de\r\n cpde\r\n jp nz,assert.fail\r\n popall\r\nendm\r\n\r\nmacro assert.do,nx\r\n storelastpc\r\n pushall\r\n call to\r\n popall\r\n jr nx\r\n to:\r\nendm\r\n\r\nmacro storelastpc\r\n push hl\r\n call getpc\r\n ld (lastpc),hl\r\n pop hl\r\nendm\r\nlastpc:\r\n dw 0\r\n \r\ngetpc:\r\n pop hl\r\n push hl\r\n ret\r\n\r\nassert.fail:\r\n ld hl,0deadh\r\n show hl\r\n showm a.reg.trc\r\n showm a.reg.min\r\n showm a.reg.val\r\n showm a.reg.max\r\n showm a.reg.adr\r\n showm lastpc\r\n call freeze\r\nmacro assert.meqw,ad,val\r\n a.regi adr,ad\r\n push hl\r\n ld hl,(ad)\r\n assert.eq val\r\n pop hl\r\nendm\r\n '].join(''),'stksz': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n\r\n;===your code \r\n\r\nsz equ 256\r\n  \r\nmain:\r\nld hl,0fd9fh\r\nld (hl),0c9h\r\n rept sz/2\r\n  push hl\r\n endm\r\n rept sz/2\r\n  pop hl\r\n endm\r\n\r\nloop:\r\n getsp\r\n ld de,-sz\r\n add hl,de\r\n ld de,1800h\r\n ld bc,sz\r\n call LDIRVM\r\n ld hl,0\r\n halt\r\n jp loop\r\n \r\n \r\n '].join(''),'vdp': [';https://www.msx.org/wiki/VDP_Status_Registers\r\n;st 0 bit 7\r\n;read 1\r\n\r\n;https://www.msx.org/wiki/VDP_Mode_Registers\r\n;ctrl 1 bit 5 set 0\r\ninclude const\r\n\r\nsusint:\r\n ld a,(RG1SAV)\r\n res 5,a\r\n ld b,A\r\n ld c,1\r\n jp WRTVDP\r\n;rstint:\r\n ld a,(RG1SAV)\r\n set 5,a\r\n ld b,A\r\n ld c,1\r\n jp WRTVDP\r\ninted:\r\n call RDVDP\r\n bit 7,a\r\n ret\r\ndoint:\r\n call inted\r\n jr z, norst\r\n ld hl,timecnt\r\n inc (hl)\r\n call h.tntimi\r\n norst:\r\n ;call rstint\r\n ret\r\nh.tntimi:\r\n ld A,(timecnt)\r\n ld hl,1ae0h\r\n call 4dh\r\n ret\r\n ds 16\r\n \r\ntimecnt:\r\ndb 0\r\nmacro vdptest\r\nlocal stk1,stk2,stk3,vl\r\nstk1:\r\n ds 256,35\r\nstk2:\r\n ds 256,42\r\nstk3:\r\n\r\nvl:\r\n call susint\r\n ld sp,stk2\r\n ld hl,stk1\r\n ld de,1800h\r\n ld bc,256\r\n call LDIRVM\r\n \r\n \r\n ld sp,stk3\r\n call doint\r\n ld hl,stk2\r\n ld de,1900h\r\n ld bc,256\r\n call LDIRVM\r\n jp vl\r\nendm\r\n \r\nscreen1:\r\n ld a,1\r\n call CHGMOD\r\n ld a,(RG1SAV)\r\n set 1,a\r\n ld b,A\r\n ld c,1\r\n call WRTVDP\r\n ret\r\n\r\ndefsub screen2\r\n ld a,2\r\n call CHGMOD\r\n ld a,(RG1SAV)\r\n set 1,a\r\n ld b,A\r\n ld c,1\r\n call WRTVDP\r\nendsub screen2\r\n '].join(''),'mus': ['include mem\r\nmus.ini:\r\n di\r\n ld hl,0fd9fh\r\n ld (hl),0c3h\r\n movw (0fd9fh+1),mus\r\n ei\r\n ret\r\nmus:\r\nproc\r\nlocal we\r\n push af\r\n push de\r\n ld a,(we-1)\r\n xor 15\r\n ld (we-1),a \r\n ld a,8\r\n ld e,15\r\n we:\r\n call WRTPSG\r\n pop af \r\n pop de\r\n ret\r\nendp'].join('')};
         
       },
       fiber$main :function* _trc_Asms_f_main(_thread) {
@@ -18,7 +18,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _this.data = {'main': ['org 09000h\n\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude sp\ninclude vdp\ninclude th\n\n\n;===your code \n\nmain:\nld a,5\nlp:\ndec b\nshow a\niff nc,nx\njr lp\nnx:\n\nret\nend main'].join(''),'math': ['include ctrl\n\n;16bit shifts\nmacro slhl\n sla l\n rl h\nendm\nmacro srahl\n sra h\n rr l\nendm\nmacro srlhl\n srl h\n rr l\nendm\nmacro slde\n sla e\n rl d\nendm\nmacro srade\n sra d\n rr e\nendm\nmacro srlde\n srl d\n rr e\nendm\nmacro slbc\n sla c\n rl b\nendm\nmacro srabc\n sra b\n rr c\nendm\nmacro srlbc\n srl b\n rr c\nendm\n\n\n; for xrnd\nmacro sldehl,n\n  local loop\n  ld b,n\n loop:\n  sla d\n  rl e\n  rl h\n  rl l\n  djnz loop\nendm\nmacro srdehl,n\n local loop\n ld b,n\n loop:\n  srl l\n  rr h\n  rr e\n  rr d\n djnz loop\nendm\n \nmacro xorrm,re,me\n  ld A,(me)\n  xor re\n  ld (me),a\nendm\n\nmacro subhl,rp\n and a\n sbc hl,rp\nendm\n\nmacro cpde.a\n rst dcompr\nendm\n\n\nmarker.b xrnd.a\nxrnd.a:\nproc \n local rhl,rde,rdhlde\n ; s[0] ^= s[0] << 13\n call rdhlde\n sldehl 13\n call wrtxor\n ; s[0] ^= s[0] >> 17\n call rdhlde\n srdehl 17\n call wrtxor\n ; s[0] ^= s[0] << 5;\n call rdhlde\n sldehl 5\n call wrtxor\n ret\n \n rdhlde:\n  ld hl,1234\n rhl:\n  ld de,5678\n rde:\n  ret\n \n wrtxor:\n  xorrm h,rhl-1\n  xorrm l,rhl-2\n  xorrm d,rde-1\n  xorrm e,rde-2\n  ret\nendp\nmarker.e xrnd.a\n\n\nmarker.b rnd\nrnd:\n push af\n call rnd.a\n pop af\n ret\nmarker.e rnd\nmarker.b rnd.a\nrnd.a:\n ld de,07fffh\n call IDIV.a\n push hl\n call xrnd.a\n res 7,h\n ex de,hl\n pop hl\n inc hl\n call IDIV.a\n ret\nmarker.e rnd.a\n\nmarker.b abs\nabs:\n bit 7,h\n ret z\nneghl:\n ld de,0 \n ex de,hl \n subhl de\n ret\nmarker.e abs\n\n '].join(''),'bool': ['include math\ninclude ctrl\ntrue equ -1\nfalse equ 0\n\nmacro rethl,val,flg\n local tru\n if not nul flg\n  iff flg ,tru\n endif\n ld hl,val\n ret\n tru:\nendm\n\nhleqde:\n subhl de\n rethl true,z\n rethl false\n\nhlnede:\n subhl de\n rethl true,nz\n rethl false\n \nhlgtde:\n subhl de\n rethl false,z\n bit 7,h\n rethl true,z\n rethl false\n\nhlltde:\n subhl de\n bit 7,h\n rethl true,nz\n rethl false\n \nhlgede:\n subhl de\n rethl true,z\n bit 7,h\n rethl true,z\n rethl false\n\nhllede:\n subhl de\n rethl true,z\n bit 7,h\n rethl true,nz\n rethl false\n \nproc\nziffalse:\n local resa\n ld (resa-1),a\n call ziffalse.a\n ld A,0\n resa:\n ret\nziffalse.a:\n ld a,0\n cp h\n ret nz\n cp l\n ret\nendp\n\nmacro jpf,to\n call ziffalse\n jp z,to\nendm\n\nmacro andand,fls\n jpf fls\nendm\nmacro oror,tru\n call ziffalse\n jp nz,tru\nendm\n\nmacro flagtobool,fl\n local yes,skp\n jr fl, yes\n ld hl,false\n jr skp\n yes:\n ld hl,true\n skp: \nendm'].join(''),'mem': ['include const\n;\nrdslt:\n ex de,hl\n rept 5\n srl d;page*2\n endm\n CALL RSLREG\n ld e,d\n rdslt1:\n  RRCA\n  dec e\n  jp nz,rdslt1\n AND    00000011B\n LD C,A;000000Pr\n LD B,0\n LD HL,EXPTBL\n ADD HL,BC\n LD C,A;000000Pr\n LD A,(HL)\n AND 80H;expand flag\n OR C\n LD C,A;e00000Pr\n rept 4;const\n INC HL\n endm\n LD A,(HL);exp reg\n ld e,d\n rdslt2:\n  srl a\n  dec e\n  jp nz,rdslt2\n;000000Ex\n sla a\n sla a\n ;    0000Ex00\n and  00001100b\n OR C;e000ExPr\n ret\nmemini:\n CALL RSLREG\n rept 4\n  RRCA\n endm\n AND    00000011B\n LD C,A;000000Pr\n LD B,0\n LD HL,EXPTBL\n ADD HL,BC\n LD C,A;000000Pr\n LD A,(HL)\n AND 80H;expand flag\n OR C\n LD C,A;e00000Pr\n rept 4;const\n INC HL\n endm\n LD A,(HL);exp reg\n rept 4; page*2\n srl a\n endm;000000Ex\n sla a\n sla a\n ;    0000Ex00\n and  00001100b\n OR C;e000ExPr\n LD Hl,04000H\n jp ENASLT\n\nmacro peekw ,regv,regm\n  local w\n  ld (w-2),regm\n  ld regv,(0)\n  w:\nendm\n\nmacro pokew ,regm,regv\n  local w\n  ld (w-2),regm\n  ld (0),regv\n  w:\nendm\nmacro movw,dst,src,rp\n if nul rp\n  push hl\n  movw dst,src,hl\n  pop hl\n else\n  ld rp,src\n  ld dst,rp\n endif \nendm\n\nmacro popa\n  ex (sp),hl\n  ld a,h\n  pop HL\nendm\n\nmacro pushall\n push af\n push bc\n push de\n push hl\nendm\nmacro popall\n pop hl\n pop de\n pop bc\n pop af\nendm\n \n\nmacro pushi, n,rp\n local rrr\n if nul rp\n  ld (rrr-2),hl\n  ld hl,n\n  push hl\n  ld hl,0\n  rrr:\n else\n  ld rp,n\n  push rp\n endif\nendm\nmacro const,n,reg\n ld (n-2),reg\nendm\nmacro ldconst,reg,n\n ld reg,0\n n:\nendm\nmacro peekconst,reg,n\n ld reg,(0)\n n:\nendm\n'].join(''),'const': ['\n;wrt equ 0a2h\ndcompr equ 0020H\nsp.ini equ 0dc00h\nstksize equ 512\n\nth.size equ 256\nth.count equ 20\nth.start equ th.end-th.size*th.count\nth.end equ sp.ini-stksize\n\nth.bottom equ 0\n\nspr.scale equ 1\nspr.xmax equ 256<<spr.scale\nspr.ymax equ 192<<spr.scale\n\nENASLT EQU 0024H\nRSLREG EQU 0138H\nEXPTBL EQU 0FCC1H\nSETWRT equ 0053H\nLDIRVM equ 005CH\nWRTVDP equ 0047H\nRG1SAV equ 0F3E0H\nRDVDP  equ 013EH\nSNSMAT.a equ 0141h\n\nCHGMOD equ 005FH\n\nIMULT.a equ 3193H;HL ← DE*HL\nIDIV.a equ 31E6H;HL ← DE/HL\nIMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) \n\nWRTPSG  equ 0093H\n\nCSRY equ 0F3DCH\nCSRX equ 0F3DDH\n\nnull equ 0\n\nmacro marker.b, n\n last.marker: defl $\nendm\nmacro marker.e, n\n len.##n: defl $-last.marker\nendm\n'].join(''),'ctrl': ['include const\nfreeze:\nhalt\njr freeze\n\nmacro for ,lbend\n ; uses a\n ; c: breaked\n proc\n  local s,lb\n  lb:\n  call dcompr; uses a\n  jp nc,lbend\n  push HL\n  push de\n  push bc\n  call s\n  pop bc\n  pop de\n  pop HL\n  jp c,lbend\n  add HL,bc\n  jr lb\n  s:\n endp\nendm\n\nmacro repti ,n,lbend\n proc\n  local s,lb, lbend2\n  push bc\n  ld b,n\n  lb:\n  push bc\n  call s\n  pop bc\n  jr c,lbend2\n  djnz lb\n  lbend2:\n  pop bc\n  jp lbend \n  s:\n endp\nendm\n\n\nmacro reptb ,lbend\n  local s,lb\n inc b\n djnz lb\n jp lbend\n lb:\n  push bc\n  call s\n  pop bc\n  jp c,lbend\n djnz lb\n jp lbend \n s:\nendm\n\n\n\nmacro callsva,pp\n local sva\n ld (sva-1),a\n call pp\n ld a,0\n sva:\nendm\nbcis0:\n callsva bcis0.a\n ret\nbcis0.a:\n ld a,b\n and a\n ret nz\n ld a,c\n and a\n ret\n\nmacro reptbc ,lbend\n local s,lb\n call bcis0\n jp z,lbend \n lb:\n  push bc\n  call s\n  pop bc\n  jp c,lbend\n  dec bc\n  call bcis0\n jr nz, lb\n jp lbend \n s:\nendm\n\n\niff.NZ equ 0\niff.Z  equ 1\niff.NC equ 2\niff.C  equ 3\n\nmacro iff,cnd,to\n local iff.\n if iff.##cnd eq iff.NZ\n  jr z,to\n endif\n if iff.##cnd eq iff.Z\n  jr nz,to\n endif\n if iff.##cnd eq iff.NC\n  jr c,to\n endif\n if iff.##cnd eq iff.C\n  jr nc,to\n endif\n ;jr cnd, skip\n ;jr to\n ;skip:\nendm\n\nmacro break,cnd\n if NUL cnd\n  scf\n  ret\n else\n  proc \n   local jj\n   iff cnd ,jj\n   break\n  jj:\n  endp\n endif\nendm\nmacro continue,cnd\n if NUL cnd \n  or a\n  ret\n else\n  proc \n   local jj\n   iff cnd,jj\n   continue\n  jj:\n  endp\n endif\nendm\n\n\nmacro djnzr,reg, j\n dec reg\n jr NZ,j\nendm\n\nmacro callhl\n local LCD\n ld (LCD-2),HL\n call LCD\n LCD:\nendm\n\nmacro stride,lim,to\n if (low $)<lim\n  exitm\n endif\n ds 256+to-(low $),0cdh\nendm'].join(''),'th': ['include ctrl\ninclude sp\ninclude vdp\ninclude mem\ninclude math\ninclude debug\n\nth.ofs.stp equ 256-4\nth.ofs.sp equ th.ofs.stp+1\nth.ofs.spini equ th.ofs.stp\nfld.top equ th.ofs.spini-2\nth.st.blank equ 0c9h\nth.st.active equ 31h\n\n;macro th.for,lb\n; ld HL,th.start\n; ld de,th.end\n; ld bc,th.size\n; for lb\n;endm\nmacro th.for.a, nx, st, en\n if nul st\n  th.for.a nx, 0, th.count\n  exitm\n endif\n local do, loop\n ld a,st+(high th.start)\n loop:\n  cp en+(high th.start)\n  jp nc, nx\n  push af\n  ld h,a\n  ld l,0\n  call do\n  popa\n  ld h,a\n  ld l,0\n  jp c, nx\n  inc a\n jr loop\n do:\nendm\n\nmacro th.new.range,st,en\n ld bc,st\n ld(th.new.start),bc\n ld bc,en\n ld(th.new.end),bc\nendm\n\ndefsub th.isblank.a\n ; h= thread\n ; z if true\n ld l, th.ofs.stp\n ld a,(hl)\n cp th.st.blank\nendsub th.isblank.a\n\ndefsub th.new\n; nc for alloc fail\nproc \n local lbend\n db 21h\n th.new.start:\n dw th.start\n db 11h\n th.new.end:\n dw th.end\n ld bc,th.size\n for lbend\n  ; TODO th.ofs.stp\n  call th.isblank.a\n  break z\n  continue\n lbend:\n ret nc\n ; TODO th.ofs.stp\n ld L,th.ofs.stp\n ld (HL),31h\n inc HL\n ld (HL),th.ofs.spini\n ld a,h\n inc HL\n ld (hl),a\n inc HL\n ld (HL),0c9h\n ld l,th.bottom\n scf\n ret\nendp\nendsub th.new\n\ndefsub th.init\nproc\n local lbend\n th.for.a lbend\n  ; TODO th.ofs.stp\n  ld L, th.ofs.stp\n  ld (HL),th.st.blank\n  continue\n lbend:\n ; disable timer\n ld HL,0fd9fh\n ld (hl),0c9h\n call susint\n ret\nendp\nendsub th.init\n\ndefsub th.stepall\n th.for.a thnx\n  ;todo th.ofs.stp\n  ld (th.cur),hl\n  call th.isblank.a\n  continue z\n  call th.step\n  continue\n thnx:\nendsub th.stepall\n\ndefsub th.step\n sp2mem adrssp+1\n ld HL,(th.cur)\n ld l,th.ofs.stp\n ;call susint\n jp (hl)\nendsub th.step\n\ndefsub th.yield\n ld hl,(th.cur)\n ld l,th.ofs.sp\n sp2mem\n adrssp:\n ld sp,0\n jp doint\nendsub th.yield\n\ndefsub th.term\n ld hl,(th.cur)\n ; TODO th.ofs.stp\n ld L,th.ofs.stp\n ld (hl),th.st.blank\n jr adrssp\nendsub th.term\n\nmacro th.with.do, to\n local pr\n th.with pr\n jr to\n pr:\nendm\n\nmacro th.with.setdst, reg\n ld (th.jpdest-2),reg\nendm\nmacro th.with,pr\n movw (th.jpdest-2), pr\n call th.with.s\nendm\nmacro th.with.ret\n jp th.ewith\nendm\n\ndefsub th.with.s\n sp2mem th.wrssp-2\n ld l, th.ofs.sp\n ld (th.updsp-2),hl\n mem2sp\n jp 0\n th.jpdest:\nth.ewith:\n ld (0),sp\n th.updsp:\n ld sp,0\n th.wrssp:\nendsub th.with.s\n \n\n \n \ndefsub th.push\n ;push bc to thread hl\n th.with tpsbc\n ret\n tpsbc:\n  push bc\n  th.with.ret 0\nendsub th.push\n\n\ndefwork th.cur\n dw 0\nendwork th.cur\n\ndefsub th.loop\n ; hook before stepall\n db 0cdh\n h.thent:\n dw th.nop\n ; save prev timecnt\n ld a,(timecnt)\n push af\n ; Do stepall\n call th.stepall\n ; hook after stepall\n db 0cdh\n h.thlop:\n dw th.nop\n ; wait until timecnt changes\n pop af\n bwat:\n  ld hl,timecnt\n  cp (hl)\n  jr nz,bbwat\n  push af\n  call doint\n  pop af\n  jr bwat\n bbwat:\n ; repeat\n jr th.loop\nendsub th.loop\n\nth.nop:\n ret\n\n\nmacro th.pushi, val\n ld bc,val\n call th.push\nendm\n\n'].join(''),'sub': [].join(''),'debug': ['include math\n;debug\nmacro show,reg\n ld (hexval+1),reg\n call showhex\nendm\nmacro showm ,ad\n push hl\n ld HL,(ad)\n show HL\n pop HL\nendm\nmacro showlb,lb\n push hl\n ld hl,lb\n ld (hexval+1),hl\n call showhex\n pop hl\nendm\nshowhex:\nproc\n local loop\n push af\n push bc\n push HL\n hexval:\n ld hl,0\n ld b,4\n loop:\n  xor a\n  rept 4\n   slhl\n   rla\n  endm\n  call showhex1\n djnz loop\n ld a,32\n call wrt\n pop HL\n pop bc\n pop af\n ret\nendp\nshowhex1:\nproc\n local els\n cp 10\n jp nc, els\n add a,48\n jp wrt\n els:\n add a,65-10\n jp wrt\nendp\nabort:\n call wrt\n db 018h,0feh\nret\n\nmacro trace,v\n if not nul v\n  push af\n  ld a,v\n  ld (trad),a\n  pop af\n endif\n call trace.s\nendm\ntrace.s:\n push af\n push hl\n ld a,(trad)\n ld hl,1ae0h\n call wrt\n call 4dh\n inc a\n ld (trad),a\n ld a,32\n call wrt \n pop hl\n pop af\n ret\ntrad:\n db 65\n\nshowz:\n push af\n jr z,showz.s\n ld a,"N"\n call wrt\n showz.s:\n ld a,"Z"\n call wrt\n ld a,32\n call wrt\n pop af\n ret\n \n\nshowc:\n push af\n jr c,showc.s\n ld a,"N"\n call wrt\n showc.s:\n ld a,"C"\n call wrt\n ld a,32\n call wrt\n pop af\n ret\n \n\n\n\n\n\nmacro unreach, mesg\n trace mesg\n dw 0x18,0xfe\nendm\nmacro head, lb\n unreach lb\n marker.b lb\n lb:\nendm\n\nmacro defsub, n\n head n\nendm\nmacro endsub, n\n ret\n marker.e n\nendm\nmacro defwork, n\n head n\nendm\nmacro endwork, n\n marker.e n\nendm\n\ndefsub wrt\nproc\n local sk\n push hl\n push af\n ld hl,1800h\n cursor:\n call 4dh\n inc hl\n ld a,h\n cp 1bh\n jr c,sk\n  ld h,18h\n sk:\n ld (cursor-2),hl\n pop af\n pop hl\n ret\nendp\nendsub wrt\n'].join(''),'sp': ['include mem\ninclude debug\nmacro sp.get\n ld HL,0\n ADD hl, sp\nendm\nmacro sp.set\n ld sp,hl\nendm\nmacro mem2sp,ad\n local rs\n if nul ad\n  ld (rs-2),hl\n  ld sp,(0)\n  rs:\n else\n  ld sp,(ad)\n endif\nendm\nmacro sp2mem,ad\n local spad\n if nul ad\n  ld (spad-2),hl\n  ld (0),sp\n  spad:\n else\n  ld (ad),sp\n endif\nendm\n\nmacro showsp\n ld (sptmp),sp\n showm sptmp\nendm\nsptmp:\ndw 0\nmacro showstk\n showsp\n ld (sva),a\n ld a,":"\n call wrt\n ld a,(sva)\n ex (sp),hl\n show hl\n ex (sp),hl\nendm\nsva: db 0'].join(''),'oop': ['include mem\ninclude th\ninclude assert\n\n;a2 a1  oldpc oldix lcl1 lcl2\nargidx equ 2\nmacro getarg ,n\n ld l,(ix+argidx+n*2)\n ld h,(ix+argidx+n*2+1)\nendm\n\nmacro setlcl ,n\n ld (IX-(n*2-1)),h\n ld (ix-n*2),l\nendm\n\nmacro getlcl ,n\n ld h,(IX-(n*2-1))\n ld l,(ix-n*2)\nendm\n\nmacro addarg\n push hl\n; hl=arg  stktp=af\n;ex (sp),hl\n;ld a,h\n;push af\nendm\n\n\n\nmacro pusharg ,n\n getarg n\n push HL\nendm\n\nmacro pushlcl ,n\n getlcl n\n push HL\nendm\n\nmacro enter ,locals\n push ix\n ld ix,0\n add ix,sp\n rept locals\n  push HL\n endm\nendm\n\nmacro pops ,n\n rept n*2\n  inc sp\n endm\nendm\n\n\nmacro exit,n\n ld sp,ix\n pop ix\n if n!=0\n  exx\n  pop bc\n  pops n\n  push bc\n  exx\n endif\n ret\nendm\n\nmacro pushthis\n getthis\n push af\nendm\nmacro popthis\n popa\n ld (this),a\nendm\n\n\nmacro invoketg.a,fld,args\n; pushthis before arg push\n; hl=target \n ld a,h\n ld (this),a\n getfld fld\n callhl\n; pops args\n; popthis after \nendm\n\nmacro invoke,fld\n getfld fld\n callhl\n; pops args\n getthis\nendm\n\nmacro getfld, n\n local ad\n ld (ad-1),a\n ld hl,(n)\n ad:\nendm\n\nmacro setfld, n\n local ad\n ld (ad-1),a\n ld (n),hl\n ad:\nendm\n\nmacro getfldtg,n\n;hl=tg\n ld l,n\n peekw hl,hl\nendm\n\nmacro setfldtg,n\n; stk=val hl=tg\n ld l,n\n pop de\n pokew hl,de\nendm\n\nmacro getfldtg, n\n; hl=target\n ld d,h\n ld e,n\n peekw HL,de\nendm\n\nmacro tgconst,n\n ld (n-1),a\nendm\nmacro tgconst.g ,r16,n,fld\n ld r16,(fld)\n n:\nendm\nmacro tgconst.s ,n,fld,r16\n ld (fld),r16\n n:\nendm\n\n\nmacro curth2this\n ld a,(th.cur+1)\n ld (this),a\nendm\nmacro getthis\n ld a,(this)\nendm\n\nmacro new,Class,flds,st,en\n if nul st\n  th.new.range th.start, th.end\n else\n  th.new.range th.start+st*th.size, th.start+en*th.size\n endif\n pushi flds, bc\n pushi Class, bc\n call o.new\nendm\n\ndefsub o.new\nproc\n local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end\n ; {val .f} n &initbl retad\n pop hl;retad\n ld (retad-2),hl\n ; set initbl for th.with\n pop hl;&initbl\n th.with.setdst hl\n ; save this\n ld (svthis-1),a\n ; allocate thread\n call th.new\n jr nc, allocfail\n push hl; thread address\n call th.with.s; call &initbl\n pop hl; thread address\n ld a,h; set this as thread\n ; init fields\n pop bc; n of {val .f}\n inc c\n loop:\n  dec c\n  jr z,lpend\n  pop hl; .f\n  ld h,a\n  ld (w-2),hl\n  pop hl; val\n  ld (w),hl\n  w:\n jr loop\n lpend:\n ; return h as this\n ld h,a\n finally:\n  ;restore a before call o.new\n  ld a,0\n  svthis:\n  ;return \n  jp 0\n  retad:\n allocfail:\n  ; drop {val .f}\n  pop bc; n of {val .f}\n  ld b,c\n  inc c\n  lp2:\n   dec c\n   jr z, lp2end\n   pop hl\n   pop hl\n  jr lp2\n  lp2end:\n  ld hl,null;  todo null\n  jr finally\nendp\nendsub o.new\n\nmacro new.arg, n, v\n if not nul v\n  ld hl,v\n endif\n push hl\n pushi n,bc\nendm\n \nmacro o.assert.eq,fld, v\n local aa\n assert.do aa\n  getfld fld\n  assert.eq v\n  ret\n aa:\nendm\n\nthis:\ndb 0\n\nmacro fld.def,n\n n equ fldidx\n fldidx:defl fldidx-2\nendm\nmacro class,Class,super\n unreach "c"\n marker.b 0\n dw super\n fldidx:defl fld.top; todo fld.top\n Class:\n  fld .class,Class\nendm\nmacro fld.bottom,Class\n if defined Class##.bottom \n  if Class##.bottom ne fldidx\n   .error bottom ne fldidx\n  endif\n else\n Class##.bottom:defl fldidx\n endif\nendm \nmacro fld,n,v\n if defined n\n  if n ne fldidx\n   .error n ne fldidx\n  else \n   fldidx:defl fldidx-2\n  endif\n else\n  fld.def n\n endif\n pushi v,bc\nendm\nmacro unuse\n fldidx:defl fldidx-2\n pushi 0,bc\nendm\nmacro meth,Class,n\n fld .##n, Class##.##n\nendm\nmacro met2,Class,n\n fld n, Class##n\nendm\n\nclass Object,null\n fld .main,null\n fld.bottom Object\n marker.e Object\n\n\ndefsub o.boot\n curth2this\n invoke .main,0\nendsub o.boot\n\n\nmacro yield\n pushthis\n push ix\n call th.yield\n pop ix\n popthis\nendm\n\nmacro def,n,args,lcls\nhead n\n def.args:defl args\n def.locals:defl lcls\n if args>0 or lcls>0\n  enter lcls\n endif\nendm\nmacro enddef,n\n if def.args>0 or def.locals>0\n  exit def.args\n else\n  ret\n endif\n marker.e n\nendm\n\ndefsub isobj.a\n ;hl=obj?\n ;cy=true\n ld a,h\n cp high th.start\n jr c,notobj\n cp high th.end\n jr nc,notobj\n scf\n ret\n notobj:\n and a\nendsub isobj.a\n\ndefsub instanceof\n ; a=this de=Class\n ; z: true\n getfld .class\n jp is.subclass.a\nendsub instanceof\n\ndefsub get.superclass\n ; hl=Class\n dec hl\n dec hl\n peekw hl,hl\nendsub get.superclass\n\ndefsub is.subclass.a\nproc \n local top\n ; hl=Subclass\n ; de=Superclass\n ; z:true\n top:\n cpde.a 0\n ret z\n call get.superclass\n push de\n ld de,null\n cpde.a 0\n pop de\n jr nz,top\n cpde.a 0\nendp\nendsub is.subclass.a\n '].join(''),'spr': ['include const\ninclude th\ninclude mem\ninclude oop\ninclude sub\n\nclass Sprite,Object\n fld .main, 0\n fld.bottom Object\n fld .x, 100\n fld .y, 100\n fld .p, 0\n fld .c, 2\n fld.bottom Sprite\n marker.e Sprite\n \nmacro outwrt\n  out (98h),a\nendm\n\n\nmacro spr.unscale\n ; HL -> A\n rept spr.scale\n  srlhl\n endm\n LD A,L\n sub 8 \nendm\n\ndefsub spr.puts\nproc\n local t1,t2,t3,t4\n ld hl, 1b00h\n call SETWRT\n th.for.a sprl\n  ld a,h\n  tgconst t1\n  tgconst t2\n  tgconst t3\n  tgconst t4\n\n  tgconst.g hl,t1,.y \n  spr.unscale 0\n  outwrt 0\n  \n  tgconst.g hl,t2,.x \n  spr.unscale 0\n  outwrt 0\n  \n  tgconst.g a,t3,.p \n  sla a\n  sla a\n  outwrt 0\n  \n  tgconst.g a,t4,.c \n  outwrt 0\n  continue\n sprl:\nendp\nendsub spr.puts\n \n '].join(''),'sprpat': ['include const\n\n;aaa\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,128\n jp LDIRVM\nbg.inipat:\n ret\nspr.pat:\n; --- Slot 0 cat fstand\n; color 9\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\nDB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\nDB $98,$FC,$FE,$FE,$F6,$F0,$60,$70\n; \n; --- Slot 1 cat fwalk1\n; color 9\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\nDB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\nDB $98,$FC,$FE,$FE,$D4,$78,$F0,$00\n; \n; --- Slot 2 cat fwalk2\n; color 9\nDB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36\nDB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00\nDB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8\nDB $30,$FC,$FE,$FE,$F7,$F7,$60,$60\n; \n; --- Slot 3 cat omg\n; color 9\nDB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D\nDB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00\nDB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C\nDB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00\n\nds 60*32\n'].join(''),'tnu': ['\ninclude spr\ninclude bool\ninclude key\n\n;.onUpdate equ .c-2\n;.update equ .onUpdate-2\n;.screenOut equ .update-2\n;.die equ .screenOut-2\n;.updateEx equ .die-2\n\nmacro end.const, n\n pushi RActor.wait,bc\n pushi o.boot,bc\n th.with.ret 0 \n marker.e n\nendm\n\nmacro RActor.noovr,Class\n meth Class,main\n fld.bottom Object\n fld .x, 0\n fld .y, -1024\n fld .p, 0\n fld .c, 3\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\nendm\n\nclass RActor,Sprite\n RActor.noovr RActor\n end.const RActor\nRActor.main:\n enter 0\n exit 0\nRActor.update:\n invoke .onUpdate\n yield\n ret \nRActor.onUpdate:\n ret\nRActor.screenOut:\nproc\n local true\n getfld .x\n bit 1,h\n jr nz, true\n getfld .y\n ld de,192*2\n cpde.a\n getthis\n jr nc,true\n ld hl,0\n xor a\n ret\n true:\n ld hl,1\n scf\n ret\nendp\nRActor.wait:\nproc\n local lbl\n lbl:\n invoke .update\n jr lbl\nendp\ndef RActor.die,0,0\n ld h,a\n ld l,th.ofs.stp\n ld (hl),th.st.blank\n ld hl, 0\n setfld .c\nenddef RActor.die\n\ndef RActor.updateEx,1,0\nproc \n local n\n; enter 0\n getarg 1\n ld b,h\n ld c,l\n reptbc n\n  invoke .update\n  continue\n n:\nendp\nenddef RActor.updateEx\n\ncrashTo.size equ 8<<spr.scale\n\nproc\n local gx,gy,t1,t2\n local endc,cr1\n local fe\n\ndefsub crashTo.setXY\n getfld .x\n const gx,hl\n getfld .y\n const gy,hl\nendsub crashTo.setXY\n\n\ndef RActor.crashTo,1,0\n call crashTo.setXY\n getarg 1\n const cr.class,hl\n call isobj.a\n jr c, cr1\n  unreach "C"\n  ; "Cannot call target.crashTo(Class) "\n  ;ld hl, th.start\n  ;ld de, th.end\n  ;call crashTo1\n  ;jr endc\n cr1:\n  getthis 0\n  call crashTo1\n  flagtobool c\n endc:\nenddef RActor.crashTo\n\nmacro crashToClass,Class,st,en\n local nx,found\n ; a=this\n call crashTo.setXY\n foreach.a Class,st,en,nx\n  call crashTo1\n  break c\n  continue\n nx:\n getthis 0\n jr c, found\n  ld hl,null\n found:\nendm\n\nmacro foreach.a, Class,st,en,nxt\n th.for.a nxt, st, en\n  all.skip Class\nendm\n\n\nmacro all.skip.blank.self\n ; skip blank\n  ; TODO th.ofs.stp\n  call th.isblank.a\n  continue z\n  ; skip hl==this\n  getthis 0\n  cp h\n  continue z\nendm\nmacro all.skip.isnot,Class\n  ; skip object not instance of *Class*\n  push hl\n  ld a,h\n  ld de,Class\n  call instanceof\n  getthis 0\n  pop hl\n  continue nz\nendm\nmacro all.skip, Class\n all.skip.blank.self 0\n all.skip.isnot Class\nendm\n\ndefsub crashToC.abolished\n ;before:\n ; call crashTo.setXY\n ; const cr.class,Class\n ; hl start\n ; de end\n ld bc,th.size\n for fe\n  all.skip.blank.self 0\n  ; skip object not instance of *Class*\n  push hl\n  ld a,h\n  ldconst de,cr.class\n  call instanceof\n  pop hl\n  continue nz\n  ; do crashTo1\n  getthis 0\n  call crashTo1\n  break c\n  continue\n fe:\n getthis 0\n ret c\n ld hl,null\nendsub crashToC.abolished\n\ndefsub crashTo1\n ; call crashTo.setXY before\n ;hl=tg\n ;cy:true\n ;hl is used\n push af\n ld a,h\n tgconst t1\n tgconst t2\n pop af\n tgconst.g hl,t1,.x\n ldconst bc,gx\n subhl bc\n call abs\n ld bc,crashTo.size\n subhl bc\n ret nc\n\n tgconst.g hl,t2,.y\n ldconst bc,gy\n subhl bc\n call abs\n ld bc,crashTo.size\n subhl bc\nendsub crashTo1\n\nendp\n\n\nmacro tnu.run,Main\n ld sp,sp.ini\n call screen2\n \n showsp\n showlb endusr\n call spr.inipat\n call bg.inipat\n\n ld hl,th.start\n ld (hl),0cdh\n ld de,th.start+1\n ld bc,th.size*th.count-1\n ldir\n \n call th.init\n ;call mus.ini\n new Main, 0\n movw (h.thlop),spr.puts\n movw (h.thent),keyall\n jp th.loop\nendm\n\n;aaaa'].join(''),'key': ['include debug\n\ndefsub keyall\nproc\n;show hl\n local lp\n ld hl,keymat1\n ld de,keymat2\n ld bc,11\n ldir\n ld a,0\n ld hl,keymat1\n lp:\n push af\n call SNSMAT.a\n xor 255\n ld (hl),a\n pop af\n inc hl\n inc a\n cp 11\n jr c,lp\nendp\nendsub keyall\n\ndefwork keymat1\nds 11\nendwork keymat1\ndefwork keymat2\nds 11\nendwork keymat2\n\n\nproc\ndefsub getkey.a\nlocal chkmat\nex de,hl\nld hl,keymat1\ncall chkmat\nld hl,0\nret z\nld hl,keymat2\ncall chkmat\nld hl,1\nret z\ninc hl\nendsub getkey.a\n\ndefsub chkmat\npush de\nld a,d\nld d,0\nadd hl,de\nand (hl)\npop de\nendsub chkmat\n\ndefsub getkey\npush af\ncall getkey.a\npop af\nendsub getkey\n\nendp'].join(''),'map': ['include sub\ninclude math\ninclude tnu\n\ndefsub map.adr\n ; hl=chipx\n ; de=chipy\n rept 5\n  slde 0\n endm\n add hl,de\n ld de,1800h\n add hl,de\nendsub map.adr\n\ndefsub map.set.a\n ;  a=data\n call map.adr\n call 4dh\nendsub map.set.a\n\ndefsub map.get.a\n call map.adr\n call 4ah \nendsub map.get.a\n\ndefsub map.adrat.a\n ; hl=spr_x\n ; de=spr_y\n spr.unscale 0\n srl a\n srl a\n srl a\n push af\n ex de,hl\n spr.unscale 0\n srl a\n srl a\n srl a\n ld d,0\n ld e,a\n pop hl\n ld l,h\n ld h,0\n inc hl\n inc de\n call map.adr\nendsub map.adrat.a\n\ndefsub map.getat.a\n call map.adrat.a\n call 4ah\nendsub map.getat.a\n\ndefsub map.setat.a\n ; a=data\n push af\n call map.adrat.a\n pop af\n call 4dh\nendsub map.setat.a\n\ndefsub locate\n ; hl=chipx\n ; de=chipy\n call map.adr\n ld (cursor-2),hl\nendsub locate\n'].join(''),'maze': [].join(''),'t1': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude tnu\ninclude sp\n\n;===your code \n\nright:dw 0\n\nmain:\ntnu.run Main\ndef Main.main,0,0\nnew.arg .vx,1\nnew.arg .vy,0\nnew.arg .x,0\nnew.arg .y,100\nnew Cat,4\n\nnew.arg .x,100\nnew.arg .y,100\nnew Target,2\n\nld (right),hl\nld a,h\nld de,RActor\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Target\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Cat\ncall instanceof\ncall showz\n\n\nld hl,1\nsetfld .c\nenddef 0\n\nclass Main,RActor\n RActor.noovr Main\n end.const Main\nclass Target,RActor\n RActor.noovr Target\n met2 Target,.push\n end.const Target\ndef Target.main,0,0\nenddef\nclass Cat,RActor\n RActor.noovr Cat\n fld .vy, 0\n fld .vx, 0\n fld.bottom Cat\n end.const Cat\ndef Cat.main,0,0\n blp:\n  ld hl,0108h\n  call getkey\n  jpf nomov\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  nomov:\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  ld hl,(right)\n  push hl\n  invoke .crashTo\n  jpf cr\n   ; r.x+=10\n   ld hl,(right)\n   getfldtg .x\n   ld de,10\n   add hl,de\n   push hl\n   ld hl,(right)\n   setfldtg .x\n   ; r.push()\n   pushthis 0\n   ld hl,(right)\n   invoketg.a .push\n   popthis 0\n  cr:\n  invoke .update\n jp blp\nenddef\n; test t1\ndef Target.push,0,0\n ld hl,3\n setfld .p\n repti 30,pse\n  getfld .x\n  inc hl\n  setfld .x\n  invoke .update\n  continue\n pse:\n ld hl,0\n setfld .p\nenddef\n\nendusr: \ninclude sprpat\n\nend main\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t2': ['org 08000h\ninclude tnu\ninclude bool\ninclude map\n\nmain:\ntnu.run Main\n;range 0-5\nclass EBullet,RActor\n meth EBullet,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .vx,0\n fld .vy,0\n end.const 0\ndef EBullet.main,0,0\n ;p=7;\n ld hl,7\n setfld .p\n ;c=15;\n ld hl,15\n setfld .c\n lb1:\n ld hl,true\n jpf lb2\n ;x+=vx;\n getfld .vx\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n ;y+=vy;\n getfld .vy\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n invoke .screenOut\n jpf lb4\n ;die();\n invoke .die\n jp lb3\n lb4:\n lb3:\n ;update();\n invoke .update\n jp lb1\n lb2:\n ret\n;range 5-15\nclass Enemy,RActor\n meth Enemy,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .vx,0\n fld .bvx,0\n fld .bvy,0\n fld .bdist,0\n meth Enemy,fire\n end.const 0\ndef Enemy.main,0,0\n lb5:\n ld hl,200\n push hl\n getfld .y\n pop de\n call hlltde\n jpf lb6\n ;y+=2;\n ld hl,2\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n ;update();\n invoke .update\n jp lb5\n lb6:\n ld hl,(gbl_player)\n getfldtg .x\n push hl\n getfld .x\n pop de\n call hlgtde\n jpf lb8\n ;vx=0-2;\n ld hl,2\n push hl\n ld hl,0\n pop de\n subhl de\n setfld .vx\n jp lb7\n lb8:\n ;vx=2;\n ld hl,2\n setfld .vx\n lb7:\n ;fire();\n invoke .fire\n lb9:\n ld hl,true\n jpf lb10\n invoke .screenOut\n jpf lb12\n ;die();\n invoke .die\n jp lb11\n lb12:\n lb11:\n ;y+=2;\n ld hl,2\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n ;x+=vx;\n getfld .vx\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n ;update();\n invoke .update\n jp lb9\n lb10:\n ret\ndef Enemy.fire,0,0\n ;bvx=$player.x-x;\n getfld .x\n push hl\n ld hl,(gbl_player)\n getfldtg .x\n pop de\n subhl de\n setfld .bvx\n ;bvy=$player.y-y;\n getfld .y\n push hl\n ld hl,(gbl_player)\n getfldtg .y\n pop de\n subhl de\n setfld .bvy\n ;bdist=abs(bvx)+abs(bvy);\n getfld .bvy\n call abs\n push hl\n getfld .bvx\n call abs\n pop de\n add hl, de\n setfld .bdist\n ;bdist/=8;\n pushthis\n getfld .bdist\n push hl\n ld hl,8\n pop de\n call IDIV.a\n popthis\n setfld .bdist\n ;bvx/=bdist;\n pushthis\n getfld .bvx\n push hl\n getfld .bdist\n pop de\n call IDIV.a\n popthis\n setfld .bvx\n ;bvy/=bdist;\n pushthis\n getfld .bvy\n push hl\n getfld .bdist\n pop de\n call IDIV.a\n popthis\n setfld .bvy\n ;new EBullet{        x,y,vx:bvx,vy:bvy    };\n getfld .x\n new.arg .x\n getfld .y\n new.arg .y\n getfld .bvx\n new.arg .vx\n getfld .bvy\n new.arg .vy\n new EBullet,4,0,5\n ret\n;range 0-5\nclass Main,RActor\n meth Main,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .i,0\n end.const 0\ndef Main.main,0,0\n ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};\n ld hl,256\n new.arg .x\n ld hl,300\n new.arg .y\n ld hl,4\n push hl\n ld hl,(gbl_pat_spr)\n pop de\n add hl, de\n new.arg .p\n ld hl,15\n new.arg .c\n new Player,4,0,5\n ld (gbl_player),hl\n ld hl,0\n setfld .i\n lb13:\n ld hl,20\n push hl\n getfld .i\n pop de\n call hlltde\n jpf lb14\n ;new Enemy{x:rnd(512), y:0, p:5, c:7};\n ld hl,512\n call rnd\n new.arg .x\n ld hl,0\n new.arg .y\n ld hl,5\n new.arg .p\n ld hl,7\n new.arg .c\n new Enemy,4,5,15\n ;updateEx(30);\n ld hl,30\n push hl\n invoke .updateEx\n jp lb13\n lb14:\n ret\n;range 15-20\nclass PBullet,RActor\n meth PBullet,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth PBullet,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld .e,0\n end.const 0\ndef PBullet.main,0,0\n ;p=6;\n ld hl,6\n setfld .p\n ;c=8;\n ld hl,8\n setfld .c\n lb15:\n ld hl,true\n jpf lb16\n invoke .screenOut\n jpf lb18\n ;die();\n invoke .die\n jp lb17\n lb18:\n lb17:\n ;y-=6;\n ld hl,6\n push hl\n getfld .y\n pop de\n subhl de\n setfld .y\n crashToClass Enemy, 5, 15\n setfld .e\n getfld .e\n jpf lb20\n ;e.die();\n pushthis 0\n getfld .e\n invoketg.a .die\n popthis 0\n ;die();\n invoke .die\n jp lb19\n lb20:\n lb19:\n ;update();\n invoke .update\n jp lb15\n lb16:\n ret\ndef PBullet.onUpdate,0,0\n ;c+=1;\n ld hl,1\n push hl\n getfld .c\n pop de\n add hl, de\n setfld .c\n ld hl,14\n push hl\n getfld .c\n pop de\n call hlgtde\n jpf lb22\n ;c=0;\n ld hl,0\n setfld .c\n jp lb21\n lb22:\n lb21:\n ret\n;range 0-5\nclass Player,RActor\n meth Player,main\n fld .x,0\n fld .y,0\n fld .p,0\n fld .c,0\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut\n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n end.const 0\ndef Player.main,0,0\n lb23:\n ld hl,3\n ld de,10\n call locate\n getfld .y\n ld a,l\n call wrt\n ld a,h\n call wrt\n getthis 0\n \n ex de,hl\n getfld .x\n ld a,35\n call map.setat.a\n getthis 0\n ld hl,true\n jpf lb24\n ld hl, 4104\n call getkey\n jpf lb26\n ;x-=3;\n ld hl,3\n push hl\n getfld .x\n pop de\n subhl de\n setfld .x\n jp lb25\n lb26:\n lb25:\n ld hl, 32776\n call getkey\n jpf lb28\n ;x+=3;\n ld hl,3\n push hl\n getfld .x\n pop de\n add hl, de\n setfld .x\n jp lb27\n lb28:\n lb27:\n ld hl, 8200\n call getkey\n jpf lb30\n ;y-=3;\n ld hl,3\n push hl\n getfld .y\n pop de\n subhl de\n setfld .y\n jp lb29\n lb30:\n lb29:\n ld hl, 16392\n call getkey\n jpf lb32\n ;y+=3;\n ld hl,3\n push hl\n getfld .y\n pop de\n add hl, de\n setfld .y\n jp lb31\n lb32:\n lb31:\n crashToClass Enemy, 5, 15\n jpf lb34\n ;die();\n invoke .die\n jp lb33\n lb34:\n lb33:\n crashToClass EBullet, 0, 5\n jpf lb36\n ;die();\n invoke .die\n jp lb35\n lb36:\n lb35:\n ld hl,1\n push hl\n ld hl, 264\n call getkey\n pop de\n call hleqde\n jpf lb38\n ;new PBullet{x,y};\n getfld .x\n new.arg .x\n getfld .y\n new.arg .y\n new PBullet,2,15,20\n foreach.a Enemy,5,14,nxx\n  ld a,h\n  ld hl,8\n  setfld .c\n  continue \n nxx:\n getthis 0\n \n \n jp lb37\n lb38:\n lb37:\n ;update();\n invoke .update\n jp lb23\n lb24:\n ret\nenddef 0\nendusr:\ngbl_player:dw 0\ngbl_pat_spr:dw 0\nspr.inipat:\n ld de,3800h\n ld hl,spr.pat\n ld bc,2048\n jp LDIRVM\nspr.pat:\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0\ndb $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0\ndb $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60\ndb $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0\ndb $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0\ndb $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0\ndb $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0\ndb $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c\ndb $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18\ndb $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0\ndb $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0\ndb $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0\ndb $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0\nbg.inipat:\n ret\n\n\nend main'].join(''),'t3': ['org 09000h\n\ninclude tnu\ninclude mus\ninclude sprpat\n\n;===your code \n\nmain:\nld sp,(8000h)\n\ncall screen1\n\nshowsp\nshowlb endusr\n\nld hl,8000h\nld (hl),0cdh\nld de,8001h\nld bc,th.size*th.count-1\nldir\n\n\ncall th.init\ncall spr.inipat\n;call mus.ini\n\n\nnew Main, 0\nshow hl\n\n\nmovw (h.thlop),spr.puts\njp th.loop\n\nclass Main, RActor\n meth Main,main\n fld.bottom Object\n fld .x,100\n fld .y,300\n fld .p,0\n fld .c,3\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\n fld.bottom Main\n end.const\n\nMain.main:\n olp:\n  getthis\n  invoke .update\n  call xrnd.a\n  ld a,h\n  and 15\n  jr nz,doap\n   getthis\n   getfld .x\n   new.arg .x\n   getfld .y\n   new.arg .y\n   ld hl,7\n   call rnd.a\n   ld de,3\n   sbc hl,de\n   new.arg .vx\n   ld hl,5\n   call rnd.a\n   ld de,15\n   sbc hl,de\n   new.arg .vy\n   new Bullet, 4\n   call dstk\n  doap:\n  ld a,8\n  call SNSMAT.a\n  and 1\n  jr z,golf\n  \n  getthis\n  getfld .x\n  inc hl\n  inc hl\n  setfld .x\n  ld de,400\n  cpde.a\n  jp c, olp\n  golf:\n  ld hl,0\n  getthis\n  setfld .x\n jp olp\n\n\nclass Bullet,RActor\n meth Bullet,main\n fld.bottom Object\n fld .x, 0\n fld .y, 0\n fld .p, 2\n fld .c, 15\n fld.bottom Sprite\n meth RActor,onUpdate\n meth RActor,update\n meth RActor,screenOut \n meth RActor,die\n meth RActor,updateEx\n meth RActor,crashTo\n fld.bottom RActor\n fld .vy, -10\n fld .vx, 0\n fld.bottom Bullet\n end.const \n \nBullet.main:\n blp:\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  getfld .vy\n  inc hl\n  setfld .vy\n\n  invoke .update\n  invoke .screenOut\n  jp c, bdie\n  getfld .vy\n  bit 7,h\n  jr nz,blp\n  ld de,5\n  cpde.a\n  jr c,blp\n \n  call dstk\n  getthis\n  ld hl,3\n  setfld .p\n  pushi 10,bc\n  invoke .updateEx\n\n bleft:\n  getthis\n  ld hl,2\n  setfld .p\n  getfld .x\n  dec hl\n  dec hl\n  setfld .x\n  getfld .y\n  dec hl\n  setfld .y\n  invoke .update\n  invoke .screenOut\n  jr c, bdie\n  jr bleft\n bdie:\n  invoke .die\n  ret \n\n  \ndstk:\n push af\n ld hl,th.start+256*3\n getthis\n ld h,a\n ld de,1900h\n ld bc,256\n call LDIRVM\n pop af\n ret\n \nendusr:\nend main'].join(''),'t4': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude tnu\ninclude sp\n\n;===your code \n\nright:dw 0\n\nmain:\ntnu.run Main\ndef Main.main,0,0\nnew.arg .vx,1\nnew.arg .vy,0\nnew.arg .x,0\nnew.arg .y,100\nnew Cat,4\n\nnew.arg .x,100\nnew.arg .y,100\nnew Target,2\n\nnew.arg .x,200\nnew.arg .y,100\nnew Target,2\n\n\nnew.arg .x,150\nnew.arg .y,100\nnew.arg .c,8\nnew NTarget,3\n\nld (right),hl\nld a,h\nld de,Actor\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Target\ncall instanceof\ncall showz\n\nld a,(right+1)\nld de,Cat\ncall instanceof\ncall showz\n\n\nld hl,1\nsetfld .c\nenddef 0\n\nclass Main,Actor\n Actor.noovr Main\n end.const 0\nclass Target,Actor\n Actor.noovr Target\n met2 Target,.push\n end.const 0\nclass NTarget,Actor\n Actor.noovr NTarget\n end.const 0\ndef NTarget.main,0,0\n ret\nenddef\n\ndef Target.main,0,0\nenddef\nclass Cat,Actor\n Actor.noovr Cat\n fld .vy, 0\n fld .vx, 0\n fld.bottom Cat\n end.const 0\ndef Cat.main,0,0\n blp:\n  getthis\n  ;x+=vx\n  getfld .x\n  ex de, hl\n  getfld .vx\n  add hl,de\n  setfld .x\n  ; y+=vy\n  getfld .y\n  ex de, hl\n  getfld .vy\n  add hl,de\n  setfld .y\n  ld hl,Target\n  push hl\n  invoke .crashTo\n  jpf cr\n   ; r.x+=10\n   const setg,hl\n   getfldtg .y\n   ld de,30\n   add hl,de\n   push hl\n   ldconst hl,setg\n   setfldtg .y\n  cr:\n  invoke .update\n jp blp\nenddef\ndef Target.push,0,0\n ld hl,3\n setfld .p\n repti 30,pse\n  getfld .y\n  inc hl\n  setfld .y\n  invoke .update\n  continue\n pse:\n ld hl,0\n setfld .p\nenddef\n\nendusr: \nend main\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t5': ['org 9000h\n\n\ninclude key\n\nmain:\ncall keyall\nld hl,0108h\ncall getkey\nshow hl\nld hl,0107h\ncall getkey\nshow hl\n\n\nhalt\njp main'].join(''),'gen': ['org 09000h\ninclude tnu\ninclude bool\n\nmain:\ntnu.run Main\nclass Main,Actor\n Actor.noovr Main\n end.const 0\ndef Main.main,0,0\n\n showlb .main\n showlb .crashTo\nenddef 0\nendusr:\nend main'].join(''),'dac': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n\nDECSUB equ 268CH;DAC ← DAC-ARG\nDECADD equ 269AH;DAC ← DAC+ARG\nDECNRM equ 26FAH;DAC を正規化する (*1)\nDECROU equ 273CH;DAC を四捨五入する\nDECMUL equ 27E6H;DAC ← DAC*DAC\nDECDIV equ 289FH;DAC ← DAC/DAC\nMAF equ 2C4DH;ARG ← DAC\nMAM equ 2C50H;ARG ← [HL]\nMOV8DH equ 2C53H;[DE] ← [HL]\nMFA equ 2C59H;DAC ← ARG\nMFM equ 2C5CH;[HL] ← DAC\nMMF equ 2C67H;[HL] ← DAC\nMOV8HD equ 2C6AH;[HL] ← [DE]\nXTF equ 2C6FH;[SP] ←→ DAC\nPHA equ 2CC7H;ARG → [SP]\nPHF equ 2CCCH;DAC → [SP]\nPPA equ 2CDCH;[SP] → ARG\nPPF equ 2CE1H;[SP] → DAC\nPUSHF equ 2EB1H;DAC → [SP]\nMOVFM equ 2EBEH;DAC ← [HL]\nMOVFR equ 2EC1H;DAC ← (CBED)\nMOVRF equ 2ECCH;(CBED) ← DAC\nMOVRMI equ 2ED6H;(CBDE) ← [HL]\nMOVRM equ 2EDFH;(BCDE) ← [HL]\nMOVMF equ 2EE8H;[HL] ← DAC\nMOVE equ 2EEBH;[HL] ← [DE]\nVMOVAM equ 2EEFH;ARG ← [HL]\nMOVVFM equ 2EF2H;[DE] ← [HL]\nVMOVE equ 2EF3H;[HL] ← [DE]\nVMOVFA equ 2F05H;DAC ← ARG\nVMOVFM equ 2F08H;DAC ← [HL]\nVMOVAF equ 2F0DH;ARG ← DAC\nVMOVMF equ 2F10H;[HL] ← DAC\n\nVALTYP equ 0F663H;1\nDAC equ 0F7F6H;16\nARG equ 0F847H;16\nFOUT equ 3425H\n\ndefsub int2dac\n push af\n ld a,2\n ld (VALTYP),a\n ld (DAC+2),HL\n pop af\nendsub int2dac\n;===your code \n\nmain:\nld hl,12345\ncall int2dac\nld hl,str\ncall FOUT\n\nld b,10\nreptb nxt\n ld a,(hl)\n cp 0\n break z\n call wrt2\n inc hl\n continue\nnxt:\nret\nstr:\n\n\n'].join(''),'setvrm': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n;===your code \n\nmain:\nld hl,1800h\ncall SETWRT\nld a,35\nrepti 5, ed\ninc a\nout (98h),a\ncontinue\ned:\nret'].join(''),'assert': ['include mem\ninclude math\ninclude debug\n\na.reg.trc:\ndw 0\na.reg.adr:\ndw 0\na.reg.min:\ndw 0\na.reg.val:\ndw 0\na.reg.max:\ndw 0\nmacro a.regi,n,v\n push hl\n ld hl,v\n ld (a.reg.##n),hl\n pop hl\nendm\nmacro a.regr,n,v\n ld (a.reg.##n),v\nendm\n\nmacro a.dummy\n local a.reg.,trc,adr,min,val,nax\nendm\n \n\nmacro assert.eq,o\n storelastpc\n pushall \n if not nul o\n  a.regi val, o\n endif\n ld de,(a.reg.val)\n ld(a.reg.val),hl\n ld(a.reg.min),de\n ld(a.reg.max),de\n cpde\n jp nz,assert.fail\n popall\nendm\n\nmacro assert.do,nx\n storelastpc\n pushall\n call to\n popall\n jr nx\n to:\nendm\n\nmacro storelastpc\n push hl\n call getpc\n ld (lastpc),hl\n pop hl\nendm\nlastpc:\n dw 0\n \ngetpc:\n pop hl\n push hl\n ret\n\nassert.fail:\n ld hl,0deadh\n show hl\n showm a.reg.trc\n showm a.reg.min\n showm a.reg.val\n showm a.reg.max\n showm a.reg.adr\n showm lastpc\n call freeze\nmacro assert.meqw,ad,val\n a.regi adr,ad\n push hl\n ld hl,(ad)\n assert.eq val\n pop hl\nendm\n '].join(''),'stksz': ['org 09000h\njp main\ninclude const\ninclude ctrl\ninclude math\ninclude debug\ninclude sub\ninclude mem\ninclude th\n\n\n;===your code \n\nsz equ 256\n  \nmain:\nld hl,0fd9fh\nld (hl),0c9h\n rept sz/2\n  push hl\n endm\n rept sz/2\n  pop hl\n endm\n\nloop:\n getsp\n ld de,-sz\n add hl,de\n ld de,1800h\n ld bc,sz\n call LDIRVM\n ld hl,0\n halt\n jp loop\n \n \n '].join(''),'vdp': [';https://www.msx.org/wiki/VDP_Status_Registers\n;st 0 bit 7\n;read 1\n\n;https://www.msx.org/wiki/VDP_Mode_Registers\n;ctrl 1 bit 5 set 0\ninclude const\n\nsusint:\n ld a,(RG1SAV)\n res 5,a\n ld b,A\n ld c,1\n jp WRTVDP\n;rstint:\n ld a,(RG1SAV)\n set 5,a\n ld b,A\n ld c,1\n jp WRTVDP\ninted:\n call RDVDP\n bit 7,a\n ret\ndoint:\n call inted\n jr z, norst\n ld hl,timecnt\n inc (hl)\n call h.tntimi\n norst:\n ;call rstint\n ret\nh.tntimi:\n ld A,(timecnt)\n ld hl,1ae0h\n call 4dh\n ret\n ds 16\n \ntimecnt:\ndb 0\nmacro vdptest\nlocal stk1,stk2,stk3,vl\nstk1:\n ds 256,35\nstk2:\n ds 256,42\nstk3:\n\nvl:\n call susint\n ld sp,stk2\n ld hl,stk1\n ld de,1800h\n ld bc,256\n call LDIRVM\n \n \n ld sp,stk3\n call doint\n ld hl,stk2\n ld de,1900h\n ld bc,256\n call LDIRVM\n jp vl\nendm\n \nscreen1:\n ld a,1\n call CHGMOD\n ld a,(RG1SAV)\n set 1,a\n ld b,A\n ld c,1\n call WRTVDP\n ret\n\ndefsub screen2\n ld a,2\n call CHGMOD\n ld a,(RG1SAV)\n set 1,a\n ld b,A\n ld c,1\n call WRTVDP\nendsub screen2\n '].join(''),'mus': ['include mem\nmus.ini:\n di\n ld hl,0fd9fh\n ld (hl),0c3h\n movw (0fd9fh+1),mus\n ei\n ret\nmus:\nproc\nlocal we\n push af\n push de\n ld a,(we-1)\n xor 15\n ld (we-1),a \n ld a,8\n ld e,15\n we:\n call WRTPSG\n pop af \n pop de\n ret\nendp'].join('')};
+        _this.data = {'main': ['org 09000h\r\n\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude sp\r\ninclude vdp\r\ninclude th\r\n\r\n\r\n;===your code \r\n\r\nmain:\r\nld a,5\r\nlp:\r\ndec b\r\nshow a\r\niff nc,nx\r\njr lp\r\nnx:\r\n\r\nret\r\nend main'].join(''),'math': ['include ctrl\r\n\r\n;16bit shifts\r\nmacro slhl\r\n sla l\r\n rl h\r\nendm\r\nmacro srahl\r\n sra h\r\n rr l\r\nendm\r\nmacro srlhl\r\n srl h\r\n rr l\r\nendm\r\nmacro slde\r\n sla e\r\n rl d\r\nendm\r\nmacro srade\r\n sra d\r\n rr e\r\nendm\r\nmacro srlde\r\n srl d\r\n rr e\r\nendm\r\nmacro slbc\r\n sla c\r\n rl b\r\nendm\r\nmacro srabc\r\n sra b\r\n rr c\r\nendm\r\nmacro srlbc\r\n srl b\r\n rr c\r\nendm\r\n\r\n\r\n; for xrnd\r\nmacro sldehl,n\r\n  local loop\r\n  ld b,n\r\n loop:\r\n  sla d\r\n  rl e\r\n  rl h\r\n  rl l\r\n  djnz loop\r\nendm\r\nmacro srdehl,n\r\n local loop\r\n ld b,n\r\n loop:\r\n  srl l\r\n  rr h\r\n  rr e\r\n  rr d\r\n djnz loop\r\nendm\r\n \r\nmacro xorrm,re,me\r\n  ld A,(me)\r\n  xor re\r\n  ld (me),a\r\nendm\r\n\r\nmacro subhl,rp\r\n and a\r\n sbc hl,rp\r\nendm\r\n\r\nmacro cpde.a\r\n rst dcompr\r\nendm\r\n\r\n\r\nmarker.b xrnd.a\r\nxrnd.a:\r\nproc \r\n local rhl,rde,rdhlde\r\n ; s[0] ^= s[0] << 13\r\n call rdhlde\r\n sldehl 13\r\n call wrtxor\r\n ; s[0] ^= s[0] >> 17\r\n call rdhlde\r\n srdehl 17\r\n call wrtxor\r\n ; s[0] ^= s[0] << 5;\r\n call rdhlde\r\n sldehl 5\r\n call wrtxor\r\n ret\r\n \r\n rdhlde:\r\n  ld hl,1234\r\n rhl:\r\n  ld de,5678\r\n rde:\r\n  ret\r\n \r\n wrtxor:\r\n  xorrm h,rhl-1\r\n  xorrm l,rhl-2\r\n  xorrm d,rde-1\r\n  xorrm e,rde-2\r\n  ret\r\nendp\r\nmarker.e xrnd.a\r\n\r\n\r\nmarker.b rnd\r\nrnd:\r\n push af\r\n call rnd.a\r\n pop af\r\n ret\r\nmarker.e rnd\r\nmarker.b rnd.a\r\nrnd.a:\r\n ld de,07fffh\r\n call IDIV.a\r\n push hl\r\n call xrnd.a\r\n res 7,h\r\n ex de,hl\r\n pop hl\r\n inc hl\r\n call IDIV.a\r\n ret\r\nmarker.e rnd.a\r\n\r\nmarker.b abs\r\nabs:\r\n bit 7,h\r\n ret z\r\nneghl:\r\n ld de,0 \r\n ex de,hl \r\n subhl de\r\n ret\r\nmarker.e abs\r\n\r\n '].join(''),'bool': ['include math\r\ninclude ctrl\r\ntrue equ -1\r\nfalse equ 0\r\n\r\nmacro rethl,val,flg\r\n local tru\r\n if not nul flg\r\n  iff flg ,tru\r\n endif\r\n ld hl,val\r\n ret\r\n tru:\r\nendm\r\n\r\nhleqde:\r\n subhl de\r\n rethl true,z\r\n rethl false\r\n\r\nhlnede:\r\n subhl de\r\n rethl true,nz\r\n rethl false\r\n \r\nhlgtde:\r\n subhl de\r\n rethl false,z\r\n bit 7,h\r\n rethl true,z\r\n rethl false\r\n\r\nhlltde:\r\n subhl de\r\n bit 7,h\r\n rethl true,nz\r\n rethl false\r\n \r\nhlgede:\r\n subhl de\r\n rethl true,z\r\n bit 7,h\r\n rethl true,z\r\n rethl false\r\n\r\nhllede:\r\n subhl de\r\n rethl true,z\r\n bit 7,h\r\n rethl true,nz\r\n rethl false\r\n \r\nproc\r\nziffalse:\r\n local resa\r\n ld (resa-1),a\r\n call ziffalse.a\r\n ld A,0\r\n resa:\r\n ret\r\nziffalse.a:\r\n ld a,0\r\n cp h\r\n ret nz\r\n cp l\r\n ret\r\nendp\r\n\r\nmacro jpf,to\r\n call ziffalse\r\n jp z,to\r\nendm\r\n\r\nmacro andand,fls\r\n jpf fls\r\nendm\r\nmacro oror,tru\r\n call ziffalse\r\n jp nz,tru\r\nendm\r\n\r\nmacro flagtobool,fl\r\n local yes,skp\r\n jr fl, yes\r\n ld hl,false\r\n jr skp\r\n yes:\r\n ld hl,true\r\n skp: \r\nendm'].join(''),'mem': ['include const\r\n;\r\nrdslt:\r\n ex de,hl\r\n rept 5\r\n srl d;page*2\r\n endm\r\n CALL RSLREG\r\n ld e,d\r\n rdslt1:\r\n  RRCA\r\n  dec e\r\n  jp nz,rdslt1\r\n AND    00000011B\r\n LD C,A;000000Pr\r\n LD B,0\r\n LD HL,EXPTBL\r\n ADD HL,BC\r\n LD C,A;000000Pr\r\n LD A,(HL)\r\n AND 80H;expand flag\r\n OR C\r\n LD C,A;e00000Pr\r\n rept 4;const\r\n INC HL\r\n endm\r\n LD A,(HL);exp reg\r\n ld e,d\r\n rdslt2:\r\n  srl a\r\n  dec e\r\n  jp nz,rdslt2\r\n;000000Ex\r\n sla a\r\n sla a\r\n ;    0000Ex00\r\n and  00001100b\r\n OR C;e000ExPr\r\n ret\r\nmemini:\r\n CALL RSLREG\r\n rept 4\r\n  RRCA\r\n endm\r\n AND    00000011B\r\n LD C,A;000000Pr\r\n LD B,0\r\n LD HL,EXPTBL\r\n ADD HL,BC\r\n LD C,A;000000Pr\r\n LD A,(HL)\r\n AND 80H;expand flag\r\n OR C\r\n LD C,A;e00000Pr\r\n rept 4;const\r\n INC HL\r\n endm\r\n LD A,(HL);exp reg\r\n rept 4; page*2\r\n srl a\r\n endm;000000Ex\r\n sla a\r\n sla a\r\n ;    0000Ex00\r\n and  00001100b\r\n OR C;e000ExPr\r\n LD Hl,04000H\r\n jp ENASLT\r\n\r\nmacro peekw ,regv,regm\r\n  local w\r\n  ld (w-2),regm\r\n  ld regv,(0)\r\n  w:\r\nendm\r\n\r\nmacro pokew ,regm,regv\r\n  local w\r\n  ld (w-2),regm\r\n  ld (0),regv\r\n  w:\r\nendm\r\nmacro movw,dst,src,rp\r\n if nul rp\r\n  push hl\r\n  movw dst,src,hl\r\n  pop hl\r\n else\r\n  ld rp,src\r\n  ld dst,rp\r\n endif \r\nendm\r\n\r\nmacro popa\r\n  ex (sp),hl\r\n  ld a,h\r\n  pop HL\r\nendm\r\n\r\nmacro pushall\r\n push af\r\n push bc\r\n push de\r\n push hl\r\nendm\r\nmacro popall\r\n pop hl\r\n pop de\r\n pop bc\r\n pop af\r\nendm\r\n \r\n\r\nmacro pushi, n,rp\r\n local rrr\r\n if nul rp\r\n  ld (rrr-2),hl\r\n  ld hl,n\r\n  push hl\r\n  ld hl,0\r\n  rrr:\r\n else\r\n  ld rp,n\r\n  push rp\r\n endif\r\nendm\r\nmacro const,n,reg\r\n ld (n-2),reg\r\nendm\r\nmacro ldconst,reg,n\r\n ld reg,0\r\n n:\r\nendm\r\nmacro peekconst,reg,n\r\n ld reg,(0)\r\n n:\r\nendm\r\n'].join(''),'const': ['\r\n;wrt equ 0a2h\r\ndcompr equ 0020H\r\nsp.ini equ 0dc00h\r\nstksize equ 512\r\n\r\nth.size equ 256\r\nth.count equ 20\r\nth.start equ th.end-th.size*th.count\r\nth.end equ sp.ini-stksize\r\n\r\nth.bottom equ 0\r\n\r\nspr.scale equ 1\r\nspr.xmax equ 256<<spr.scale\r\nspr.ymax equ 192<<spr.scale\r\n\r\nENASLT EQU 0024H\r\nRSLREG EQU 0138H\r\nEXPTBL EQU 0FCC1H\r\nSETWRT equ 0053H\r\nLDIRVM equ 005CH\r\nWRTVDP equ 0047H\r\nRG1SAV equ 0F3E0H\r\nRDVDP  equ 013EH\r\nSNSMAT.a equ 0141h\r\n\r\nCHGMOD equ 005FH\r\n\r\nIMULT.a equ 3193H;HL ← DE*HL\r\nIDIV.a equ 31E6H;HL ← DE/HL\r\nIMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) \r\n\r\nWRTPSG  equ 0093H\r\n\r\nCSRY equ 0F3DCH\r\nCSRX equ 0F3DDH\r\n\r\nnull equ 0\r\n\r\nmacro marker.b, n\r\n last.marker: defl $\r\nendm\r\nmacro marker.e, n\r\n len.##n: defl $-last.marker\r\nendm\r\n'].join(''),'ctrl': ['include const\r\nfreeze:\r\nhalt\r\njr freeze\r\n\r\nmacro for ,lbend\r\n ; uses a\r\n ; c: breaked\r\n proc\r\n  local s,lb\r\n  lb:\r\n  call dcompr; uses a\r\n  jp nc,lbend\r\n  push HL\r\n  push de\r\n  push bc\r\n  call s\r\n  pop bc\r\n  pop de\r\n  pop HL\r\n  jp c,lbend\r\n  add HL,bc\r\n  jr lb\r\n  s:\r\n endp\r\nendm\r\n\r\nmacro repti ,n,lbend\r\n proc\r\n  local s,lb, lbend2\r\n  push bc\r\n  ld b,n\r\n  lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jr c,lbend2\r\n  djnz lb\r\n  lbend2:\r\n  pop bc\r\n  jp lbend \r\n  s:\r\n endp\r\nendm\r\n\r\n\r\nmacro reptb ,lbend\r\n  local s,lb\r\n inc b\r\n djnz lb\r\n jp lbend\r\n lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jp c,lbend\r\n djnz lb\r\n jp lbend \r\n s:\r\nendm\r\n\r\n\r\n\r\nmacro callsva,pp\r\n local sva\r\n ld (sva-1),a\r\n call pp\r\n ld a,0\r\n sva:\r\nendm\r\nbcis0:\r\n callsva bcis0.a\r\n ret\r\nbcis0.a:\r\n ld a,b\r\n and a\r\n ret nz\r\n ld a,c\r\n and a\r\n ret\r\n\r\nmacro reptbc ,lbend\r\n local s,lb\r\n call bcis0\r\n jp z,lbend \r\n lb:\r\n  push bc\r\n  call s\r\n  pop bc\r\n  jp c,lbend\r\n  dec bc\r\n  call bcis0\r\n jr nz, lb\r\n jp lbend \r\n s:\r\nendm\r\n\r\n\r\niff.NZ equ 0\r\niff.Z  equ 1\r\niff.NC equ 2\r\niff.C  equ 3\r\n\r\nmacro iff,cnd,to\r\n local iff.\r\n if iff.##cnd eq iff.NZ\r\n  jr z,to\r\n endif\r\n if iff.##cnd eq iff.Z\r\n  jr nz,to\r\n endif\r\n if iff.##cnd eq iff.NC\r\n  jr c,to\r\n endif\r\n if iff.##cnd eq iff.C\r\n  jr nc,to\r\n endif\r\n ;jr cnd, skip\r\n ;jr to\r\n ;skip:\r\nendm\r\n\r\nmacro break,cnd\r\n if NUL cnd\r\n  scf\r\n  ret\r\n else\r\n  proc \r\n   local jj\r\n   iff cnd ,jj\r\n   break\r\n  jj:\r\n  endp\r\n endif\r\nendm\r\nmacro continue,cnd\r\n if NUL cnd \r\n  or a\r\n  ret\r\n else\r\n  proc \r\n   local jj\r\n   iff cnd,jj\r\n   continue\r\n  jj:\r\n  endp\r\n endif\r\nendm\r\n\r\n\r\nmacro djnzr,reg, j\r\n dec reg\r\n jr NZ,j\r\nendm\r\n\r\nmacro callhl\r\n local LCD\r\n ld (LCD-2),HL\r\n call LCD\r\n LCD:\r\nendm\r\n\r\nmacro stride,lim,to\r\n if (low $)<lim\r\n  exitm\r\n endif\r\n ds 256+to-(low $),0cdh\r\nendm'].join(''),'th': ['include ctrl\r\ninclude sp\r\ninclude vdp\r\ninclude mem\r\ninclude math\r\ninclude debug\r\n\r\nth.ofs.stp equ 256-4\r\nth.ofs.sp equ th.ofs.stp+1\r\nth.ofs.spini equ th.ofs.stp\r\nfld.top equ th.ofs.spini-2\r\nth.st.blank equ 0c9h\r\nth.st.active equ 31h\r\n\r\n;macro th.for,lb\r\n; ld HL,th.start\r\n; ld de,th.end\r\n; ld bc,th.size\r\n; for lb\r\n;endm\r\nmacro th.for.a, nx, st, en\r\n if nul st\r\n  th.for.a nx, 0, th.count\r\n  exitm\r\n endif\r\n local do, loop\r\n ld a,st+(high th.start)\r\n loop:\r\n  cp en+(high th.start)\r\n  jp nc, nx\r\n  push af\r\n  ld h,a\r\n  ld l,0\r\n  call do\r\n  popa\r\n  ld h,a\r\n  ld l,0\r\n  jp c, nx\r\n  inc a\r\n jr loop\r\n do:\r\nendm\r\n\r\nmacro th.new.range,st,en\r\n ld bc,st\r\n ld(th.new.start),bc\r\n ld bc,en\r\n ld(th.new.end),bc\r\nendm\r\n\r\ndefsub th.isblank.a\r\n ; h= thread\r\n ; z if true\r\n ld l, th.ofs.stp\r\n ld a,(hl)\r\n cp th.st.blank\r\nendsub th.isblank.a\r\n\r\ndefsub th.new\r\n; nc for alloc fail\r\nproc \r\n local lbend\r\n db 21h\r\n th.new.start:\r\n dw th.start\r\n db 11h\r\n th.new.end:\r\n dw th.end\r\n ld bc,th.size\r\n for lbend\r\n  ; TODO th.ofs.stp\r\n  call th.isblank.a\r\n  break z\r\n  continue\r\n lbend:\r\n ret nc\r\n ; TODO th.ofs.stp\r\n ld L,th.ofs.stp\r\n ld (HL),31h\r\n inc HL\r\n ld (HL),th.ofs.spini\r\n ld a,h\r\n inc HL\r\n ld (hl),a\r\n inc HL\r\n ld (HL),0c9h\r\n ld l,th.bottom\r\n scf\r\n ret\r\nendp\r\nendsub th.new\r\n\r\ndefsub th.init\r\nproc\r\n local lbend\r\n th.for.a lbend\r\n  ; TODO th.ofs.stp\r\n  ld L, th.ofs.stp\r\n  ld (HL),th.st.blank\r\n  continue\r\n lbend:\r\n ; disable timer\r\n ld HL,0fd9fh\r\n ld (hl),0c9h\r\n call susint\r\n ret\r\nendp\r\nendsub th.init\r\n\r\ndefsub th.stepall\r\n th.for.a thnx\r\n  ;todo th.ofs.stp\r\n  ld (th.cur),hl\r\n  call th.isblank.a\r\n  continue z\r\n  call th.step\r\n  continue\r\n thnx:\r\nendsub th.stepall\r\n\r\ndefsub th.step\r\n sp2mem adrssp+1\r\n ld HL,(th.cur)\r\n ld l,th.ofs.stp\r\n ;call susint\r\n jp (hl)\r\nendsub th.step\r\n\r\ndefsub th.yield\r\n ld hl,(th.cur)\r\n ld l,th.ofs.sp\r\n sp2mem\r\n adrssp:\r\n ld sp,0\r\n jp doint\r\nendsub th.yield\r\n\r\ndefsub th.term\r\n ld hl,(th.cur)\r\n ; TODO th.ofs.stp\r\n ld L,th.ofs.stp\r\n ld (hl),th.st.blank\r\n jr adrssp\r\nendsub th.term\r\n\r\nmacro th.with.do, to\r\n local pr\r\n th.with pr\r\n jr to\r\n pr:\r\nendm\r\n\r\nmacro th.with.setdst, reg\r\n ld (th.jpdest-2),reg\r\nendm\r\nmacro th.with,pr\r\n movw (th.jpdest-2), pr\r\n call th.with.s\r\nendm\r\nmacro th.with.ret\r\n jp th.ewith\r\nendm\r\n\r\ndefsub th.with.s\r\n sp2mem th.wrssp-2\r\n ld l, th.ofs.sp\r\n ld (th.updsp-2),hl\r\n mem2sp\r\n jp 0\r\n th.jpdest:\r\nth.ewith:\r\n ld (0),sp\r\n th.updsp:\r\n ld sp,0\r\n th.wrssp:\r\nendsub th.with.s\r\n \r\n\r\n \r\n \r\ndefsub th.push\r\n ;push bc to thread hl\r\n th.with tpsbc\r\n ret\r\n tpsbc:\r\n  push bc\r\n  th.with.ret 0\r\nendsub th.push\r\n\r\n\r\ndefwork th.cur\r\n dw 0\r\nendwork th.cur\r\n\r\ndefsub th.loop\r\n ; hook before stepall\r\n db 0cdh\r\n h.thent:\r\n dw th.nop\r\n ; save prev timecnt\r\n ld a,(timecnt)\r\n push af\r\n ; Do stepall\r\n call th.stepall\r\n ; hook after stepall\r\n db 0cdh\r\n h.thlop:\r\n dw th.nop\r\n ; wait until timecnt changes\r\n pop af\r\n bwat:\r\n  ld hl,timecnt\r\n  cp (hl)\r\n  jr nz,bbwat\r\n  push af\r\n  call doint\r\n  pop af\r\n  jr bwat\r\n bbwat:\r\n ; repeat\r\n jr th.loop\r\nendsub th.loop\r\n\r\nth.nop:\r\n ret\r\n\r\n\r\nmacro th.pushi, val\r\n ld bc,val\r\n call th.push\r\nendm\r\n\r\n'].join(''),'sub': [].join(''),'debug': ['include math\r\n;debug\r\nmacro show,reg\r\n ld (hexval+1),reg\r\n call showhex\r\nendm\r\nmacro showm ,ad\r\n push hl\r\n ld HL,(ad)\r\n show HL\r\n pop HL\r\nendm\r\nmacro showlb,lb\r\n push hl\r\n ld hl,lb\r\n ld (hexval+1),hl\r\n call showhex\r\n pop hl\r\nendm\r\nshowhex:\r\nproc\r\n local loop\r\n push af\r\n push bc\r\n push HL\r\n hexval:\r\n ld hl,0\r\n ld b,4\r\n loop:\r\n  xor a\r\n  rept 4\r\n   slhl\r\n   rla\r\n  endm\r\n  call showhex1\r\n djnz loop\r\n ld a,32\r\n call wrt\r\n pop HL\r\n pop bc\r\n pop af\r\n ret\r\nendp\r\nshowhex1:\r\nproc\r\n local els\r\n cp 10\r\n jp nc, els\r\n add a,48\r\n jp wrt\r\n els:\r\n add a,65-10\r\n jp wrt\r\nendp\r\nabort:\r\n call wrt\r\n db 018h,0feh\r\nret\r\n\r\nmacro trace,v\r\n if not nul v\r\n  push af\r\n  ld a,v\r\n  ld (trad),a\r\n  pop af\r\n endif\r\n call trace.s\r\nendm\r\ntrace.s:\r\n push af\r\n push hl\r\n ld a,(trad)\r\n ld hl,1ae0h\r\n call wrt\r\n call 4dh\r\n inc a\r\n ld (trad),a\r\n ld a,32\r\n call wrt \r\n pop hl\r\n pop af\r\n ret\r\ntrad:\r\n db 65\r\n\r\nshowz:\r\n push af\r\n jr z,showz.s\r\n ld a,"N"\r\n call wrt\r\n showz.s:\r\n ld a,"Z"\r\n call wrt\r\n ld a,32\r\n call wrt\r\n pop af\r\n ret\r\n \r\n\r\nshowc:\r\n push af\r\n jr c,showc.s\r\n ld a,"N"\r\n call wrt\r\n showc.s:\r\n ld a,"C"\r\n call wrt\r\n ld a,32\r\n call wrt\r\n pop af\r\n ret\r\n \r\n\r\n\r\n\r\n\r\n\r\nmacro unreach, mesg\r\n trace mesg\r\n dw 0x18,0xfe\r\nendm\r\nmacro head, lb\r\n unreach lb\r\n marker.b lb\r\n lb:\r\nendm\r\n\r\nmacro defsub, n\r\n head n\r\nendm\r\nmacro endsub, n\r\n ret\r\n marker.e n\r\nendm\r\nmacro defwork, n\r\n head n\r\nendm\r\nmacro endwork, n\r\n marker.e n\r\nendm\r\n\r\ndefsub wrt\r\nproc\r\n local sk\r\n push hl\r\n push af\r\n ld hl,1800h\r\n cursor:\r\n call 4dh\r\n inc hl\r\n ld a,h\r\n cp 1bh\r\n jr c,sk\r\n  ld h,18h\r\n sk:\r\n ld (cursor-2),hl\r\n pop af\r\n pop hl\r\n ret\r\nendp\r\nendsub wrt\r\n'].join(''),'sp': ['include mem\r\ninclude debug\r\nmacro sp.get\r\n ld HL,0\r\n ADD hl, sp\r\nendm\r\nmacro sp.set\r\n ld sp,hl\r\nendm\r\nmacro mem2sp,ad\r\n local rs\r\n if nul ad\r\n  ld (rs-2),hl\r\n  ld sp,(0)\r\n  rs:\r\n else\r\n  ld sp,(ad)\r\n endif\r\nendm\r\nmacro sp2mem,ad\r\n local spad\r\n if nul ad\r\n  ld (spad-2),hl\r\n  ld (0),sp\r\n  spad:\r\n else\r\n  ld (ad),sp\r\n endif\r\nendm\r\n\r\nmacro showsp\r\n ld (sptmp),sp\r\n showm sptmp\r\nendm\r\nsptmp:\r\ndw 0\r\nmacro showstk\r\n showsp\r\n ld (sva),a\r\n ld a,":"\r\n call wrt\r\n ld a,(sva)\r\n ex (sp),hl\r\n show hl\r\n ex (sp),hl\r\nendm\r\nsva: db 0'].join(''),'oop': ['include mem\r\ninclude th\r\ninclude assert\r\n\r\n;a2 a1  oldpc oldix lcl1 lcl2\r\nargidx equ 2\r\nmacro getarg ,n\r\n ld l,(ix+argidx+n*2)\r\n ld h,(ix+argidx+n*2+1)\r\nendm\r\n\r\nmacro setlcl ,n\r\n ld (IX-(n*2-1)),h\r\n ld (ix-n*2),l\r\nendm\r\n\r\nmacro getlcl ,n\r\n ld h,(IX-(n*2-1))\r\n ld l,(ix-n*2)\r\nendm\r\n\r\nmacro addarg\r\n push hl\r\n; hl=arg  stktp=af\r\n;ex (sp),hl\r\n;ld a,h\r\n;push af\r\nendm\r\n\r\n\r\n\r\nmacro pusharg ,n\r\n getarg n\r\n push HL\r\nendm\r\n\r\nmacro pushlcl ,n\r\n getlcl n\r\n push HL\r\nendm\r\n\r\nmacro enter ,locals\r\n push ix\r\n ld ix,0\r\n add ix,sp\r\n rept locals\r\n  push HL\r\n endm\r\nendm\r\n\r\nmacro pops ,n\r\n rept n*2\r\n  inc sp\r\n endm\r\nendm\r\n\r\n\r\nmacro exit,n\r\n ld sp,ix\r\n pop ix\r\n if n!=0\r\n  exx\r\n  pop bc\r\n  pops n\r\n  push bc\r\n  exx\r\n endif\r\n ret\r\nendm\r\n\r\nmacro pushthis\r\n getthis\r\n push af\r\nendm\r\nmacro popthis\r\n popa\r\n ld (this),a\r\nendm\r\n\r\n\r\nmacro invoketg.a,fld,args\r\n; pushthis before arg push\r\n; hl=target \r\n ld a,h\r\n ld (this),a\r\n getfld fld\r\n callhl\r\n; pops args\r\n; popthis after \r\nendm\r\n\r\nmacro invoke,fld\r\n getfld fld\r\n callhl\r\n; pops args\r\n getthis\r\nendm\r\n\r\nmacro getfld, n\r\n local ad\r\n ld (ad-1),a\r\n ld hl,(n)\r\n ad:\r\nendm\r\n\r\nmacro setfld, n\r\n local ad\r\n ld (ad-1),a\r\n ld (n),hl\r\n ad:\r\nendm\r\n\r\nmacro getfldtg,n\r\n;hl=tg\r\n ld l,n\r\n peekw hl,hl\r\nendm\r\n\r\nmacro setfldtg,n\r\n; stk=val hl=tg\r\n ld l,n\r\n pop de\r\n pokew hl,de\r\nendm\r\n\r\nmacro getfldtg, n\r\n; hl=target\r\n ld d,h\r\n ld e,n\r\n peekw HL,de\r\nendm\r\n\r\nmacro tgconst,n\r\n ld (n-1),a\r\nendm\r\nmacro tgconst.g ,r16,n,fld\r\n ld r16,(fld)\r\n n:\r\nendm\r\nmacro tgconst.s ,n,fld,r16\r\n ld (fld),r16\r\n n:\r\nendm\r\n\r\n\r\nmacro curth2this\r\n ld a,(th.cur+1)\r\n ld (this),a\r\nendm\r\nmacro getthis\r\n ld a,(this)\r\nendm\r\n\r\nmacro new,Class,flds,st,en\r\n if nul st\r\n  th.new.range th.start, th.end\r\n else\r\n  th.new.range th.start+st*th.size, th.start+en*th.size\r\n endif\r\n pushi flds, bc\r\n pushi Class, bc\r\n call o.new\r\nendm\r\n\r\ndefsub o.new\r\nproc\r\n local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end\r\n ; {val .f} n &initbl retad\r\n pop hl;retad\r\n ld (retad-2),hl\r\n ; set initbl for th.with\r\n pop hl;&initbl\r\n th.with.setdst hl\r\n ; save this\r\n ld (svthis-1),a\r\n ; allocate thread\r\n call th.new\r\n jr nc, allocfail\r\n push hl; thread address\r\n call th.with.s; call &initbl\r\n pop hl; thread address\r\n ld a,h; set this as thread\r\n ; init fields\r\n pop bc; n of {val .f}\r\n inc c\r\n loop:\r\n  dec c\r\n  jr z,lpend\r\n  pop hl; .f\r\n  ld h,a\r\n  ld (w-2),hl\r\n  pop hl; val\r\n  ld (w),hl\r\n  w:\r\n jr loop\r\n lpend:\r\n ; return h as this\r\n ld h,a\r\n finally:\r\n  ;restore a before call o.new\r\n  ld a,0\r\n  svthis:\r\n  ;return \r\n  jp 0\r\n  retad:\r\n allocfail:\r\n  ; drop {val .f}\r\n  pop bc; n of {val .f}\r\n  ld b,c\r\n  inc c\r\n  lp2:\r\n   dec c\r\n   jr z, lp2end\r\n   pop hl\r\n   pop hl\r\n  jr lp2\r\n  lp2end:\r\n  ld hl,null;  todo null\r\n  jr finally\r\nendp\r\nendsub o.new\r\n\r\nmacro new.arg, n, v\r\n if not nul v\r\n  ld hl,v\r\n endif\r\n push hl\r\n pushi n,bc\r\nendm\r\n \r\nmacro o.assert.eq,fld, v\r\n local aa\r\n assert.do aa\r\n  getfld fld\r\n  assert.eq v\r\n  ret\r\n aa:\r\nendm\r\n\r\nthis:\r\ndb 0\r\n\r\nmacro fld.def,n\r\n n equ fldidx\r\n fldidx:defl fldidx-2\r\nendm\r\nmacro class,Class,super\r\n unreach "c"\r\n marker.b 0\r\n dw super\r\n fldidx:defl fld.top; todo fld.top\r\n Class:\r\n  fld .class,Class\r\nendm\r\nmacro fld.bottom,Class\r\n if defined Class##.bottom \r\n  if Class##.bottom ne fldidx\r\n   .error bottom ne fldidx\r\n  endif\r\n else\r\n Class##.bottom:defl fldidx\r\n endif\r\nendm \r\nmacro fld,n,v\r\n if defined n\r\n  if n ne fldidx\r\n   .error n ne fldidx\r\n  else \r\n   fldidx:defl fldidx-2\r\n  endif\r\n else\r\n  fld.def n\r\n endif\r\n pushi v,bc\r\nendm\r\nmacro unuse\r\n fldidx:defl fldidx-2\r\n pushi 0,bc\r\nendm\r\nmacro meth,Class,n\r\n fld .##n, Class##.##n\r\nendm\r\nmacro met2,Class,n\r\n fld n, Class##n\r\nendm\r\n\r\nclass Object,null\r\n fld .main,null\r\n fld.bottom Object\r\n marker.e Object\r\n\r\n\r\ndefsub o.boot\r\n curth2this\r\n invoke .main,0\r\nendsub o.boot\r\n\r\n\r\nmacro yield\r\n pushthis\r\n push ix\r\n call th.yield\r\n pop ix\r\n popthis\r\nendm\r\n\r\nmacro def,n,args,lcls\r\nhead n\r\n def.args:defl args\r\n def.locals:defl lcls\r\n if args>0 or lcls>0\r\n  enter lcls\r\n endif\r\nendm\r\nmacro enddef,n\r\n if def.args>0 or def.locals>0\r\n  exit def.args\r\n else\r\n  ret\r\n endif\r\n marker.e n\r\nendm\r\n\r\ndefsub isobj.a\r\n ;hl=obj?\r\n ;cy=true\r\n ld a,h\r\n cp high th.start\r\n jr c,notobj\r\n cp high th.end\r\n jr nc,notobj\r\n scf\r\n ret\r\n notobj:\r\n and a\r\nendsub isobj.a\r\n\r\ndefsub instanceof\r\n ; a=this de=Class\r\n ; z: true\r\n getfld .class\r\n jp is.subclass.a\r\nendsub instanceof\r\n\r\ndefsub get.superclass\r\n ; hl=Class\r\n dec hl\r\n dec hl\r\n peekw hl,hl\r\nendsub get.superclass\r\n\r\ndefsub is.subclass.a\r\nproc \r\n local top\r\n ; hl=Subclass\r\n ; de=Superclass\r\n ; z:true\r\n top:\r\n cpde.a 0\r\n ret z\r\n call get.superclass\r\n push de\r\n ld de,null\r\n cpde.a 0\r\n pop de\r\n jr nz,top\r\n cpde.a 0\r\nendp\r\nendsub is.subclass.a\r\n '].join(''),'spr': ['include const\r\ninclude th\r\ninclude mem\r\ninclude oop\r\ninclude sub\r\n\r\nclass Sprite,Object\r\n fld .main, 0\r\n fld.bottom Object\r\n fld .x, 100\r\n fld .y, 100\r\n fld .p, 0\r\n fld .c, 2\r\n fld.bottom Sprite\r\n marker.e Sprite\r\n \r\nmacro outwrt\r\n  out (98h),a\r\nendm\r\n\r\n\r\nmacro spr.unscale\r\n ; HL -> A\r\n rept spr.scale\r\n  srlhl\r\n endm\r\n LD A,L\r\n sub 8 \r\nendm\r\n\r\ndefsub spr.puts\r\nproc\r\n local t1,t2,t3,t4\r\n ld hl, 1b00h\r\n call SETWRT\r\n th.for.a sprl\r\n  ld a,h\r\n  tgconst t1\r\n  tgconst t2\r\n  tgconst t3\r\n  tgconst t4\r\n\r\n  tgconst.g hl,t1,.y \r\n  spr.unscale 0\r\n  outwrt 0\r\n  \r\n  tgconst.g hl,t2,.x \r\n  spr.unscale 0\r\n  outwrt 0\r\n  \r\n  tgconst.g a,t3,.p \r\n  sla a\r\n  sla a\r\n  outwrt 0\r\n  \r\n  tgconst.g a,t4,.c \r\n  outwrt 0\r\n  continue\r\n sprl:\r\nendp\r\nendsub spr.puts\r\n \r\n '].join(''),'sprpat': ['include const\r\n\r\n;aaa\r\nspr.inipat:\r\n ld de,3800h\r\n ld hl,spr.pat\r\n ld bc,128\r\n jp LDIRVM\r\nbg.inipat:\r\n ret\r\nspr.pat:\r\n; --- Slot 0 cat fstand\r\n; color 9\r\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\r\nDB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C\r\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\r\nDB $98,$FC,$FE,$FE,$F6,$F0,$60,$70\r\n; \r\n; --- Slot 1 cat fwalk1\r\n; color 9\r\nDB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B\r\nDB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06\r\nDB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C\r\nDB $98,$FC,$FE,$FE,$D4,$78,$F0,$00\r\n; \r\n; --- Slot 2 cat fwalk2\r\n; color 9\r\nDB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36\r\nDB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00\r\nDB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8\r\nDB $30,$FC,$FE,$FE,$F7,$F7,$60,$60\r\n; \r\n; --- Slot 3 cat omg\r\n; color 9\r\nDB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D\r\nDB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00\r\nDB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C\r\nDB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00\r\n\r\nds 60*32\r\n'].join(''),'tnu': ['\r\ninclude spr\r\ninclude bool\r\ninclude key\r\n\r\n;.onUpdate equ .c-2\r\n;.update equ .onUpdate-2\r\n;.screenOut equ .update-2\r\n;.die equ .screenOut-2\r\n;.updateEx equ .die-2\r\n\r\nmacro end.const, n\r\n pushi RActor.wait,bc\r\n pushi o.boot,bc\r\n th.with.ret 0 \r\n marker.e n\r\nendm\r\n\r\nmacro RActor.noovr,Class\r\n meth Class,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, -1024\r\n fld .p, 0\r\n fld .c, 3\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\nendm\r\n\r\nclass RActor,Sprite\r\n RActor.noovr RActor\r\n end.const RActor\r\nRActor.main:\r\n enter 0\r\n exit 0\r\nRActor.update:\r\n invoke .onUpdate\r\n yield\r\n ret \r\nRActor.onUpdate:\r\n ret\r\nRActor.screenOut:\r\nproc\r\n local true\r\n getfld .x\r\n bit 1,h\r\n jr nz, true\r\n getfld .y\r\n ld de,192*2\r\n cpde.a\r\n getthis\r\n jr nc,true\r\n ld hl,0\r\n xor a\r\n ret\r\n true:\r\n ld hl,1\r\n scf\r\n ret\r\nendp\r\nRActor.wait:\r\nproc\r\n local lbl\r\n lbl:\r\n invoke .update\r\n jr lbl\r\nendp\r\ndef RActor.die,0,0\r\n ld h,a\r\n ld l,th.ofs.stp\r\n ld (hl),th.st.blank\r\n ld hl, 0\r\n setfld .c\r\nenddef RActor.die\r\n\r\ndef RActor.updateEx,1,0\r\nproc \r\n local n\r\n; enter 0\r\n getarg 1\r\n ld b,h\r\n ld c,l\r\n reptbc n\r\n  invoke .update\r\n  continue\r\n n:\r\nendp\r\nenddef RActor.updateEx\r\n\r\ncrashTo.size equ 8<<spr.scale\r\n\r\nproc\r\n local gx,gy,t1,t2\r\n local endc,cr1\r\n local fe\r\n\r\ndefsub crashTo.setXY\r\n getfld .x\r\n const gx,hl\r\n getfld .y\r\n const gy,hl\r\nendsub crashTo.setXY\r\n\r\n\r\ndef RActor.crashTo,1,0\r\n call crashTo.setXY\r\n getarg 1\r\n const cr.class,hl\r\n call isobj.a\r\n jr c, cr1\r\n  unreach "C"\r\n  ; "Cannot call target.crashTo(Class) "\r\n  ;ld hl, th.start\r\n  ;ld de, th.end\r\n  ;call crashTo1\r\n  ;jr endc\r\n cr1:\r\n  getthis 0\r\n  call crashTo1\r\n  flagtobool c\r\n endc:\r\nenddef RActor.crashTo\r\n\r\nmacro crashToClass,Class,st,en\r\n local nx,found\r\n ; a=this\r\n call crashTo.setXY\r\n foreach.a Class,st,en,nx\r\n  call crashTo1\r\n  break c\r\n  continue\r\n nx:\r\n getthis 0\r\n jr c, found\r\n  ld hl,null\r\n found:\r\nendm\r\n\r\nmacro foreach.a, Class,st,en,nxt\r\n th.for.a nxt, st, en\r\n  all.skip Class\r\nendm\r\n\r\n\r\nmacro all.skip.blank.self\r\n ; skip blank\r\n  ; TODO th.ofs.stp\r\n  call th.isblank.a\r\n  continue z\r\n  ; skip hl==this\r\n  getthis 0\r\n  cp h\r\n  continue z\r\nendm\r\nmacro all.skip.isnot,Class\r\n  ; skip object not instance of *Class*\r\n  push hl\r\n  ld a,h\r\n  ld de,Class\r\n  call instanceof\r\n  getthis 0\r\n  pop hl\r\n  continue nz\r\nendm\r\nmacro all.skip, Class\r\n all.skip.blank.self 0\r\n all.skip.isnot Class\r\nendm\r\n\r\ndefsub crashToC.abolished\r\n ;before:\r\n ; call crashTo.setXY\r\n ; const cr.class,Class\r\n ; hl start\r\n ; de end\r\n ld bc,th.size\r\n for fe\r\n  all.skip.blank.self 0\r\n  ; skip object not instance of *Class*\r\n  push hl\r\n  ld a,h\r\n  ldconst de,cr.class\r\n  call instanceof\r\n  pop hl\r\n  continue nz\r\n  ; do crashTo1\r\n  getthis 0\r\n  call crashTo1\r\n  break c\r\n  continue\r\n fe:\r\n getthis 0\r\n ret c\r\n ld hl,null\r\nendsub crashToC.abolished\r\n\r\ndefsub crashTo1\r\n ; call crashTo.setXY before\r\n ;hl=tg\r\n ;cy:true\r\n ;hl is used\r\n push af\r\n ld a,h\r\n tgconst t1\r\n tgconst t2\r\n pop af\r\n tgconst.g hl,t1,.x\r\n ldconst bc,gx\r\n subhl bc\r\n call abs\r\n ld bc,crashTo.size\r\n subhl bc\r\n ret nc\r\n\r\n tgconst.g hl,t2,.y\r\n ldconst bc,gy\r\n subhl bc\r\n call abs\r\n ld bc,crashTo.size\r\n subhl bc\r\nendsub crashTo1\r\n\r\nendp\r\n\r\n\r\nmacro tnu.run,Main\r\n ld sp,sp.ini\r\n call screen2\r\n \r\n showsp\r\n showlb endusr\r\n call spr.inipat\r\n call bg.inipat\r\n\r\n ld hl,th.start\r\n ld (hl),0cdh\r\n ld de,th.start+1\r\n ld bc,th.size*th.count-1\r\n ldir\r\n \r\n call th.init\r\n ;call mus.ini\r\n new Main, 0\r\n movw (h.thlop),spr.puts\r\n movw (h.thent),keyall\r\n jp th.loop\r\nendm\r\n\r\n;aaaa'].join(''),'key': ['include debug\r\n\r\ndefsub keyall\r\nproc\r\n;show hl\r\n local lp\r\n ld hl,keymat1\r\n ld de,keymat2\r\n ld bc,11\r\n ldir\r\n ld a,0\r\n ld hl,keymat1\r\n lp:\r\n push af\r\n call SNSMAT.a\r\n xor 255\r\n ld (hl),a\r\n pop af\r\n inc hl\r\n inc a\r\n cp 11\r\n jr c,lp\r\nendp\r\nendsub keyall\r\n\r\ndefwork keymat1\r\nds 11\r\nendwork keymat1\r\ndefwork keymat2\r\nds 11\r\nendwork keymat2\r\n\r\n\r\nproc\r\ndefsub getkey.a\r\nlocal chkmat\r\nex de,hl\r\nld hl,keymat1\r\ncall chkmat\r\nld hl,0\r\nret z\r\nld hl,keymat2\r\ncall chkmat\r\nld hl,1\r\nret z\r\ninc hl\r\nendsub getkey.a\r\n\r\ndefsub chkmat\r\npush de\r\nld a,d\r\nld d,0\r\nadd hl,de\r\nand (hl)\r\npop de\r\nendsub chkmat\r\n\r\ndefsub getkey\r\npush af\r\ncall getkey.a\r\npop af\r\nendsub getkey\r\n\r\nendp'].join(''),'map': ['include sub\r\ninclude math\r\ninclude tnu\r\n\r\ndefsub map.adr\r\n ; hl=chipx\r\n ; de=chipy\r\n rept 5\r\n  slde 0\r\n endm\r\n add hl,de\r\n ld de,1800h\r\n add hl,de\r\nendsub map.adr\r\n\r\ndefsub map.set.a\r\n ;  a=data\r\n call map.adr\r\n call 4dh\r\nendsub map.set.a\r\n\r\ndefsub map.get.a\r\n call map.adr\r\n call 4ah \r\nendsub map.get.a\r\n\r\ndefsub map.adrat.a\r\n ; hl=spr_x\r\n ; de=spr_y\r\n spr.unscale 0\r\n srl a\r\n srl a\r\n srl a\r\n push af\r\n ex de,hl\r\n spr.unscale 0\r\n srl a\r\n srl a\r\n srl a\r\n ld d,0\r\n ld e,a\r\n pop hl\r\n ld l,h\r\n ld h,0\r\n inc hl\r\n inc de\r\n call map.adr\r\nendsub map.adrat.a\r\n\r\ndefsub map.getat.a\r\n call map.adrat.a\r\n call 4ah\r\nendsub map.getat.a\r\n\r\ndefsub map.setat.a\r\n ; a=data\r\n push af\r\n call map.adrat.a\r\n pop af\r\n call 4dh\r\nendsub map.setat.a\r\n\r\ndefsub locate\r\n ; hl=chipx\r\n ; de=chipy\r\n call map.adr\r\n ld (cursor-2),hl\r\nendsub locate\r\n'].join(''),'maze': [].join(''),'t1': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude tnu\r\ninclude sp\r\n\r\n;===your code \r\n\r\nright:dw 0\r\n\r\nmain:\r\ntnu.run Main\r\ndef Main.main,0,0\r\nnew.arg .vx,1\r\nnew.arg .vy,0\r\nnew.arg .x,0\r\nnew.arg .y,100\r\nnew Cat,4\r\n\r\nnew.arg .x,100\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\nld (right),hl\r\nld a,h\r\nld de,RActor\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Target\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Cat\r\ncall instanceof\r\ncall showz\r\n\r\n\r\nld hl,1\r\nsetfld .c\r\nenddef 0\r\n\r\nclass Main,RActor\r\n RActor.noovr Main\r\n end.const Main\r\nclass Target,RActor\r\n RActor.noovr Target\r\n met2 Target,.push\r\n end.const Target\r\ndef Target.main,0,0\r\nenddef\r\nclass Cat,RActor\r\n RActor.noovr Cat\r\n fld .vy, 0\r\n fld .vx, 0\r\n fld.bottom Cat\r\n end.const Cat\r\ndef Cat.main,0,0\r\n blp:\r\n  ld hl,0108h\r\n  call getkey\r\n  jpf nomov\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  nomov:\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  ld hl,(right)\r\n  push hl\r\n  invoke .crashTo\r\n  jpf cr\r\n   ; r.x+=10\r\n   ld hl,(right)\r\n   getfldtg .x\r\n   ld de,10\r\n   add hl,de\r\n   push hl\r\n   ld hl,(right)\r\n   setfldtg .x\r\n   ; r.push()\r\n   pushthis 0\r\n   ld hl,(right)\r\n   invoketg.a .push\r\n   popthis 0\r\n  cr:\r\n  invoke .update\r\n jp blp\r\nenddef\r\n; test t1\r\ndef Target.push,0,0\r\n ld hl,3\r\n setfld .p\r\n repti 30,pse\r\n  getfld .x\r\n  inc hl\r\n  setfld .x\r\n  invoke .update\r\n  continue\r\n pse:\r\n ld hl,0\r\n setfld .p\r\nenddef\r\n\r\nendusr: \r\ninclude sprpat\r\n\r\nend main\r\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\r\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t2': ['org 08000h\r\ninclude tnu\r\ninclude bool\r\ninclude map\r\n\r\nmain:\r\ntnu.run Main\r\n;range 0-5\r\nclass EBullet,RActor\r\n meth EBullet,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .vx,0\r\n fld .vy,0\r\n end.const 0\r\ndef EBullet.main,0,0\r\n ;p=7;\r\n ld hl,7\r\n setfld .p\r\n ;c=15;\r\n ld hl,15\r\n setfld .c\r\n lb1:\r\n ld hl,true\r\n jpf lb2\r\n ;x+=vx;\r\n getfld .vx\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n ;y+=vy;\r\n getfld .vy\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n invoke .screenOut\r\n jpf lb4\r\n ;die();\r\n invoke .die\r\n jp lb3\r\n lb4:\r\n lb3:\r\n ;update();\r\n invoke .update\r\n jp lb1\r\n lb2:\r\n ret\r\n;range 5-15\r\nclass Enemy,RActor\r\n meth Enemy,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .vx,0\r\n fld .bvx,0\r\n fld .bvy,0\r\n fld .bdist,0\r\n meth Enemy,fire\r\n end.const 0\r\ndef Enemy.main,0,0\r\n lb5:\r\n ld hl,200\r\n push hl\r\n getfld .y\r\n pop de\r\n call hlltde\r\n jpf lb6\r\n ;y+=2;\r\n ld hl,2\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n ;update();\r\n invoke .update\r\n jp lb5\r\n lb6:\r\n ld hl,(gbl_player)\r\n getfldtg .x\r\n push hl\r\n getfld .x\r\n pop de\r\n call hlgtde\r\n jpf lb8\r\n ;vx=0-2;\r\n ld hl,2\r\n push hl\r\n ld hl,0\r\n pop de\r\n subhl de\r\n setfld .vx\r\n jp lb7\r\n lb8:\r\n ;vx=2;\r\n ld hl,2\r\n setfld .vx\r\n lb7:\r\n ;fire();\r\n invoke .fire\r\n lb9:\r\n ld hl,true\r\n jpf lb10\r\n invoke .screenOut\r\n jpf lb12\r\n ;die();\r\n invoke .die\r\n jp lb11\r\n lb12:\r\n lb11:\r\n ;y+=2;\r\n ld hl,2\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n ;x+=vx;\r\n getfld .vx\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n ;update();\r\n invoke .update\r\n jp lb9\r\n lb10:\r\n ret\r\ndef Enemy.fire,0,0\r\n ;bvx=$player.x-x;\r\n getfld .x\r\n push hl\r\n ld hl,(gbl_player)\r\n getfldtg .x\r\n pop de\r\n subhl de\r\n setfld .bvx\r\n ;bvy=$player.y-y;\r\n getfld .y\r\n push hl\r\n ld hl,(gbl_player)\r\n getfldtg .y\r\n pop de\r\n subhl de\r\n setfld .bvy\r\n ;bdist=abs(bvx)+abs(bvy);\r\n getfld .bvy\r\n call abs\r\n push hl\r\n getfld .bvx\r\n call abs\r\n pop de\r\n add hl, de\r\n setfld .bdist\r\n ;bdist/=8;\r\n pushthis\r\n getfld .bdist\r\n push hl\r\n ld hl,8\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bdist\r\n ;bvx/=bdist;\r\n pushthis\r\n getfld .bvx\r\n push hl\r\n getfld .bdist\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bvx\r\n ;bvy/=bdist;\r\n pushthis\r\n getfld .bvy\r\n push hl\r\n getfld .bdist\r\n pop de\r\n call IDIV.a\r\n popthis\r\n setfld .bvy\r\n ;new EBullet{        x,y,vx:bvx,vy:bvy    };\r\n getfld .x\r\n new.arg .x\r\n getfld .y\r\n new.arg .y\r\n getfld .bvx\r\n new.arg .vx\r\n getfld .bvy\r\n new.arg .vy\r\n new EBullet,4,0,5\r\n ret\r\n;range 0-5\r\nclass Main,RActor\r\n meth Main,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .i,0\r\n end.const 0\r\ndef Main.main,0,0\r\n ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};\r\n ld hl,256\r\n new.arg .x\r\n ld hl,300\r\n new.arg .y\r\n ld hl,4\r\n push hl\r\n ld hl,(gbl_pat_spr)\r\n pop de\r\n add hl, de\r\n new.arg .p\r\n ld hl,15\r\n new.arg .c\r\n new Player,4,0,5\r\n ld (gbl_player),hl\r\n ld hl,0\r\n setfld .i\r\n lb13:\r\n ld hl,20\r\n push hl\r\n getfld .i\r\n pop de\r\n call hlltde\r\n jpf lb14\r\n ;new Enemy{x:rnd(512), y:0, p:5, c:7};\r\n ld hl,512\r\n call rnd\r\n new.arg .x\r\n ld hl,0\r\n new.arg .y\r\n ld hl,5\r\n new.arg .p\r\n ld hl,7\r\n new.arg .c\r\n new Enemy,4,5,15\r\n ;updateEx(30);\r\n ld hl,30\r\n push hl\r\n invoke .updateEx\r\n jp lb13\r\n lb14:\r\n ret\r\n;range 15-20\r\nclass PBullet,RActor\r\n meth PBullet,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth PBullet,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld .e,0\r\n end.const 0\r\ndef PBullet.main,0,0\r\n ;p=6;\r\n ld hl,6\r\n setfld .p\r\n ;c=8;\r\n ld hl,8\r\n setfld .c\r\n lb15:\r\n ld hl,true\r\n jpf lb16\r\n invoke .screenOut\r\n jpf lb18\r\n ;die();\r\n invoke .die\r\n jp lb17\r\n lb18:\r\n lb17:\r\n ;y-=6;\r\n ld hl,6\r\n push hl\r\n getfld .y\r\n pop de\r\n subhl de\r\n setfld .y\r\n crashToClass Enemy, 5, 15\r\n setfld .e\r\n getfld .e\r\n jpf lb20\r\n ;e.die();\r\n pushthis 0\r\n getfld .e\r\n invoketg.a .die\r\n popthis 0\r\n ;die();\r\n invoke .die\r\n jp lb19\r\n lb20:\r\n lb19:\r\n ;update();\r\n invoke .update\r\n jp lb15\r\n lb16:\r\n ret\r\ndef PBullet.onUpdate,0,0\r\n ;c+=1;\r\n ld hl,1\r\n push hl\r\n getfld .c\r\n pop de\r\n add hl, de\r\n setfld .c\r\n ld hl,14\r\n push hl\r\n getfld .c\r\n pop de\r\n call hlgtde\r\n jpf lb22\r\n ;c=0;\r\n ld hl,0\r\n setfld .c\r\n jp lb21\r\n lb22:\r\n lb21:\r\n ret\r\n;range 0-5\r\nclass Player,RActor\r\n meth Player,main\r\n fld .x,0\r\n fld .y,0\r\n fld .p,0\r\n fld .c,0\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut\r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n end.const 0\r\ndef Player.main,0,0\r\n lb23:\r\n ld hl,3\r\n ld de,10\r\n call locate\r\n getfld .y\r\n ld a,l\r\n call wrt\r\n ld a,h\r\n call wrt\r\n getthis 0\r\n \r\n ex de,hl\r\n getfld .x\r\n ld a,35\r\n call map.setat.a\r\n getthis 0\r\n ld hl,true\r\n jpf lb24\r\n ld hl, 4104\r\n call getkey\r\n jpf lb26\r\n ;x-=3;\r\n ld hl,3\r\n push hl\r\n getfld .x\r\n pop de\r\n subhl de\r\n setfld .x\r\n jp lb25\r\n lb26:\r\n lb25:\r\n ld hl, 32776\r\n call getkey\r\n jpf lb28\r\n ;x+=3;\r\n ld hl,3\r\n push hl\r\n getfld .x\r\n pop de\r\n add hl, de\r\n setfld .x\r\n jp lb27\r\n lb28:\r\n lb27:\r\n ld hl, 8200\r\n call getkey\r\n jpf lb30\r\n ;y-=3;\r\n ld hl,3\r\n push hl\r\n getfld .y\r\n pop de\r\n subhl de\r\n setfld .y\r\n jp lb29\r\n lb30:\r\n lb29:\r\n ld hl, 16392\r\n call getkey\r\n jpf lb32\r\n ;y+=3;\r\n ld hl,3\r\n push hl\r\n getfld .y\r\n pop de\r\n add hl, de\r\n setfld .y\r\n jp lb31\r\n lb32:\r\n lb31:\r\n crashToClass Enemy, 5, 15\r\n jpf lb34\r\n ;die();\r\n invoke .die\r\n jp lb33\r\n lb34:\r\n lb33:\r\n crashToClass EBullet, 0, 5\r\n jpf lb36\r\n ;die();\r\n invoke .die\r\n jp lb35\r\n lb36:\r\n lb35:\r\n ld hl,1\r\n push hl\r\n ld hl, 264\r\n call getkey\r\n pop de\r\n call hleqde\r\n jpf lb38\r\n ;new PBullet{x,y};\r\n getfld .x\r\n new.arg .x\r\n getfld .y\r\n new.arg .y\r\n new PBullet,2,15,20\r\n foreach.a Enemy,5,14,nxx\r\n  ld a,h\r\n  ld hl,8\r\n  setfld .c\r\n  continue \r\n nxx:\r\n getthis 0\r\n \r\n \r\n jp lb37\r\n lb38:\r\n lb37:\r\n ;update();\r\n invoke .update\r\n jp lb23\r\n lb24:\r\n ret\r\nenddef 0\r\nendusr:\r\ngbl_player:dw 0\r\ngbl_pat_spr:dw 0\r\nspr.inipat:\r\n ld de,3800h\r\n ld hl,spr.pat\r\n ld bc,2048\r\n jp LDIRVM\r\nspr.pat:\r\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c\r\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70\r\ndb $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6\r\ndb $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0\r\ndb $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0\r\ndb $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60\r\ndb $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0\r\ndb $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0\r\ndb $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0\r\ndb $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0\r\ndb $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c\r\ndb $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18\r\ndb $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0\r\ndb $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0\r\ndb $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0\r\ndb $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0\r\nbg.inipat:\r\n ret\r\n\r\n\r\nend main'].join(''),'t3': ['org 09000h\r\n\r\ninclude tnu\r\ninclude mus\r\ninclude sprpat\r\n\r\n;===your code \r\n\r\nmain:\r\nld sp,(8000h)\r\n\r\ncall screen1\r\n\r\nshowsp\r\nshowlb endusr\r\n\r\nld hl,8000h\r\nld (hl),0cdh\r\nld de,8001h\r\nld bc,th.size*th.count-1\r\nldir\r\n\r\n\r\ncall th.init\r\ncall spr.inipat\r\n;call mus.ini\r\n\r\n\r\nnew Main, 0\r\nshow hl\r\n\r\n\r\nmovw (h.thlop),spr.puts\r\njp th.loop\r\n\r\nclass Main, RActor\r\n meth Main,main\r\n fld.bottom Object\r\n fld .x,100\r\n fld .y,300\r\n fld .p,0\r\n fld .c,3\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\n fld.bottom Main\r\n end.const\r\n\r\nMain.main:\r\n olp:\r\n  getthis\r\n  invoke .update\r\n  call xrnd.a\r\n  ld a,h\r\n  and 15\r\n  jr nz,doap\r\n   getthis\r\n   getfld .x\r\n   new.arg .x\r\n   getfld .y\r\n   new.arg .y\r\n   ld hl,7\r\n   call rnd.a\r\n   ld de,3\r\n   sbc hl,de\r\n   new.arg .vx\r\n   ld hl,5\r\n   call rnd.a\r\n   ld de,15\r\n   sbc hl,de\r\n   new.arg .vy\r\n   new Bullet, 4\r\n   call dstk\r\n  doap:\r\n  ld a,8\r\n  call SNSMAT.a\r\n  and 1\r\n  jr z,golf\r\n  \r\n  getthis\r\n  getfld .x\r\n  inc hl\r\n  inc hl\r\n  setfld .x\r\n  ld de,400\r\n  cpde.a\r\n  jp c, olp\r\n  golf:\r\n  ld hl,0\r\n  getthis\r\n  setfld .x\r\n jp olp\r\n\r\n\r\nclass Bullet,RActor\r\n meth Bullet,main\r\n fld.bottom Object\r\n fld .x, 0\r\n fld .y, 0\r\n fld .p, 2\r\n fld .c, 15\r\n fld.bottom Sprite\r\n meth RActor,onUpdate\r\n meth RActor,update\r\n meth RActor,screenOut \r\n meth RActor,die\r\n meth RActor,updateEx\r\n meth RActor,crashTo\r\n fld.bottom RActor\r\n fld .vy, -10\r\n fld .vx, 0\r\n fld.bottom Bullet\r\n end.const \r\n \r\nBullet.main:\r\n blp:\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  getfld .vy\r\n  inc hl\r\n  setfld .vy\r\n\r\n  invoke .update\r\n  invoke .screenOut\r\n  jp c, bdie\r\n  getfld .vy\r\n  bit 7,h\r\n  jr nz,blp\r\n  ld de,5\r\n  cpde.a\r\n  jr c,blp\r\n \r\n  call dstk\r\n  getthis\r\n  ld hl,3\r\n  setfld .p\r\n  pushi 10,bc\r\n  invoke .updateEx\r\n\r\n bleft:\r\n  getthis\r\n  ld hl,2\r\n  setfld .p\r\n  getfld .x\r\n  dec hl\r\n  dec hl\r\n  setfld .x\r\n  getfld .y\r\n  dec hl\r\n  setfld .y\r\n  invoke .update\r\n  invoke .screenOut\r\n  jr c, bdie\r\n  jr bleft\r\n bdie:\r\n  invoke .die\r\n  ret \r\n\r\n  \r\ndstk:\r\n push af\r\n ld hl,th.start+256*3\r\n getthis\r\n ld h,a\r\n ld de,1900h\r\n ld bc,256\r\n call LDIRVM\r\n pop af\r\n ret\r\n \r\nendusr:\r\nend main'].join(''),'t4': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude tnu\r\ninclude sp\r\n\r\n;===your code \r\n\r\nright:dw 0\r\n\r\nmain:\r\ntnu.run Main\r\ndef Main.main,0,0\r\nnew.arg .vx,1\r\nnew.arg .vy,0\r\nnew.arg .x,0\r\nnew.arg .y,100\r\nnew Cat,4\r\n\r\nnew.arg .x,100\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\nnew.arg .x,200\r\nnew.arg .y,100\r\nnew Target,2\r\n\r\n\r\nnew.arg .x,150\r\nnew.arg .y,100\r\nnew.arg .c,8\r\nnew NTarget,3\r\n\r\nld (right),hl\r\nld a,h\r\nld de,Actor\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Target\r\ncall instanceof\r\ncall showz\r\n\r\nld a,(right+1)\r\nld de,Cat\r\ncall instanceof\r\ncall showz\r\n\r\n\r\nld hl,1\r\nsetfld .c\r\nenddef 0\r\n\r\nclass Main,Actor\r\n Actor.noovr Main\r\n end.const 0\r\nclass Target,Actor\r\n Actor.noovr Target\r\n met2 Target,.push\r\n end.const 0\r\nclass NTarget,Actor\r\n Actor.noovr NTarget\r\n end.const 0\r\ndef NTarget.main,0,0\r\n ret\r\nenddef\r\n\r\ndef Target.main,0,0\r\nenddef\r\nclass Cat,Actor\r\n Actor.noovr Cat\r\n fld .vy, 0\r\n fld .vx, 0\r\n fld.bottom Cat\r\n end.const 0\r\ndef Cat.main,0,0\r\n blp:\r\n  getthis\r\n  ;x+=vx\r\n  getfld .x\r\n  ex de, hl\r\n  getfld .vx\r\n  add hl,de\r\n  setfld .x\r\n  ; y+=vy\r\n  getfld .y\r\n  ex de, hl\r\n  getfld .vy\r\n  add hl,de\r\n  setfld .y\r\n  ld hl,Target\r\n  push hl\r\n  invoke .crashTo\r\n  jpf cr\r\n   ; r.x+=10\r\n   const setg,hl\r\n   getfldtg .y\r\n   ld de,30\r\n   add hl,de\r\n   push hl\r\n   ldconst hl,setg\r\n   setfldtg .y\r\n  cr:\r\n  invoke .update\r\n jp blp\r\nenddef\r\ndef Target.push,0,0\r\n ld hl,3\r\n setfld .p\r\n repti 30,pse\r\n  getfld .y\r\n  inc hl\r\n  setfld .y\r\n  invoke .update\r\n  continue\r\n pse:\r\n ld hl,0\r\n setfld .p\r\nenddef\r\n\r\nendusr: \r\nend main\r\nhttps://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN\r\nhttps://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7'].join(''),'t5': ['org 9000h\r\n\r\n\r\ninclude key\r\n\r\nmain:\r\ncall keyall\r\nld hl,0108h\r\ncall getkey\r\nshow hl\r\nld hl,0107h\r\ncall getkey\r\nshow hl\r\n\r\n\r\nhalt\r\njp main'].join(''),'gen': ['org 09000h\r\ninclude tnu\r\ninclude bool\r\n\r\nmain:\r\ntnu.run Main\r\nclass Main,Actor\r\n Actor.noovr Main\r\n end.const 0\r\ndef Main.main,0,0\r\n\r\n showlb .main\r\n showlb .crashTo\r\nenddef 0\r\nendusr:\r\nend main'].join(''),'dac': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n\r\nDECSUB equ 268CH;DAC ← DAC-ARG\r\nDECADD equ 269AH;DAC ← DAC+ARG\r\nDECNRM equ 26FAH;DAC を正規化する (*1)\r\nDECROU equ 273CH;DAC を四捨五入する\r\nDECMUL equ 27E6H;DAC ← DAC*DAC\r\nDECDIV equ 289FH;DAC ← DAC/DAC\r\nMAF equ 2C4DH;ARG ← DAC\r\nMAM equ 2C50H;ARG ← [HL]\r\nMOV8DH equ 2C53H;[DE] ← [HL]\r\nMFA equ 2C59H;DAC ← ARG\r\nMFM equ 2C5CH;[HL] ← DAC\r\nMMF equ 2C67H;[HL] ← DAC\r\nMOV8HD equ 2C6AH;[HL] ← [DE]\r\nXTF equ 2C6FH;[SP] ←→ DAC\r\nPHA equ 2CC7H;ARG → [SP]\r\nPHF equ 2CCCH;DAC → [SP]\r\nPPA equ 2CDCH;[SP] → ARG\r\nPPF equ 2CE1H;[SP] → DAC\r\nPUSHF equ 2EB1H;DAC → [SP]\r\nMOVFM equ 2EBEH;DAC ← [HL]\r\nMOVFR equ 2EC1H;DAC ← (CBED)\r\nMOVRF equ 2ECCH;(CBED) ← DAC\r\nMOVRMI equ 2ED6H;(CBDE) ← [HL]\r\nMOVRM equ 2EDFH;(BCDE) ← [HL]\r\nMOVMF equ 2EE8H;[HL] ← DAC\r\nMOVE equ 2EEBH;[HL] ← [DE]\r\nVMOVAM equ 2EEFH;ARG ← [HL]\r\nMOVVFM equ 2EF2H;[DE] ← [HL]\r\nVMOVE equ 2EF3H;[HL] ← [DE]\r\nVMOVFA equ 2F05H;DAC ← ARG\r\nVMOVFM equ 2F08H;DAC ← [HL]\r\nVMOVAF equ 2F0DH;ARG ← DAC\r\nVMOVMF equ 2F10H;[HL] ← DAC\r\n\r\nVALTYP equ 0F663H;1\r\nDAC equ 0F7F6H;16\r\nARG equ 0F847H;16\r\nFOUT equ 3425H\r\n\r\ndefsub int2dac\r\n push af\r\n ld a,2\r\n ld (VALTYP),a\r\n ld (DAC+2),HL\r\n pop af\r\nendsub int2dac\r\n;===your code \r\n\r\nmain:\r\nld hl,12345\r\ncall int2dac\r\nld hl,str\r\ncall FOUT\r\n\r\nld b,10\r\nreptb nxt\r\n ld a,(hl)\r\n cp 0\r\n break z\r\n call wrt2\r\n inc hl\r\n continue\r\nnxt:\r\nret\r\nstr:\r\n\r\n\r\n'].join(''),'setvrm': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n;===your code \r\n\r\nmain:\r\nld hl,1800h\r\ncall SETWRT\r\nld a,35\r\nrepti 5, ed\r\ninc a\r\nout (98h),a\r\ncontinue\r\ned:\r\nret'].join(''),'assert': ['include mem\r\ninclude math\r\ninclude debug\r\n\r\na.reg.trc:\r\ndw 0\r\na.reg.adr:\r\ndw 0\r\na.reg.min:\r\ndw 0\r\na.reg.val:\r\ndw 0\r\na.reg.max:\r\ndw 0\r\nmacro a.regi,n,v\r\n push hl\r\n ld hl,v\r\n ld (a.reg.##n),hl\r\n pop hl\r\nendm\r\nmacro a.regr,n,v\r\n ld (a.reg.##n),v\r\nendm\r\n\r\nmacro a.dummy\r\n local a.reg.,trc,adr,min,val,nax\r\nendm\r\n \r\n\r\nmacro assert.eq,o\r\n storelastpc\r\n pushall \r\n if not nul o\r\n  a.regi val, o\r\n endif\r\n ld de,(a.reg.val)\r\n ld(a.reg.val),hl\r\n ld(a.reg.min),de\r\n ld(a.reg.max),de\r\n cpde\r\n jp nz,assert.fail\r\n popall\r\nendm\r\n\r\nmacro assert.do,nx\r\n storelastpc\r\n pushall\r\n call to\r\n popall\r\n jr nx\r\n to:\r\nendm\r\n\r\nmacro storelastpc\r\n push hl\r\n call getpc\r\n ld (lastpc),hl\r\n pop hl\r\nendm\r\nlastpc:\r\n dw 0\r\n \r\ngetpc:\r\n pop hl\r\n push hl\r\n ret\r\n\r\nassert.fail:\r\n ld hl,0deadh\r\n show hl\r\n showm a.reg.trc\r\n showm a.reg.min\r\n showm a.reg.val\r\n showm a.reg.max\r\n showm a.reg.adr\r\n showm lastpc\r\n call freeze\r\nmacro assert.meqw,ad,val\r\n a.regi adr,ad\r\n push hl\r\n ld hl,(ad)\r\n assert.eq val\r\n pop hl\r\nendm\r\n '].join(''),'stksz': ['org 09000h\r\njp main\r\ninclude const\r\ninclude ctrl\r\ninclude math\r\ninclude debug\r\ninclude sub\r\ninclude mem\r\ninclude th\r\n\r\n\r\n;===your code \r\n\r\nsz equ 256\r\n  \r\nmain:\r\nld hl,0fd9fh\r\nld (hl),0c9h\r\n rept sz/2\r\n  push hl\r\n endm\r\n rept sz/2\r\n  pop hl\r\n endm\r\n\r\nloop:\r\n getsp\r\n ld de,-sz\r\n add hl,de\r\n ld de,1800h\r\n ld bc,sz\r\n call LDIRVM\r\n ld hl,0\r\n halt\r\n jp loop\r\n \r\n \r\n '].join(''),'vdp': [';https://www.msx.org/wiki/VDP_Status_Registers\r\n;st 0 bit 7\r\n;read 1\r\n\r\n;https://www.msx.org/wiki/VDP_Mode_Registers\r\n;ctrl 1 bit 5 set 0\r\ninclude const\r\n\r\nsusint:\r\n ld a,(RG1SAV)\r\n res 5,a\r\n ld b,A\r\n ld c,1\r\n jp WRTVDP\r\n;rstint:\r\n ld a,(RG1SAV)\r\n set 5,a\r\n ld b,A\r\n ld c,1\r\n jp WRTVDP\r\ninted:\r\n call RDVDP\r\n bit 7,a\r\n ret\r\ndoint:\r\n call inted\r\n jr z, norst\r\n ld hl,timecnt\r\n inc (hl)\r\n call h.tntimi\r\n norst:\r\n ;call rstint\r\n ret\r\nh.tntimi:\r\n ld A,(timecnt)\r\n ld hl,1ae0h\r\n call 4dh\r\n ret\r\n ds 16\r\n \r\ntimecnt:\r\ndb 0\r\nmacro vdptest\r\nlocal stk1,stk2,stk3,vl\r\nstk1:\r\n ds 256,35\r\nstk2:\r\n ds 256,42\r\nstk3:\r\n\r\nvl:\r\n call susint\r\n ld sp,stk2\r\n ld hl,stk1\r\n ld de,1800h\r\n ld bc,256\r\n call LDIRVM\r\n \r\n \r\n ld sp,stk3\r\n call doint\r\n ld hl,stk2\r\n ld de,1900h\r\n ld bc,256\r\n call LDIRVM\r\n jp vl\r\nendm\r\n \r\nscreen1:\r\n ld a,1\r\n call CHGMOD\r\n ld a,(RG1SAV)\r\n set 1,a\r\n ld b,A\r\n ld c,1\r\n call WRTVDP\r\n ret\r\n\r\ndefsub screen2\r\n ld a,2\r\n call CHGMOD\r\n ld a,(RG1SAV)\r\n set 1,a\r\n ld b,A\r\n ld c,1\r\n call WRTVDP\r\nendsub screen2\r\n '].join(''),'mus': ['include mem\r\nmus.ini:\r\n di\r\n ld hl,0fd9fh\r\n ld (hl),0c3h\r\n movw (0fd9fh+1),mus\r\n ei\r\n ret\r\nmus:\r\nproc\r\nlocal we\r\n push af\r\n push de\r\n ld a,(we-1)\r\n xor 15\r\n ld (we-1),a \r\n ld a,8\r\n ld e,15\r\n we:\r\n call WRTPSG\r\n pop af \r\n pop de\r\n ret\r\nendp'].join('')};
         
         
       },
@@ -1474,14 +1474,14 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 12,Player: 4},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,EBullet: 4,Enemy: 8},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
       },
       fiber$config :function* _trc_MBoot_f_config(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 12,Player: 4},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
+        Tonyu.globals.$config={"spr.scale": 1,"obj.limits": {PBullet: 5,EBullet: 4,Enemy: 8},"th.count": 20,"defdbl": ["dbl","$dbl",/^f_/,/^\$f_/],"arrays": {"$mem": 50,"$ary": [1,10,100],"$mat": [[1,3,5],[10,12]],"$f_ary": [1.2,2.3,4.5]},"strings": {"$mesg": "Hello, world","$mesgs": ["Hello","World!!"]}};
         
       },
       createMainObject :function _trc_MBoot_createMainObject() {
@@ -1508,7 +1508,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2115() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2126() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -1542,7 +1542,7 @@ Tonyu.klass.define({
           ide.runDialog.resize({left: 10,top: 300,width: 400,height: 400});
         }
         if (Tonyu.globals.$editButton) {
-          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2115() {
+          new Tonyu.classes.kernel.Button({top: 480,text: "Edit Page",height: 30,fillStyle: Tonyu.globals.$RSprPat.palette[4],onClick: (function anonymous_2126() {
             
             Tonyu.globals.$editButton.openEditor();
           })});
@@ -1572,14 +1572,14 @@ Tonyu.klass.define({
         
         _this.anodes = _this.genasm.anodes;
         
-        _this.Za = (_this.anodes.filter((function anonymous_817(e) {
+        _this.Za = (_this.anodes.filter((function anonymous_891(e) {
           
           return e.shortName==="RActor";
         }))[0]);
         
         _this.fld = new Tonyu.classes.user.FldIdx;
         
-        _this.ks = _this.anodes.filter((function anonymous_906(klass) {
+        _this.ks = _this.anodes.filter((function anonymous_984(klass) {
           
           return _this.inherits(klass,_this.Za)&&klass!==_this.Za;
         }));
@@ -1603,14 +1603,14 @@ Tonyu.klass.define({
         
         _this.anodes = _this.genasm.anodes;
         
-        _this.Za = (_this.anodes.filter((function anonymous_817(e) {
+        _this.Za = (_this.anodes.filter((function anonymous_891(e) {
           
           return e.shortName==="RActor";
         }))[0]);
         
         _this.fld = new Tonyu.classes.user.FldIdx;
         
-        _this.ks = _this.anodes.filter((function anonymous_906(klass) {
+        _this.ks = _this.anodes.filter((function anonymous_984(klass) {
           
           return _this.inherits(klass,_this.Za)&&klass!==_this.Za;
         }));
@@ -1657,6 +1657,7 @@ Tonyu.klass.define({
         if (klass.shortName!="RActor"&&s) {
           res=_this.getMembers(s);
         }
+        f=new Tonyu.classes.user.FldCollect({klass: klass}).collect();
         for (let [n, v] of Tonyu.iterator2(f,2)) {
           res[n]={type: "fld",declin: klass};
           
@@ -1688,6 +1689,7 @@ Tonyu.klass.define({
         if (klass.shortName!="RActor"&&s) {
           res=(yield* _this.fiber$getMembers(_thread, s));
         }
+        f=new Tonyu.classes.user.FldCollect({klass: klass}).collect();
         for (let [n, v] of Tonyu.iterator2(f,2)) {
           res[n]={type: "fld",declin: klass};
           
@@ -3511,6 +3513,241 @@ Tonyu.klass.define({
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"v_String":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"v_prefix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Prefix"],"returnValue":null}},"v_postfix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Postfix"],"returnValue":null}},"v_infix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Infix"],"returnValue":null}},"v_trifix":{"nowait":false,"isMain":false,"vtype":{"params":["user.Trifix"],"returnValue":null}},"v_arrayElem":{"nowait":false,"isMain":false,"vtype":{"params":["user.ArrayElem"],"returnValue":null}},"v_argList":{"nowait":false,"isMain":false,"vtype":{"params":["user.ArgList"],"returnValue":null}},"v_member":{"nowait":false,"isMain":false,"vtype":{"params":["user.Member"],"returnValue":null}},"v_parenExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.ParenExpr"],"returnValue":null}},"v_varAccess":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"v_funcExprArg":{"nowait":false,"isMain":false,"vtype":{"params":["user.FuncExprArg"],"returnValue":null}},"v_objlitArg":{"nowait":false,"isMain":false,"vtype":{"params":["user.ObjlitArg"],"returnValue":null}},"v_call":{"nowait":false,"isMain":false,"vtype":{"params":["user.Call"],"returnValue":null}},"v_scall":{"nowait":false,"isMain":false,"vtype":{"params":["user.Scall"],"returnValue":null}},"v_newExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.NewExpr"],"returnValue":null}},"v_superExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.SuperExpr"],"returnValue":null}},"v_exprstmt":{"nowait":false,"isMain":false,"vtype":{"params":["user.Exprstmt"],"returnValue":null}},"v_compound":{"nowait":false,"isMain":false,"vtype":{"params":["user.Compound"],"returnValue":null}},"v_return":{"nowait":false,"isMain":false,"vtype":{"params":["user.Return"],"returnValue":null}},"v_if":{"nowait":false,"isMain":false,"vtype":{"params":["user.If"],"returnValue":null}},"v_forin":{"nowait":false,"isMain":false,"vtype":{"params":["user.Forin"],"returnValue":null}},"v_normalFor":{"nowait":false,"isMain":false,"vtype":{"params":["user.NormalFor"],"returnValue":null}},"v_for":{"nowait":false,"isMain":false,"vtype":{"params":["user.For"],"returnValue":null}},"v_while":{"nowait":false,"isMain":false,"vtype":{"params":["user.While"],"returnValue":null}},"v_do":{"nowait":false,"isMain":false,"vtype":{"params":["user.Do"],"returnValue":null}},"v_case":{"nowait":false,"isMain":false,"vtype":{"params":["user.Case"],"returnValue":null}},"v_default":{"nowait":false,"isMain":false,"vtype":{"params":["user.Default"],"returnValue":null}},"v_switch":{"nowait":false,"isMain":false,"vtype":{"params":["user.Switch"],"returnValue":null}},"v_break":{"nowait":false,"isMain":false,"vtype":{"params":["user.Break"],"returnValue":null}},"v_continue":{"nowait":false,"isMain":false,"vtype":{"params":["user.Continue"],"returnValue":null}},"v_finally":{"nowait":false,"isMain":false,"vtype":{"params":["user.Finally"],"returnValue":null}},"v_catch":{"nowait":false,"isMain":false,"vtype":{"params":["user.Catch"],"returnValue":null}},"v_try":{"nowait":false,"isMain":false,"vtype":{"params":["user.Try"],"returnValue":null}},"v_throw":{"nowait":false,"isMain":false,"vtype":{"params":["user.Throw"],"returnValue":null}},"v_typeExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.TypeExpr"],"returnValue":null}},"v_typeDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.TypeDecl"],"returnValue":null}},"v_varDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarDecl"],"returnValue":null}},"v_varsDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarsDecl"],"returnValue":null}},"v_paramDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.ParamDecl"],"returnValue":null}},"v_paramDecls":{"nowait":false,"isMain":false,"vtype":{"params":["user.ParamDecls"],"returnValue":null}},"v_setterDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.SetterDecl"],"returnValue":null}},"v_funcDeclHead":{"nowait":false,"isMain":false,"vtype":{"params":["user.FuncDeclHead"],"returnValue":null}},"v_funcDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.FuncDecl"],"returnValue":null}},"v_nativeDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.NativeDecl"],"returnValue":null}},"v_ifWait":{"nowait":false,"isMain":false,"vtype":{"params":["user.IfWait"],"returnValue":null}},"v_empty":{"nowait":false,"isMain":false,"vtype":{"params":["user.Empty"],"returnValue":null}},"v_funcExprHead":{"nowait":false,"isMain":false,"vtype":{"params":["user.FuncExprHead"],"returnValue":null}},"v_funcExpr":{"nowait":false,"isMain":false,"vtype":{"params":["user.FuncExpr"],"returnValue":null}},"v_jsonElem":{"nowait":false,"isMain":false,"vtype":{"params":["user.JsonElem"],"returnValue":null}},"v_objlit":{"nowait":false,"isMain":false,"vtype":{"params":["user.Objlit"],"returnValue":null}},"v_arylit":{"nowait":false,"isMain":false,"vtype":{"params":["user.Arylit"],"returnValue":null}},"v_extends":{"nowait":false,"isMain":false,"vtype":{"params":["user.Extends"],"returnValue":null}},"v_includes":{"nowait":false,"isMain":false,"vtype":{"params":["user.Includes"],"returnValue":null}},"v_program":{"nowait":false,"isMain":false,"vtype":{"params":["user.Program"],"returnValue":null}}},"fields":{}}
 });
 Tonyu.klass.define({
+  fullName: 'user.FldCollect',
+  shortName: 'FldCollect',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.Visitor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_FldCollect_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        
+        
+      },
+      fiber$main :function* _trc_FldCollect_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        
+        
+        
+      },
+      collect :function _trc_FldCollect_collect() {
+        "use strict";
+        var _this=this;
+        
+        _this.fields={};
+        let methods = _this.klass.decls.methods;
+        
+        _this.anode=(_this.klass.annotation);
+        for (let [mname, me] of Tonyu.iterator2(methods,2)) {
+          let method = me;
+          
+          _this.visit(method.stmts);
+          
+        }
+        return _this.fields;
+      },
+      fiber$collect :function* _trc_FldCollect_f_collect(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.fields={};
+        let methods = _this.klass.decls.methods;
+        
+        _this.anode=(_this.klass.annotation);
+        for (let [mname, me] of Tonyu.iterator2(methods,2)) {
+          let method = me;
+          
+          (yield* _this.fiber$visit(_thread, method.stmts));
+          
+        }
+        return _this.fields;
+        
+      },
+      annotation :function _trc_FldCollect_annotation(n) {
+        "use strict";
+        var _this=this;
+        
+        let res = _this.anode[n._id];
+        
+        if (! res) {
+          return {};
+          
+        }
+        return res;
+      },
+      fiber$annotation :function* _trc_FldCollect_f_annotation(_thread,n) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let res = _this.anode[n._id];
+        
+        if (! res) {
+          return {};
+          
+        }
+        return res;
+        
+      },
+      v_varDecl :function _trc_FldCollect_v_varDecl(node) {
+        "use strict";
+        var _this=this;
+        
+        let a = _this.annotation(node);
+        
+        if (! a.varInMain) {
+          return _this;
+        }
+        _this.addField(node.name,node);
+      },
+      fiber$v_varDecl :function* _trc_FldCollect_f_v_varDecl(_thread,node) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let a=yield* _this.fiber$annotation(_thread, node);
+        
+        if (! a.varInMain) {
+          return _this;
+        }
+        (yield* _this.fiber$addField(_thread, node.name, node));
+        
+      },
+      v_varsDecl :function _trc_FldCollect_v_varsDecl(node) {
+        "use strict";
+        var _this=this;
+        
+        for (let [d] of Tonyu.iterator2(node.decls,1)) {
+          _this.visit(d);
+          
+        }
+      },
+      fiber$v_varsDecl :function* _trc_FldCollect_f_v_varsDecl(_thread,node) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        for (let [d] of Tonyu.iterator2(node.decls,1)) {
+          (yield* _this.fiber$visit(_thread, d));
+          
+        }
+        
+      },
+      v_varAccess :function _trc_FldCollect_v_varAccess(node) {
+        "use strict";
+        var _this=this;
+        
+        let a = _this.annotation(node);
+        
+        if (a.scopeInfo.type==="field") {
+          _this.addField(node.name,node);
+          
+        }
+      },
+      fiber$v_varAccess :function* _trc_FldCollect_f_v_varAccess(_thread,node) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let a=yield* _this.fiber$annotation(_thread, node);
+        
+        if (a.scopeInfo.type==="field") {
+          (yield* _this.fiber$addField(_thread, node.name, node));
+          
+        }
+        
+      },
+      v_forin :function _trc_FldCollect_v_forin(node) {
+        "use strict";
+        var _this=this;
+        
+        node.vars.forEach((function anonymous_1153(v) {
+          
+          let a = _this.annotation(v);
+          
+          if (a.varInMain) {
+            _this.addField(v);
+            
+          }
+        }));
+      },
+      fiber$v_forin :function* _trc_FldCollect_f_v_forin(_thread,node) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        node.vars.forEach((function anonymous_1153(v) {
+          
+          let a = _this.annotation(v);
+          
+          if (a.varInMain) {
+            _this.addField(v);
+            
+          }
+        }));
+        
+      },
+      addField :function _trc_FldCollect_addField(name) {
+        "use strict";
+        var _this=this;
+        
+        _this.fields[name.text]=1;
+      },
+      fiber$addField :function* _trc_FldCollect_f_addField(_thread,name) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.fields[name.text]=1;
+        
+      },
+      def :function _trc_FldCollect_def(n) {
+        "use strict";
+        var _this=this;
+        
+        if (! n) {
+          return _this;
+        }
+        if (typeof  n!=="object") {
+          return _this;
+        }
+        for (let [k] of Tonyu.iterator2(Object.keys(n),1)) {
+          _this.visit(n[k]);
+          
+        }
+      },
+      fiber$def :function* _trc_FldCollect_f_def(_thread,n) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        if (! n) {
+          return _this;
+        }
+        if (typeof  n!=="object") {
+          return _this;
+        }
+        for (let [k] of Tonyu.iterator2(Object.keys(n),1)) {
+          (yield* _this.fiber$visit(_thread, n[k]));
+          
+        }
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"collect":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"annotation":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"v_varDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarDecl"],"returnValue":null}},"v_varsDecl":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarsDecl"],"returnValue":null}},"v_varAccess":{"nowait":false,"isMain":false,"vtype":{"params":["user.VarAccess"],"returnValue":null}},"v_forin":{"nowait":false,"isMain":false,"vtype":{"params":["user.Forin"],"returnValue":null}},"addField":{"nowait":false,"isMain":false,"vtype":{"params":["user.Token"],"returnValue":null}},"def":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"anode":{},"klass":{},"fields":{}}}
+});
+Tonyu.klass.define({
   fullName: 'user.OutBG',
   shortName: 'OutBG',
   namespace: 'user',
@@ -4249,7 +4486,7 @@ Tonyu.klass.define({
         
         _this.opmap = {"*": "call IMULT.a%n","/": "call IDIV.a%n","%": "call IMOD.a%n","+": "add hl, de%n","-": "subhl de%n"};
         
-        _this.printf(['org 08000h\ninclude tnu\ninclude map\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join(''));
+        _this.printf(['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join(''));
         
         _this.x=256;
         _this.y=20;
@@ -4290,10 +4527,10 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         _this.waitEvent(_this.outbg,"complete");
-        _this.printf(['\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1733(k) {
+        _this.printf(['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1959(k) {
           
           return _this.globalLabel(k)+":dw 0";
-        })).join("\n"),'\nmacro inivrm, n, dst\n ld de,dst\n ld hl,n\n ld bc,end.##n-n\n call LDIRVM\nendm\n\nspr.inipat:\n inivrm spr.pat, 3800h\n ret\n\nspr.pat:\n',_this.outp.buf,'\nend.spr.pat:\n\nbg.inipat:\n inivrm bg.gen, 0000h\n inivrm bg.gen, 0800h\n inivrm bg.gen, 1000h\n inivrm bg.col, 2000h\n inivrm bg.col, 2800h\n inivrm bg.col, 3000h\n inivrm bg.name, 1800h\n ret\n\nbg.gen:\n',_this.toDB(_this.outbg.patgen),'\nend.bg.gen:\n\nbg.col:\n',_this.toDB(_this.outbg.coltbl),'\nend.bg.col:\n\nbg.name:\n ds 256*3,32\nend.bg.name:\n\nend main'].join(''));
+        })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join(''));
         _this.url = "https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
         
         new Tonyu.classes.kernel.Button({top: 420,text: "to MSXPen",onClick: Tonyu.bindFunc(_this,_this.showDiag),fillStyle: Tonyu.globals.$RSprPat.palette[2]});
@@ -4328,7 +4565,7 @@ Tonyu.klass.define({
         
         _this.opmap = {"*": "call IMULT.a%n","/": "call IDIV.a%n","%": "call IMOD.a%n","+": "add hl, de%n","-": "subhl de%n"};
         
-        (yield* _this.fiber$printf(_thread, ['org 08000h\ninclude tnu\ninclude map\ninclude bool\n\nmain:\ntnu.run ',Tonyu.globals.$mainClassName,'\n'].join('')));
+        (yield* _this.fiber$printf(_thread, ['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join('')));
         
         _this.x=256;
         _this.y=20;
@@ -4369,10 +4606,10 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         (yield* _this.fiber$waitEvent(_thread, _this.outbg, "complete"));
-        (yield* _this.fiber$printf(_thread, ['\nendusr:\n',Object.keys(_this.globals).map((function anonymous_1733(k) {
+        (yield* _this.fiber$printf(_thread, ['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1959(k) {
           
           return _this.globalLabel(k)+":dw 0";
-        })).join("\n"),'\nmacro inivrm, n, dst\n ld de,dst\n ld hl,n\n ld bc,end.##n-n\n call LDIRVM\nendm\n\nspr.inipat:\n inivrm spr.pat, 3800h\n ret\n\nspr.pat:\n',_this.outp.buf,'\nend.spr.pat:\n\nbg.inipat:\n inivrm bg.gen, 0000h\n inivrm bg.gen, 0800h\n inivrm bg.gen, 1000h\n inivrm bg.col, 2000h\n inivrm bg.col, 2800h\n inivrm bg.col, 3000h\n inivrm bg.name, 1800h\n ret\n\nbg.gen:\n',_this.toDB(_this.outbg.patgen),'\nend.bg.gen:\n\nbg.col:\n',_this.toDB(_this.outbg.coltbl),'\nend.bg.col:\n\nbg.name:\n ds 256*3,32\nend.bg.name:\n\nend main'].join('')));
+        })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join('')));
         _this.url = "https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
         
         new Tonyu.classes.kernel.Button({top: 420,text: "to MSXPen",onClick: Tonyu.bindFunc(_this,_this.showDiag),fillStyle: Tonyu.globals.$RSprPat.palette[2]});
@@ -4459,13 +4696,13 @@ Tonyu.klass.define({
         var _this=this;
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3143(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3444(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3256() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3560() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3488() {
+          }))),["button",{onclick: (function anonymous_3799() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4473,7 +4710,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4040() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4372() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4495,13 +4732,13 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3143(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3444(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3256() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3560() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3488() {
+          }))),["button",{onclick: (function anonymous_3799() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4509,7 +4746,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4040() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4372() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4915,7 +5152,7 @@ Tonyu.klass.define({
               if (op.text==="++"||op.text==="--") {
                 _this.visit(left);
                 _this.printf(op.text==="++"?"inc hl%n":"dec hl%n");
-                _this.enter({lval: true},(function anonymous_7185() {
+                _this.enter({lval: true},(function anonymous_7641() {
                   
                   _this.visit(left);
                 }));
@@ -4930,7 +5167,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_7391() {
+            _this.enter({lval: false},(function anonymous_7856() {
               
               _this.visit(tgme[0]);
             }));
@@ -4981,7 +5218,7 @@ Tonyu.klass.define({
               if (op.text==="++"||op.text==="--") {
                 (yield* _this.fiber$visit(_thread, left));
                 (yield* _this.fiber$printf(_thread, op.text==="++"?"inc hl%n":"dec hl%n"));
-                (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_7185() {
+                (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_7641() {
                   
                   _this.visit(left);
                 })));
@@ -4996,7 +5233,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7391() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7856() {
               
               _this.visit(tgme[0]);
             })));
@@ -5463,7 +5700,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_12437() {
+        _this.enter({lval: true},(function anonymous_13076() {
           
           _this.visit(left);
         }));
@@ -5480,7 +5717,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_12437() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13076() {
           
           _this.visit(left);
         })));
@@ -5497,7 +5734,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_13252() {
+        _this.enter({lval: true},(function anonymous_13931() {
           
           _this.visit(left);
         }));
@@ -5514,7 +5751,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13252() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13931() {
           
           _this.visit(left);
         })));
@@ -5727,7 +5964,7 @@ Tonyu.klass.define({
         _this.printf("%s:%n",sh);
         _this.visit(cond);
         _this.printf("jpf %s%n",se);
-        _this.enter({closestBrk: se},(function anonymous_14839() {
+        _this.enter({closestBrk: se},(function anonymous_15585() {
           
           _this.visit(loop);
         }));
@@ -5750,7 +5987,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$printf(_thread, "%s:%n", sh));
         (yield* _this.fiber$visit(_thread, cond));
         (yield* _this.fiber$printf(_thread, "jpf %s%n", se));
-        (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_14839() {
+        (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_15585() {
           
           _this.visit(loop);
         })));
@@ -5817,7 +6054,7 @@ Tonyu.klass.define({
           _this.printf("%s:%n",sh);
           _this.visit(cond);
           _this.printf("jpf %s%n",se);
-          _this.enter({closestBrk: se},(function anonymous_15551() {
+          _this.enter({closestBrk: se},(function anonymous_16328() {
             
             _this.visit(loop);
           }));
@@ -5857,7 +6094,7 @@ Tonyu.klass.define({
             _this.unsup(vars,"only field supports");
             
           }
-          _this.enter({closestBrk: "BREAK"},(function anonymous_16432() {
+          _this.enter({closestBrk: "BREAK"},(function anonymous_17237() {
             
             _this.visit(loop);
           }));
@@ -5893,7 +6130,7 @@ Tonyu.klass.define({
           (yield* _this.fiber$printf(_thread, "%s:%n", sh));
           (yield* _this.fiber$visit(_thread, cond));
           (yield* _this.fiber$printf(_thread, "jpf %s%n", se));
-          (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_15551() {
+          (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_16328() {
             
             _this.visit(loop);
           })));
@@ -5933,7 +6170,7 @@ Tonyu.klass.define({
             (yield* _this.fiber$unsup(_thread, vars, "only field supports"));
             
           }
-          (yield* _this.fiber$enter(_thread, {closestBrk: "BREAK"}, (function anonymous_16432() {
+          (yield* _this.fiber$enter(_thread, {closestBrk: "BREAK"}, (function anonymous_17237() {
             
             _this.visit(loop);
           })));
@@ -7498,6 +7735,174 @@ Tonyu.klass.define({
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"die":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"crashTo":{"nowait":true,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"update":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"updateEx":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"onUpdate":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"screenOut":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"x":{},"y":{},"p":{},"c":{}}}
 });
 Tonyu.klass.define({
+  fullName: 'user.EBullet',
+  shortName: 'EBullet',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.RActor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_EBullet_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        _this.p=7;
+        _this.c=15;
+        while (true) {
+          Tonyu.checkLoop();
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          if (_this.map_getAt(_this.x,_this.y)==1) {
+            _this.map_setAt(_this.x,_this.y,32);
+            _this.die();
+            
+          }
+          _this.update();
+          
+        }
+      },
+      fiber$main :function* _trc_EBullet_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        _this.p=7;
+        _this.c=15;
+        while (true) {
+          yield null;
+          _this.x+=_this.vx;
+          _this.y+=_this.vy;
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          if (_this.map_getAt(_this.x,_this.y)==1) {
+            (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, 32));
+            _this.die();
+            
+          }
+          (yield* _this.fiber$update(_thread));
+          
+        }
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{},"vy":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.Enemy',
+  shortName: 'Enemy',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.RActor,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Enemy_main() {
+        "use strict";
+        var _this=this;
+        
+        
+        while (_this.y<200) {
+          Tonyu.checkLoop();
+          _this.y+=2;
+          _this.update();
+          
+        }
+        if (_this.x>Tonyu.globals.$player.x) {
+          _this.vx=0-2;
+        } else {
+          _this.vx=2;
+        }
+        _this.fire();
+        while (true) {
+          Tonyu.checkLoop();
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          _this.y+=2;
+          _this.x+=_this.vx;
+          _this.map_setAt(_this.x,_this.y,32);
+          _this.update();
+          
+        }
+        
+      },
+      fiber$main :function* _trc_Enemy_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        
+        while (_this.y<200) {
+          yield null;
+          _this.y+=2;
+          (yield* _this.fiber$update(_thread));
+          
+        }
+        if (_this.x>Tonyu.globals.$player.x) {
+          _this.vx=0-2;
+        } else {
+          _this.vx=2;
+        }
+        (yield* _this.fiber$fire(_thread));
+        while (true) {
+          yield null;
+          if (_this.screenOut()) {
+            _this.die();
+          }
+          _this.y+=2;
+          _this.x+=_this.vx;
+          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, 32));
+          (yield* _this.fiber$update(_thread));
+          
+        }
+        
+        
+      },
+      fire :function _trc_Enemy_fire() {
+        "use strict";
+        var _this=this;
+        
+        _this.bvx=Tonyu.globals.$player.x-_this.x;
+        _this.bvy=Tonyu.globals.$player.y-_this.y;
+        _this.bdist=_this.abs(_this.bvx)+_this.abs(_this.bvy);
+        _this.bdist/=8;
+        if (_this.bdist>0) {
+          _this.bvx/=_this.bdist;
+          _this.bvy/=_this.bdist;
+          new Tonyu.classes.user.EBullet({x: _this.x,y: _this.y,vx: _this.bvx,vy: _this.bvy});
+          
+        }
+      },
+      fiber$fire :function* _trc_Enemy_f_fire(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.bvx=Tonyu.globals.$player.x-_this.x;
+        _this.bvy=Tonyu.globals.$player.y-_this.y;
+        _this.bdist=_this.abs(_this.bvx)+_this.abs(_this.bvy);
+        _this.bdist/=8;
+        if (_this.bdist>0) {
+          _this.bvx/=_this.bdist;
+          _this.bvy/=_this.bdist;
+          new Tonyu.classes.user.EBullet({x: _this.x,y: _this.y,vx: _this.bvx,vy: _this.bvy});
+          
+        }
+        
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"fire":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{},"bvx":{},"bvy":{},"bdist":{}}}
+});
+Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',
@@ -7509,25 +7914,15 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 16,c: 8,pc: 3});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 17,c: 7,pc: 4});
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 18,c: 3,pc: 5});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 19,c: 10,pc: 6});
-        _this.p=0;
-        _this.c=15;
+        Tonyu.globals.$player=new Tonyu.classes.user.Player({x: 256,y: 300,p: Tonyu.globals.$pat_spr+4,c: 15});
+        _this.i = 0;
+        
+        Tonyu.globals.$score=0;
         while (true) {
           Tonyu.checkLoop();
-          if (_this.rnd(40)==0) {
-            _this.x=_this.rnd(32);
-            _this.y=_this.rnd(24);
-            _this.c=_this.map_get(_this.x,_this.y);
-            if (_this.c>=3&&_this.c<=6) {
-              new Tonyu.classes.user.PBullet({x: _this.x*16+8,y: _this.y*16+8,pc: _this.c});
-              
-            }
-            
-          }
-          _this.update();
+          new Tonyu.classes.user.Enemy({x: _this.rnd(512),y: 0,p: 5,c: 7});
+          _this.updateEx(30);
+          _this.showScore();
           
         }
       },
@@ -7536,33 +7931,51 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 16,c: 8,pc: 3});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 17,c: 7,pc: 4});
-        new Tonyu.classes.user.Player({x: 32,y: 32,p: 18,c: 3,pc: 5});
-        new Tonyu.classes.user.Player({x: 480,y: 300,p: 19,c: 10,pc: 6});
-        _this.p=0;
-        _this.c=15;
+        Tonyu.globals.$player=new Tonyu.classes.user.Player({x: 256,y: 300,p: Tonyu.globals.$pat_spr+4,c: 15});
+        _this.i = 0;
+        
+        Tonyu.globals.$score=0;
         while (true) {
           yield null;
-          if (_this.rnd(40)==0) {
-            _this.x=_this.rnd(32);
-            _this.y=_this.rnd(24);
-            _this.c=(yield* _this.fiber$map_get(_thread, _this.x, _this.y));
-            if (_this.c>=3&&_this.c<=6) {
-              new Tonyu.classes.user.PBullet({x: _this.x*16+8,y: _this.y*16+8,pc: _this.c});
-              
-            }
-            
-          }
-          (yield* _this.fiber$update(_thread));
+          new Tonyu.classes.user.Enemy({x: _this.rnd(512),y: 0,p: 5,c: 7});
+          (yield* _this.fiber$updateEx(_thread, 30));
+          (yield* _this.fiber$showScore(_thread));
           
+        }
+        
+      },
+      showScore :function _trc_Main_showScore() {
+        "use strict";
+        var _this=this;
+        
+        _this.tmps=Tonyu.globals.$score;
+        for (_this.i=5; _this.i>1 ; _this.i-=1) {
+          Tonyu.checkLoop();
+          {
+            _this.map_set(_this.i,1,_this.tmps%10+48);
+            _this.tmps=_this.div(_this.tmps,10);
+          }
+        }
+      },
+      fiber$showScore :function* _trc_Main_f_showScore(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.tmps=Tonyu.globals.$score;
+        for (_this.i=5; _this.i>1 ; _this.i-=1) {
+          yield null;
+          {
+            (yield* _this.fiber$map_set(_thread, _this.i, 1, _this.tmps%10+48));
+            _this.tmps=(yield* _this.fiber$div(_thread, _this.tmps, 10));
+          }
         }
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"showScore":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"i":{"vtype":"Number"},"tmps":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.PBullet',
@@ -7576,80 +7989,27 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        _this.p=7;
-        _this.vx = 0;
-        
-        _this.vy = 0;
-        
-        
-        if (_this.pc==3) {
-          _this.bc=8;
-        }
-        if (_this.pc==4) {
-          _this.bc=7;
-        }
-        if (_this.pc==5) {
-          _this.bc=3;
-        }
-        if (_this.pc==6) {
-          _this.bc=10;
-        }
-        for ([_this.target] of Tonyu.iterator2(_this.all(Tonyu.classes.user.Player),1)) {
-          if (_this.target.pc==_this.pc) {
-            break;
-            
-          }
-          
-        }
-        _this.i = 0;
-        
+        _this.p=6;
+        _this.c=8;
         while (true) {
           Tonyu.checkLoop();
-          if (_this.i%20==0) {
-            _this.c=15;
-          } else {
-            _this.c=_this.bc;
-          }
-          if (_this.crashTo(_this.target)) {
-            break;
-            
-          }
-          _this.i++;
-          _this.update();
-          
-        }
-        _this.i=0-1;
-        while (true) {
-          Tonyu.checkLoop();
-          _this.map_setAt(_this.x,_this.y,_this.pc);
-          if (_this.target.defeatBy) {
-            _this.die();
-            
-          }
-          _this.foe = _this.crashTo(Tonyu.classes.user.Player);
-          
-          if (_this.foe&&_this.foe.pc!=_this.pc) {
-            _this.foe.defeatBy=_this.pc;
-            _this.die();
-            
-          }
           if (_this.screenOut()) {
             _this.die();
           }
-          if (_this.target.x>_this.x) {
-            _this.vx+=1;
+          _this.y-=6;
+          _this.e = _this.crashTo(Tonyu.classes.user.Enemy);
+          
+          if (_this.e) {
+            _this.e.die();
+            _this.die();
+            Tonyu.globals.$score+=10;
+            
           }
-          if (_this.target.x<_this.x) {
-            _this.vx-=1;
+          if (_this.map_getAt(_this.x,_this.y-16)==1) {
+            _this.map_setAt(_this.x,_this.y-16,32);
+            _this.die();
+            
           }
-          if (_this.target.y>_this.y) {
-            _this.vy+=1;
-          }
-          if (_this.target.y<_this.y) {
-            _this.vy-=1;
-          }
-          _this.x+=_this.vx;
-          _this.y+=_this.vy;
           _this.update();
           
         }
@@ -7659,89 +8019,45 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _this.p=7;
-        _this.vx = 0;
-        
-        _this.vy = 0;
-        
-        
-        if (_this.pc==3) {
-          _this.bc=8;
-        }
-        if (_this.pc==4) {
-          _this.bc=7;
-        }
-        if (_this.pc==5) {
-          _this.bc=3;
-        }
-        if (_this.pc==6) {
-          _this.bc=10;
-        }
-        for ([_this.target] of Tonyu.iterator2(_this.all(Tonyu.classes.user.Player),1)) {
-          if (_this.target.pc==_this.pc) {
-            break;
-            
-          }
-          
-        }
-        _this.i = 0;
-        
+        _this.p=6;
+        _this.c=8;
         while (true) {
           yield null;
-          if (_this.i%20==0) {
-            _this.c=15;
-          } else {
-            _this.c=_this.bc;
-          }
-          if (_this.crashTo(_this.target)) {
-            break;
-            
-          }
-          _this.i++;
-          (yield* _this.fiber$update(_thread));
-          
-        }
-        _this.i=0-1;
-        while (true) {
-          yield null;
-          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, _this.pc));
-          if (_this.target.defeatBy) {
-            _this.die();
-            
-          }
-          _this.foe = _this.crashTo(Tonyu.classes.user.Player);
-          
-          if (_this.foe&&_this.foe.pc!=_this.pc) {
-            _this.foe.defeatBy=_this.pc;
-            _this.die();
-            
-          }
           if (_this.screenOut()) {
             _this.die();
           }
-          if (_this.target.x>_this.x) {
-            _this.vx+=1;
+          _this.y-=6;
+          _this.e = _this.crashTo(Tonyu.classes.user.Enemy);
+          
+          if (_this.e) {
+            _this.e.die();
+            _this.die();
+            Tonyu.globals.$score+=10;
+            
           }
-          if (_this.target.x<_this.x) {
-            _this.vx-=1;
+          if (_this.map_getAt(_this.x,_this.y-16)==1) {
+            (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y-16, 32));
+            _this.die();
+            
           }
-          if (_this.target.y>_this.y) {
-            _this.vy+=1;
-          }
-          if (_this.target.y<_this.y) {
-            _this.vy-=1;
-          }
-          _this.x+=_this.vx;
-          _this.y+=_this.vy;
           (yield* _this.fiber$update(_thread));
           
         }
         
       },
+      onUpdate :function _trc_PBullet_onUpdate() {
+        "use strict";
+        var _this=this;
+        
+        _this.c+=1;
+        if (_this.c>14) {
+          _this.c=0;
+        }
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"vx":{"vtype":"Number"},"vy":{"vtype":"Number"},"pc":{},"bc":{},"target":{},"i":{"vtype":"Number"},"foe":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"onUpdate":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"e":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Player',
@@ -7755,71 +8071,31 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        _this.tx = _this.rnd(512);
-        
-        _this.ty = _this.rnd(384);
-        
-        
         while (true) {
           Tonyu.checkLoop();
-          _this.map_setAt(_this.x,_this.y,_this.pc);
-          if (_this.c==8) {
-            if (_this.getkey("left")) {
-              _this.x-=3;
-            }
-            if (_this.getkey("right")) {
-              _this.x+=3;
-            }
-            if (_this.getkey("up")) {
-              _this.y-=3;
-            }
-            if (_this.getkey("down")) {
-              _this.y+=3;
-            }
-            
-          } else {
-            if (_this.x>_this.tx) {
-              _this.x-=3;
-            }
-            if (_this.x<_this.tx) {
-              _this.x+=3;
-            }
-            if (_this.y>_this.ty) {
-              _this.y-=3;
-            }
-            if (_this.y<_this.ty) {
-              _this.y+=3;
-            }
-            if (_this.rnd(20)==0) {
-              _this.tx=_this.rnd(512);
-              _this.ty=_this.rnd(384);
-              for ([_this.s] of Tonyu.iterator2(_this.all(Tonyu.classes.user.PBullet),1)) {
-                if (_this.s.pc==_this.pc&&_this.s.i>=0) {
-                  _this.tx=_this.s.x;
-                  _this.ty=_this.s.y;
-                  
-                }
-                
-              }
-              
-            }
+          _this.map_setAt(_this.x,_this.y,Tonyu.globals.$pat_font+1);
+          if (_this.getkey("left")) {
+            _this.x-=3;
+          }
+          if (_this.getkey("right")) {
+            _this.x+=3;
+          }
+          if (_this.getkey("up")) {
+            _this.y-=3;
+          }
+          if (_this.getkey("down")) {
+            _this.y+=3;
+          }
+          if (_this.crashTo(Tonyu.classes.user.Enemy)) {
+            _this.die();
             
           }
-          
-          if (_this.defeatBy) {
-            _this.i = 0;
+          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
+            _this.die();
             
-            while (_this.i<120) {
-              Tonyu.checkLoop();
-              _this.x+=8;
-              _this.update();
-              _this.x-=8;
-              _this.update();
-              _this.i+=1;
-              
-            }
-            _this.defeatBy=0;
-            _this.i=0;
+          }
+          if (_this.getkey("space")==1) {
+            new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
             
           }
           _this.update();
@@ -7831,71 +8107,31 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _this.tx = _this.rnd(512);
-        
-        _this.ty = _this.rnd(384);
-        
-        
         while (true) {
           yield null;
-          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, _this.pc));
-          if (_this.c==8) {
-            if (_this.getkey("left")) {
-              _this.x-=3;
-            }
-            if (_this.getkey("right")) {
-              _this.x+=3;
-            }
-            if (_this.getkey("up")) {
-              _this.y-=3;
-            }
-            if (_this.getkey("down")) {
-              _this.y+=3;
-            }
-            
-          } else {
-            if (_this.x>_this.tx) {
-              _this.x-=3;
-            }
-            if (_this.x<_this.tx) {
-              _this.x+=3;
-            }
-            if (_this.y>_this.ty) {
-              _this.y-=3;
-            }
-            if (_this.y<_this.ty) {
-              _this.y+=3;
-            }
-            if (_this.rnd(20)==0) {
-              _this.tx=_this.rnd(512);
-              _this.ty=_this.rnd(384);
-              for ([_this.s] of Tonyu.iterator2(_this.all(Tonyu.classes.user.PBullet),1)) {
-                if (_this.s.pc==_this.pc&&_this.s.i>=0) {
-                  _this.tx=_this.s.x;
-                  _this.ty=_this.s.y;
-                  
-                }
-                
-              }
-              
-            }
+          (yield* _this.fiber$map_setAt(_thread, _this.x, _this.y, Tonyu.globals.$pat_font+1));
+          if (_this.getkey("left")) {
+            _this.x-=3;
+          }
+          if (_this.getkey("right")) {
+            _this.x+=3;
+          }
+          if (_this.getkey("up")) {
+            _this.y-=3;
+          }
+          if (_this.getkey("down")) {
+            _this.y+=3;
+          }
+          if (_this.crashTo(Tonyu.classes.user.Enemy)) {
+            _this.die();
             
           }
-          
-          if (_this.defeatBy) {
-            _this.i = 0;
+          if (_this.crashTo(Tonyu.classes.user.EBullet)) {
+            _this.die();
             
-            while (_this.i<120) {
-              yield null;
-              _this.x+=8;
-              (yield* _this.fiber$update(_thread));
-              _this.x-=8;
-              (yield* _this.fiber$update(_thread));
-              _this.i+=1;
-              
-            }
-            _this.defeatBy=0;
-            _this.i=0;
+          }
+          if (_this.getkey("space")==1) {
+            new Tonyu.classes.user.PBullet({x: _this.x,y: _this.y});
             
           }
           (yield* _this.fiber$update(_thread));
@@ -7906,7 +8142,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"tx":{},"ty":{},"pc":{},"s":{},"defeatBy":{},"i":{"vtype":"Number"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
 });
 Tonyu.klass.define({
   fullName: 'user.Elem',

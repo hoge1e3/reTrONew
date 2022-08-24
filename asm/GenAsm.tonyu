@@ -51,9 +51,14 @@ for (klass of mem.ks) {
     //print(klass.src.tonyu);
     let methods=klass.decls.methods;
     anode=(klass.annotation);
+    //let fldc=(new FldCollect{anode});
+    //print("FLDC", fldc, fldc.visit);
     for (let mname, me of methods) {
         let method:FuncInfo=me;
+        
         text=klass.shortName+"."+mname;
+        //print(text);
+        //fldc.visit(method.stmts);
         if (method.params.length>0) {
             unsup(method.params[0],"Parameters is not yet supported");
         }
