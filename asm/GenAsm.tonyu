@@ -2,9 +2,12 @@ extends Visitor;
 includes Buf, Context;
 native Tonyu;
 initModule();
+x=256;y=20;fillStyle="black";
 let IDEPrj=$currentProject.compiler;
+text="get Nodes...";
 let anodes=waitFor(IDEPrj.serializeAnnotatedNodes());
 let mem=new MemberScan{genasm:this};
+waitEvent(mem,"complete");
 let lval=false;
 let symSeq=1;
 let ide=$Boot.getIDE();
@@ -40,7 +43,6 @@ let anode;
     }
     return res;
 }
-x=256;y=20;fillStyle="black";
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;

@@ -1561,7 +1561,7 @@ Tonyu.klass.define({
   fullName: 'user.MemberScan',
   shortName: 'MemberScan',
   namespace: 'user',
-  superclass: Tonyu.classes.kernel.TObject,
+  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -1572,14 +1572,14 @@ Tonyu.klass.define({
         
         _this.anodes = _this.genasm.anodes;
         
-        _this.Za = (_this.anodes.filter((function anonymous_891(e) {
+        _this.Za = (_this.anodes.filter((function anonymous_889(e) {
           
           return e.shortName==="RActor";
         }))[0]);
         
         _this.fld = new Tonyu.classes.user.FldIdx;
         
-        _this.ks = _this.anodes.filter((function anonymous_984(klass) {
+        _this.ks = _this.anodes.filter((function anonymous_982(klass) {
           
           return _this.inherits(klass,_this.Za)&&klass!==_this.Za;
         }));
@@ -1589,11 +1589,14 @@ Tonyu.klass.define({
         _this.name2klass = {};
         
         for (let [klass] of Tonyu.iterator2(_this.ks,1)) {
+          _this.genasm.text=" MemberScan "+klass.shortName;
           _this.name2klass[klass.shortName]=klass;
           _this.proc(klass);
+          _this.update();
           
         }
         _this.fld.build();
+        _this.fireEvent("complete");
       },
       fiber$main :function* _trc_MemberScan_f_main(_thread) {
         "use strict";
@@ -1603,14 +1606,14 @@ Tonyu.klass.define({
         
         _this.anodes = _this.genasm.anodes;
         
-        _this.Za = (_this.anodes.filter((function anonymous_891(e) {
+        _this.Za = (_this.anodes.filter((function anonymous_889(e) {
           
           return e.shortName==="RActor";
         }))[0]);
         
         _this.fld = new Tonyu.classes.user.FldIdx;
         
-        _this.ks = _this.anodes.filter((function anonymous_984(klass) {
+        _this.ks = _this.anodes.filter((function anonymous_982(klass) {
           
           return _this.inherits(klass,_this.Za)&&klass!==_this.Za;
         }));
@@ -1620,11 +1623,14 @@ Tonyu.klass.define({
         _this.name2klass = {};
         
         for (let [klass] of Tonyu.iterator2(_this.ks,1)) {
+          _this.genasm.text=" MemberScan "+klass.shortName;
           _this.name2klass[klass.shortName]=klass;
           (yield* _this.fiber$proc(_thread, klass));
+          (yield* _this.fiber$update(_thread));
           
         }
         _this.fld.build();
+        _this.fireEvent("complete");
         
       },
       u :function _trc_MemberScan_u(obj) {
@@ -4462,12 +4468,17 @@ Tonyu.klass.define({
         var _this=this;
         
         _this.initModule();
+        _this.x=256;
+        _this.y=20;
+        _this.fillStyle="black";
         _this.IDEPrj = Tonyu.globals.$currentProject.compiler;
         
+        _this.text="get Nodes...";
         _this.anodes = _this.waitFor(_this.IDEPrj.serializeAnnotatedNodes());
         
         _this.mem = new Tonyu.classes.user.MemberScan({genasm: _this});
         
+        _this.waitEvent(_this.mem,"complete");
         _this.lval = false;
         
         _this.symSeq = 1;
@@ -4488,9 +4499,6 @@ Tonyu.klass.define({
         
         _this.printf(['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join(''));
         
-        _this.x=256;
-        _this.y=20;
-        _this.fillStyle="black";
         for ([_this.klass] of Tonyu.iterator2(_this.mem.ks,1)) {
           let r = _this.mem.objRange(_this.klass);
           
@@ -4527,7 +4535,7 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         _this.waitEvent(_this.outbg,"complete");
-        _this.printf(['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1959(k) {
+        _this.printf(['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_2009(k) {
           
           return _this.globalLabel(k)+":dw 0";
         })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join(''));
@@ -4541,12 +4549,17 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$initModule(_thread));
+        _this.x=256;
+        _this.y=20;
+        _this.fillStyle="black";
         _this.IDEPrj = Tonyu.globals.$currentProject.compiler;
         
+        _this.text="get Nodes...";
         _this.anodes=yield* _this.fiber$waitFor(_thread, _this.IDEPrj.serializeAnnotatedNodes());
         
         _this.mem = new Tonyu.classes.user.MemberScan({genasm: _this});
         
+        (yield* _this.fiber$waitEvent(_thread, _this.mem, "complete"));
         _this.lval = false;
         
         _this.symSeq = 1;
@@ -4567,9 +4580,6 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$printf(_thread, ['org 08000h\r\ninclude tnu\r\ninclude map\r\ninclude bool\r\n\r\nmain:\r\ntnu.run ',Tonyu.globals.$mainClassName,'\r\n'].join('')));
         
-        _this.x=256;
-        _this.y=20;
-        _this.fillStyle="black";
         for ([_this.klass] of Tonyu.iterator2(_this.mem.ks,1)) {
           let r = _this.mem.objRange(_this.klass);
           
@@ -4606,7 +4616,7 @@ Tonyu.klass.define({
         _this.outbg = new Tonyu.classes.user.OutBG;
         
         (yield* _this.fiber$waitEvent(_thread, _this.outbg, "complete"));
-        (yield* _this.fiber$printf(_thread, ['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_1959(k) {
+        (yield* _this.fiber$printf(_thread, ['\r\nendusr:\r\n',Object.keys(_this.globals).map((function anonymous_2009(k) {
           
           return _this.globalLabel(k)+":dw 0";
         })).join("\n"),'\r\nmacro inivrm, n, dst\r\n ld de,dst\r\n ld hl,n\r\n ld bc,end.##n-n\r\n call LDIRVM\r\nendm\r\n\r\nspr.inipat:\r\n inivrm spr.pat, 3800h\r\n ret\r\n\r\nspr.pat:\r\n',_this.outp.buf,'\r\nend.spr.pat:\r\n\r\nbg.inipat:\r\n inivrm bg.gen, 0000h\r\n inivrm bg.gen, 0800h\r\n inivrm bg.gen, 1000h\r\n inivrm bg.col, 2000h\r\n inivrm bg.col, 2800h\r\n inivrm bg.col, 3000h\r\n inivrm bg.name, 1800h\r\n ret\r\n\r\nbg.gen:\r\n',_this.toDB(_this.outbg.patgen),'\r\nend.bg.gen:\r\n\r\nbg.col:\r\n',_this.toDB(_this.outbg.coltbl),'\r\nend.bg.col:\r\n\r\nbg.name:\r\n ds 256*3,32\r\nend.bg.name:\r\n\r\nend main'].join('')));
@@ -4696,13 +4706,13 @@ Tonyu.klass.define({
         var _this=this;
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3444(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3494(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3560() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3610() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3799() {
+          }))),["button",{onclick: (function anonymous_3849() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4710,7 +4720,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4372() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4422() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4732,13 +4742,13 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         if (_this.problems.length) {
-          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3444(p) {
+          let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #fee;'},["h2","Problem(s) found"],["ul"].concat(_this.problems.map((function anonymous_3494(p) {
             
-            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3560() {
+            return ["li",["a",{href: "javascript:;",onclick: (function anonymous_3610() {
               
               _this.ide.jump(p.file,p.row,p.col);
             })},p.file.name(),":",p.row,":",p.col," - ",p.mesg]];
-          }))),["button",{onclick: (function anonymous_3799() {
+          }))),["button",{onclick: (function anonymous_3849() {
             
             tx.die();
           })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -4746,7 +4756,7 @@ Tonyu.klass.define({
           return _this;
           
         }
-        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4372() {
+        let tx = new Tonyu.classes.kernel.HTMLUI({content: ["div",{style: 'background: #eee;'},["h2","Code copied!"],["ul",["li","Open ",["a",{target: "pen",href: _this.url},"this MSXpen page "],"."],["li","Paste the copied code"," to 'Asm' tab."]],["textarea",{rows: "10",cols: "30",name: "val"},"test\ndesu"],["button",{onclick: (function anonymous_4422() {
           
           tx.die();
         })},"Close"]],left: 10,top: 20,width: 300,height: 400});
@@ -5152,7 +5162,7 @@ Tonyu.klass.define({
               if (op.text==="++"||op.text==="--") {
                 _this.visit(left);
                 _this.printf(op.text==="++"?"inc hl%n":"dec hl%n");
-                _this.enter({lval: true},(function anonymous_7641() {
+                _this.enter({lval: true},(function anonymous_7691() {
                   
                   _this.visit(left);
                 }));
@@ -5167,7 +5177,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             _this.printf("push hl%n");
-            _this.enter({lval: false},(function anonymous_7856() {
+            _this.enter({lval: false},(function anonymous_7906() {
               
               _this.visit(tgme[0]);
             }));
@@ -5218,7 +5228,7 @@ Tonyu.klass.define({
               if (op.text==="++"||op.text==="--") {
                 (yield* _this.fiber$visit(_thread, left));
                 (yield* _this.fiber$printf(_thread, op.text==="++"?"inc hl%n":"dec hl%n"));
-                (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_7641() {
+                (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_7691() {
                   
                   _this.visit(left);
                 })));
@@ -5233,7 +5243,7 @@ Tonyu.klass.define({
           
           if (tgme) {
             (yield* _this.fiber$printf(_thread, "push hl%n"));
-            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7856() {
+            (yield* _this.fiber$enter(_thread, {lval: false}, (function anonymous_7906() {
               
               _this.visit(tgme[0]);
             })));
@@ -5700,7 +5710,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.arith2(left,op.text.substring(0,op.text.length-1),right);
-        _this.enter({lval: true},(function anonymous_13076() {
+        _this.enter({lval: true},(function anonymous_13126() {
           
           _this.visit(left);
         }));
@@ -5717,7 +5727,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$arith2(_thread, left, op.text.substring(0,op.text.length-1), right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13076() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13126() {
           
           _this.visit(left);
         })));
@@ -5734,7 +5744,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         _this.visit(right);
-        _this.enter({lval: true},(function anonymous_13931() {
+        _this.enter({lval: true},(function anonymous_13981() {
           
           _this.visit(left);
         }));
@@ -5751,7 +5761,7 @@ Tonyu.klass.define({
         let right = n.right;
         
         (yield* _this.fiber$visit(_thread, right));
-        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13931() {
+        (yield* _this.fiber$enter(_thread, {lval: true}, (function anonymous_13981() {
           
           _this.visit(left);
         })));
@@ -5964,7 +5974,7 @@ Tonyu.klass.define({
         _this.printf("%s:%n",sh);
         _this.visit(cond);
         _this.printf("jpf %s%n",se);
-        _this.enter({closestBrk: se},(function anonymous_15585() {
+        _this.enter({closestBrk: se},(function anonymous_15635() {
           
           _this.visit(loop);
         }));
@@ -5987,7 +5997,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$printf(_thread, "%s:%n", sh));
         (yield* _this.fiber$visit(_thread, cond));
         (yield* _this.fiber$printf(_thread, "jpf %s%n", se));
-        (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_15585() {
+        (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_15635() {
           
           _this.visit(loop);
         })));
@@ -6054,7 +6064,7 @@ Tonyu.klass.define({
           _this.printf("%s:%n",sh);
           _this.visit(cond);
           _this.printf("jpf %s%n",se);
-          _this.enter({closestBrk: se},(function anonymous_16328() {
+          _this.enter({closestBrk: se},(function anonymous_16378() {
             
             _this.visit(loop);
           }));
@@ -6094,7 +6104,7 @@ Tonyu.klass.define({
             _this.unsup(vars,"only field supports");
             
           }
-          _this.enter({closestBrk: "BREAK"},(function anonymous_17237() {
+          _this.enter({closestBrk: "BREAK"},(function anonymous_17287() {
             
             _this.visit(loop);
           }));
@@ -6130,7 +6140,7 @@ Tonyu.klass.define({
           (yield* _this.fiber$printf(_thread, "%s:%n", sh));
           (yield* _this.fiber$visit(_thread, cond));
           (yield* _this.fiber$printf(_thread, "jpf %s%n", se));
-          (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_16328() {
+          (yield* _this.fiber$enter(_thread, {closestBrk: se}, (function anonymous_16378() {
             
             _this.visit(loop);
           })));
@@ -6170,7 +6180,7 @@ Tonyu.klass.define({
             (yield* _this.fiber$unsup(_thread, vars, "only field supports"));
             
           }
-          (yield* _this.fiber$enter(_thread, {closestBrk: "BREAK"}, (function anonymous_17237() {
+          (yield* _this.fiber$enter(_thread, {closestBrk: "BREAK"}, (function anonymous_17287() {
             
             _this.visit(loop);
           })));
