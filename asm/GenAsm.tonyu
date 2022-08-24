@@ -419,6 +419,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             printf("ld de,%s%n",rangeToAd(range[1]));
             printf("call crashToC%n");*/
         } else {
+            printf("call crashTo.setXY%n");
             visit(tg);
             printf("call crashTo1%n");
             printf("flagtobool c%n");
