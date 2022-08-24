@@ -613,10 +613,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             unsup(set,"only 'for (e of all(Class))' is allowed ");
             return;
         }
-        //foreach, Class,st,en,nx
+        //foreach.a, Class,st,en,nx
         let range=mem.objRange(klass);
         let nx=genSym();
-        printf("foreach %s, %d, %d, %s%{",klass.shortName,range[0],range[1],nx);
+        printf("foreach.a %s, %d, %d, %s%{",klass.shortName,range[0],range[1],nx);
         let va=annotation(vars[0]);
         //print (va);
         if (va.scopeInfo.type==="field") {

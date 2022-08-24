@@ -640,9 +640,9 @@ macro th.for.a, nx, st, en
   exitm
  endif
  local do, loop
- ld a,((high th.start)+st)
+ ld a,st+(high th.start)
  loop:
-  cp (high th.start)+en
+  cp en+(high th.start)
   jp nc, nx
   push af
   ld h,a
@@ -1666,12 +1666,8 @@ macro crashToClass,Class,st,en
  call crashToC
 endm
 
-macro foreach, Class,st,en,nxt
-;uses a
- ld hl,th.start+st*th.size
- ld de,th.start+en*th.size
- ld bc,th.size
- for nxt
+macro foreach.a, Class,st,en,nxt
+ th.for.a nxt, st, en
   all.skip Class
 endm
 
@@ -1726,7 +1722,7 @@ defsub crashToC
  getthis 0
  ret c
  ld hl,null
-endsub all
+endsub crashToC
 
 defsub crashTo1
  ;hl=tg
@@ -2500,7 +2496,7 @@ def Player.main,0,0
  getfld .y
  new.arg .y
  new PBullet,2,15,20
- foreach Enemy,5,14,nxx
+ foreach.a Enemy,5,14,nxx
   ld a,h
   ld hl,8
   setfld .c
