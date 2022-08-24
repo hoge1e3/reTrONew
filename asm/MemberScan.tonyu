@@ -1,4 +1,4 @@
-extends TObject;
+extends Actor;
 native Tonyu;
 \u(obj) {
     return Object.assign({},obj);
@@ -11,7 +11,7 @@ native Tonyu;
     let res={};
     if(klass.shortName!="RActor" && s)res=getMembers(s);
     //let p=Tonyu.iterator2(f);
-    //f=new FldCollect{klass}.collect();
+    f=new FldCollect{klass}.collect();
     for(let n,v in f){
         res [n]={
             type="fld",
@@ -46,10 +46,13 @@ let ks=anodes.filter \(klass){
 let obj_limits=initLimitRange($config["obj.limits"]||{});
 let name2klass={};
 for (let klass of ks) {
+    genasm.text=" MemberScan "+klass.shortName;
     name2klass[klass.shortName]=klass;
     proc(klass);
+    update();
 }
 fld.build();
+fireEvent("complete");
 /*
 for (let klass of ks) {
     header(klass);
