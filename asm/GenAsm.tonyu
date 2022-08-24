@@ -313,6 +313,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
 }
 \tgMeth(target: Expression, name:Token, op:Call) {
+    if (name.text==="crashTo") {
+        unsup(name, "target.crashTo( ) is not supported");
+        return;
+    }
     printf("pushthis 0%n");
     let args=op.args;
     for(let a of args){
@@ -400,12 +404,6 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         if (klass) {
             let range=mem.objRange(klass);
             printf("crashToClass %s, %d, %d%n",klass.shortName,range[0],range[1]);
-            /*printf("call crashTo.setXY%n");
-            printf("ld hl,%s%n",klass.shortName);
-            printf("const crashTo.kls,hl%n");
-            printf("ld hl,%s%n",rangeToAd(range[0]));
-            printf("ld de,%s%n",rangeToAd(range[1]));
-            printf("call crashToC%n");*/
         } else {
             visit(tg);
             printf("call crashTo1%n");
