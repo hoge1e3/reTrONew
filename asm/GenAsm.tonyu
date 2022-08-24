@@ -613,12 +613,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             unsup(set,"only 'for (e of all(Class))' is allowed ");
             return;
         }
-        //foreach, Class,st,en,do
+        //foreach, Class,st,en,nx
         let range=mem.objRange(klass);
-        let _do=genSym(),nx=genSym();
-        printf("foreach %s, %d, %d, %s%n",klass.shortName,range[0],range[1],_do);
-        printf("jp %s%n",nx);
-        printf("%s:%{",_do);
+        let nx=genSym();
+        printf("foreach %s, %d, %d, %s%{",klass.shortName,range[0],range[1],nx);
         let va=annotation(vars[0]);
         //print (va);
         if (va.scopeInfo.type==="field") {
@@ -629,6 +627,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         visit(loop);
         printf("continue%n");
         printf("%}%s:%n",nx);
+        printf("getthis 0%n");
     }
 }
 \isAll(set:Expression) {
