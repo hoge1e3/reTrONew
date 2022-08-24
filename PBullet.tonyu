@@ -9,7 +9,7 @@ if (pc==6) bc=10;
 // TODO target is declaed in Actor, 
 // if forgot to var, error will happen in assembler
 
-for (var target of all(Player)) {
+for (target of all(Player)) {
     if (target.pc==pc) break;
 }
 var i=0;
