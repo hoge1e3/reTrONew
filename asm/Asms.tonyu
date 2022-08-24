@@ -628,11 +628,31 @@ fld.top equ th.ofs.spini-2
 th.st.blank equ 0c9h
 th.st.active equ 31h
 
-macro th.for,lb
- ld HL,th.start
- ld de,th.end
- ld bc,th.size
- for lb
+;macro th.for,lb
+; ld HL,th.start
+; ld de,th.end
+; ld bc,th.size
+; for lb
+;endm
+macro th.for.a, nx, st, en
+ if nul st
+  th.for.a nx, 0, th.count
+  exitm
+ endif
+ local do, loop
+ ld a,((high th.start)+st)
+ loop:
+  cp (high th.start)+en
+  jp nc, nx
+  push af
+  ld h,a
+  ld l,0
+  call do
+  popa
+  jp c, nx
+  inc a
+ jr loop
+ do:
 endm
 
 macro th.new.range,st,en
@@ -687,7 +707,7 @@ endsub th.new
 defsub th.init
 proc
  local lbend
- th.for lbend
+ th.for.a lbend
   ; TODO th.ofs.stp
   ld L, th.ofs.stp
   ld (HL),th.st.blank
@@ -702,7 +722,7 @@ endp
 endsub th.init
 
 defsub th.stepall
- th.for thnx
+ th.for.a thnx
   ;todo th.ofs.stp
   ld (th.cur),hl
   call th.isblank.a
@@ -1440,7 +1460,7 @@ proc
  local t1,t2,t3,t4
  ld hl, 1b00h
  call SETWRT
- th.for sprl
+ th.for.a sprl
   ld a,h
   tgconst t1
   tgconst t2
