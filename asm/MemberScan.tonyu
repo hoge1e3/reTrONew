@@ -11,7 +11,7 @@ native Tonyu;
     let res={};
     if(klass.shortName!="RActor" && s)res=getMembers(s);
     //let p=Tonyu.iterator2(f);
-
+    //f=new FldCollect{klass}.collect();
     for(let n,v in f){
         res [n]={
             type="fld",

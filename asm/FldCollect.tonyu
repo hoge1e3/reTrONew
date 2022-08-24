@@ -1,0 +1,70 @@
+extends Visitor;
+// includes Visitor is cannot visit why?
+// ^ See document
+let anode;
+let klass;
+let fields;
+\collect() {
+    fields={};
+    //text=klass.shortName;
+    //print("KLS",klass);
+    //printf(";range %d-%d%n",r[0],r[1]);
+    //klassSrc=klass.src.tonyu.text();
+    //print(klass.src.tonyu);
+    let methods=klass.decls.methods;
+    anode=(klass.annotation);
+    for (let mname, me of methods) {
+        let method:FuncInfo=me;
+        //text=klass.shortName+"."+mname;
+        //print(text);
+        visit(method.stmts);
+    }
+    return fields;
+}
+\annotation(n) {
+    let res=anode[n._id];
+    if (!res) {
+        return {};
+    }
+    return res;
+}
+//\v_nativeDecl(node:NativeDecl) {}
+//\v_funcDecl(node:FuncDecl) {}
+//\v_funcExpr(node:FuncExpr) {}
+\v_varDecl (node:VarDecl) {
+    let a=annotation(node);
+    if (!a.varInMain) return;
+    addField(node.name, node);
+}
+\v_varsDecl(node:VarsDecl) {
+    for (let d of node.decls) {
+        visit(d);
+    }
+}
+\v_varAccess(node:VarAccess) {
+    let a=annotation(node);
+    if (a.scopeInfo.type==="field") {
+        addField(node.name, node);
+    }
+}
+\v_forin(node:Forin) {
+    node.vars.forEach \(v:Token){
+        let a=annotation(v);
+        if (a.varInMain) {
+            addField(v);
+        }
+    };
+    
+}
+\addField(name:Token) {
+    fields[name.text]=1;
+    //print("Field", name.text);
+}
+\def(n){
+    if (!n) return;
+    if (typeof n!=="object") return;
+    //print("N",n);
+    for (let k of Object.keys(n)) {
+        visit(n[k]);
+    }
+}
