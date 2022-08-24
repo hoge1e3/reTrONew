@@ -19,7 +19,7 @@ while(true) {
         y=rnd(24);
         c=map_get(x,y);
         if (c>=3 && c<=6) {
-            new Seed{x:x*16+8,y:y*16+8,pc:c};
+            new PBullet{x:x*16+8,y:y*16+8,pc:c};
         }
     }
     update();

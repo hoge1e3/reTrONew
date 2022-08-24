@@ -14,6 +14,7 @@ let builtins={getkey:"getkey",rnd:"rnd"};
 let globals={};
 let keynames={space: 0x0108, 
 right:0x8008,down:0x4008,up:0x2008,left:0x1008};
+let closestBrk;
 //debug=true;
 let opmap={
     "*":"call IMULT.a%n", 
@@ -298,6 +299,13 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
                 }
                 unsup(n, `Not a member Ref `);
             }
+        } else if (op.text==="++"||op.text==="--") {
+            visit(left);
+            printf(op.text==="++"? "inc hl%n": "dec hl%n");
+            enter{lval:true} \{
+                visit(left);
+            };
+            return;
         }
     } else {
         let tgme=isMemberRef(n);
@@ -579,11 +587,23 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     printf("%s:%n",sh);
     visit(cond);
     printf("jpf %s%n",se);
-    visit(loop);
+    enter{closestBrk:se} \{
+        visit(loop);
+    };
     printf("jp %s%n",sh);
     printf("%s:%n",se);
 }
 
+\v_break(n) {
+    if (!closestBrk) {
+        unsup(n,"break outside loop ")   ;
+    }
+    if (closestBrk==="BREAK") {
+        printf("break%n");
+    } else {
+        printf("jp %s%n",closestBrk);
+    }
+}
 \v_for(n:For){
     let inFor:ForHead=n.inFor;
     let loop:Stmt=n.loop;
@@ -598,7 +618,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         printf("%s:%n",sh);
         visit(cond);
         printf("jpf %s%n",se);
-        visit(loop);
+        enter{closestBrk: se} \{
+            visit(loop);
+        };
         visit(next);
         printf("jp %s%n",sh);
         printf("%s:%n",se);
@@ -624,7 +646,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         } else {
             unsup(vars,"only field supports");
         }
-        visit(loop);
+        enter{closestBrk:"BREAK"} \{
+            visit(loop);
+        };
         printf("continue%n");
         printf("%}%s:%n",nx);
         printf("getthis 0%n");
