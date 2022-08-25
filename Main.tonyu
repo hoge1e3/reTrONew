@@ -4,11 +4,13 @@ https://github.com/hoge1e3/reTrONew
 */
 
 for (var i=0;i<4;i++) {
-    x=32;if(i%2==0) x=480;
+    x=32;if(i%2==1) x=480;
     y=32;if(i>=2) y=360;
     $players[i]=new Player{
-    x,y, p:16, c:8, pc:$colors[i]};
+    x,y, p:16+i, pc:i};
 }
+for (var y=0;y<24;y++)
+for (var x=0;x<32;x++) map_set(x,y,0);
 
 p=0; c=15;
 while(true) {
@@ -17,7 +19,7 @@ while(true) {
         y=rnd(24);
         c=map_get(x,y);
         if (c>=3 && c<=6) {
-            new PBullet{x:x*16+8,y:y*16+8,pc:c};
+            new PBullet{x:x*16+8,y:y*16+8,pc:c-3};
         }
     }
     update();

@@ -1,9 +1,10 @@
 var tx=rnd(512);
 var ty=rnd(384);
 var pc;
+c=$colors[pc];
+defeatBy=-1;
 while(true) {
-    map_setAt(x,y,pc);
-    if (c==8) {
+    if (pc==0) {
         if (getkey("left")) x-=3;
         if (getkey("right")) x+=3;
         if (getkey("up")) y-=3;
@@ -24,17 +25,16 @@ while(true) {
             }
         }
     }
+    map_setAt(x,y,pc+3);
     var defeatBy;
-    if (defeatBy){
-        var i=0;
-        while(i<120) {
+    if (defeatBy>=0){
+        for (var i=0;i<120;i++) {
             x+=8;
             update();
             x-=8;
             update();
-            i+=1;
         }
-        defeatBy=0;
+        defeatBy=-1;
         i=0;
     }
     update();

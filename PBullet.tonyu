@@ -2,10 +2,7 @@ p=7;
 var vx=0;
 var vy=0;
 var pc,bc;
-if (pc==3) bc=8;
-if (pc==4) bc=7;
-if (pc==5) bc=3;
-if (pc==6) bc=10;
+bc=$colors[pc];
 // TODO target is declaed in Actor, 
 // if forgot to var, error will happen in assembler
 
@@ -19,17 +16,26 @@ while (true) {
     i++;
     update();
 }
-i=0-1;
+c=bc;
+i=-1;
 while (true) {
-    map_setAt(x,y,pc);
-    if (target.defeatBy) {
-        die();
+    var g=map_getAt(x,y)-3;
+    if (g>=0 && g<4 && g!=pc) {
+        var foe=$players[g];
+        if (crashTo(foe) && foe.defeatBy<0) {
+            foe.defeatBy=pc;
+            die();
+        }
     }
+    map_setAt(x,y,pc+3);
+    if (target.defeatBy>=0) {
+        die();
+    }/*
     var foe=crashTo(Player);
     if (foe && foe.pc!=pc && !foe.defeatBy) {
         foe.defeatBy=pc;
         die();
-    }
+    }*/
     if (screenOut()) die();
     if (target.x>x)vx+=1; 
     if (target.x<x)vx-=1; 
