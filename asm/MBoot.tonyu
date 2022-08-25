@@ -1,5 +1,5 @@
 extends Boot;
-
+native Tonyu;
 \config() {
     $config={
         "spr.scale"=1,
@@ -23,7 +23,7 @@ extends Boot;
             "$f_ary": [1.2, 2.3, 4.5] //double[3] 
         },
         // unimplemented: global strings(char*). length cannot be changed.
-        "strings": {
+        "chars": {
             "$mesg": "Hello, world", // char*
             //substring: $mesg+7 -> "world"
             "$mesgs": ["Hello", "World!!"], // (char*)[2]
@@ -47,6 +47,16 @@ extends Boot;
     $Screen.setBGColor($RSprPat.palette[6]);
     $pat_font_orig=$pat_font;
     $pat_font=0;
+    if ($config.intArrays ) {
+        for (let k,v in $config.intArrays) {
+            if (typeof v==="number") {
+                let n=v;
+                v=[];
+                for (let i=0;i<n;i++) v.push(0);
+            }
+            Tonyu.setGlobal(k,v);
+        }
+    }
     $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0};
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
     $exporter=new GenAsm;

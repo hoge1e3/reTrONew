@@ -78,10 +78,22 @@ let outbg=new OutBG;
 waitEvent(outbg,"complete");
 
 printf(`
-endusr:
 ${Object.keys(globals).map \(k){
-    return globalLabel(k)+":dw 0";
+    if ($config.intArrays && $config.intArrays[k]) {
+        let i= $config.intArrays[k];
+        if (typeof i==="number") {
+            return globalLabel(k)+":dw $+2\n"+
+            "ds "+(i*2);
+        } else {
+            // 1-d array only currently
+            return globalLabel(k)+":dw $+2\n"+
+            "dw "+i.join(", ");
+        }
+    } else {
+        return globalLabel(k)+":dw 0";
+    }
 }.join("\n")}
+endusr:
 macro inivrm, n, dst
  ld de,dst
  ld hl,n
@@ -324,6 +336,16 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             enter{lval:true} \{
                 visit(left);
             };
+        } else if (op.type==="arrayElem") {
+            let ae:ArrayElem=op;
+            let subscript:Expression=ae.subscript;
+            visit(subscript);
+            printf("push hl%n");
+            visit(left);
+            printf("pop de%n");
+            printf("slde%n");
+            printf("add hl,de%n");
+            printf("peekw hl,hl%n");
             return;
         }
     } else {
@@ -334,6 +356,21 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
                 visit(tgme[0]);
             };
             printf("setfldtg .%s%n",tgme[1]);
+            return;
+        } else if (op.type==="arrayElem") {
+            printf("push hl%n");
+            let ae:ArrayElem=op;
+            let subscript:Expression=ae.subscript;
+            enter{lval:false}\{
+                visit(subscript);
+                printf("push hl%n");
+                visit(left);
+                printf("pop de%n");
+            };
+            printf("slde%n");
+            printf("add hl,de%n");
+            printf("pop de%n");
+            printf("pokew hl,de%n");
             return;
         }
     }
