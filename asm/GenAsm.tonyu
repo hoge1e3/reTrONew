@@ -733,14 +733,20 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     let then:Stmt=n.then;
     let _else:Stmt?=n._else;
     let send=genSym();
-    let sels=genSym();
     visit(cond);
-    printf("jpf %s%n",sels);
-    visit(then);
-    printf("jp %s%n",send);
-    printf("%s:%n",sels);
-    if (_else) visit(_else);
-    printf("%s:%n",send);
+    if (_else) {
+        let sels=genSym();
+        printf("jpf %s%n",sels);
+        visit(then);
+        printf("jp %s%n",send);
+        printf("%s:%n",sels);
+        visit(_else);
+        printf("%s:%n",send);
+    } else {
+        printf("jpf %s%n",send);
+        visit(then);
+        printf("%s:%n",send);
+    }
 }
 
 
