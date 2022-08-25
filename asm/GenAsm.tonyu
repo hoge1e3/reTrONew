@@ -17,6 +17,7 @@ let builtins={getkey:"getkey",rnd:"rnd"};
 let globals={};
 let keynames={space: 0x0108, 
 right:0x8008,down:0x4008,up:0x2008,left:0x1008};
+let closestBrk;
 //debug=true;
 let opmap={
     "*":"call IMULT.a%n", 
@@ -329,6 +330,12 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
                 }
                 unsup(n, `Not a member Ref `);
             }
+        } else if (op.text==="++"||op.text==="--") {
+            visit(left);
+            printf(op.text==="++"? "inc hl%n": "dec hl%n");
+            enter{lval:true} \{
+                visit(left);
+            };
         } else if (op.type==="arrayElem") {
             let ae:ArrayElem=op;
             let subscript:Expression=ae.subscript;
@@ -370,6 +377,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
 }
 \tgMeth(target: Expression, name:Token, op:Call) {
+    if (name.text==="crashTo") {
+        unsup(name, "target.crashTo( ) is not supported");
+        return;
+    }
     printf("pushthis 0%n");
     let args=op.args;
     for(let a of args){
@@ -637,11 +648,23 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     printf("%s:%n",sh);
     visit(cond);
     printf("jpf %s%n",se);
-    visit(loop);
+    enter{closestBrk:se} \{
+        visit(loop);
+    };
     printf("jp %s%n",sh);
     printf("%s:%n",se);
 }
 
+\v_break(n) {
+    if (!closestBrk) {
+        unsup(n,"break outside loop ")   ;
+    }
+    if (closestBrk==="BREAK") {
+        printf("break%n");
+    } else {
+        printf("jp %s%n",closestBrk);
+    }
+}
 \v_for(n:For){
     let inFor:ForHead=n.inFor;
     let loop:Stmt=n.loop;
@@ -656,7 +679,9 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         printf("%s:%n",sh);
         visit(cond);
         printf("jpf %s%n",se);
-        visit(loop);
+        enter{closestBrk: se} \{
+            visit(loop);
+        };
         visit(next);
         printf("jp %s%n",sh);
         printf("%s:%n",se);
@@ -671,12 +696,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             unsup(set,"only 'for (e of all(Class))' is allowed ");
             return;
         }
-        //foreach, Class,st,en,do
+        //foreach.a, Class,st,en,nx
         let range=mem.objRange(klass);
-        let _do=genSym(),nx=genSym();
-        printf("foreach %s, %d, %d, %s%n",klass.shortName,range[0],range[1],_do);
-        printf("jp %s%n",nx);
-        printf("%s:%{",_do);
+        let nx=genSym();
+        printf("foreach.a %s, %d, %d, %s%{",klass.shortName,range[0],range[1],nx);
         let va=annotation(vars[0]);
         //print (va);
         if (va.scopeInfo.type==="field") {
@@ -684,9 +707,12 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         } else {
             unsup(vars,"only field supports");
         }
-        visit(loop);
+        enter{closestBrk:"BREAK"} \{
+            visit(loop);
+        };
         printf("continue%n");
         printf("%}%s:%n",nx);
+        printf("getthis 0%n");
     }
 }
 \isAll(set:Expression) {
@@ -706,20 +732,14 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     let then:Stmt=n.then;
     let _else:Stmt?=n._else;
     let send=genSym();
+    let sels=genSym();
     visit(cond);
-    if (_else) {
-        let sels=genSym();
-        printf("jpf %s%n",sels);
-        visit(then);
-        printf("jp %s%n",send);
-        printf("%s:%n",sels);
-        visit(_else);
-        printf("%s:%n",send);
-    } else {
-        printf("jpf %s%n",send);
-        visit(then);
-        printf("%s:%n",send);
-    }
+    printf("jpf %s%n",sels);
+    visit(then);
+    printf("jp %s%n",send);
+    printf("%s:%n",sels);
+    if (_else) visit(_else);
+    printf("%s:%n",send);
 }
 
 
