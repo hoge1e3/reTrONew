@@ -15,7 +15,7 @@ native Tonyu;
         /^f_/,/^\$f_/,
         ],
         // unimplemented: global arrays
-        "arrays": {
+        "intArrays": {
             "$players": 4, // int16[4]
             "$colors": [8,7,3,11], // int16[4] with initial values
             "$mat": [[1,3,5],[10,12]], // (int*)[2] 
