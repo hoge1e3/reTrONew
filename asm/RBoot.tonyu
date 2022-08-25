@@ -5,30 +5,16 @@ native Tonyu;
         "spr.scale"=1,
         //"crashTo.size"=32,
         "obj.limits"={
-            PBullet: 12, Player: 4
         },
         "th.count"=20,
-
         // unimplemented: the variables treated as double(common to all classes) 
         "defdbl": [
-        "dbl","$dbl",
-        /^f_/,/^\$f_/,
         ],
         // unimplemented: global int arrays
         "intArrays": {
-            "$players": 4, // int16[4]
-            "$colors": [9,7,3,11], // int16[4] with initial values
-            "$mat": [[1,3,5],[10,12]], // (int*)[2] 
-            // [1,3,5] and [10,12] may not be placed in contiguous memory areas.
-            "$f_ary": [1.2, 2.3, 4.5] //double[3] 
         },
         // unimplemented: global strings(char*). length cannot be changed.
         "chars": {
-            "$mesg": "Hello, world", // char*
-            //substring: $mesg+7 -> "world"
-            "$mesgs": ["Hello", "World!!"], // (char*)[2]
-            // "Hello" and "World!!" may not be placed in contiguous memory areas.
-            //"$f_str": "ERROR! float cannot point string",
         }
     };
 }
