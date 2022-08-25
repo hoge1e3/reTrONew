@@ -3,14 +3,12 @@ For details:
 https://github.com/hoge1e3/reTrONew
 */
 
-new Player{
-x:32, y: 32, p:16, c:8, pc:3};
-new Player{
-x:480, y: 300, p:17, c:7, pc:4};
-new Player{
-x:32, y: 32, p:18, c:3, pc:5};
-new Player{
-x:480, y: 300, p:19, c:10, pc:6};
+for (var i=0;i<4;i++) {
+    x=32;if(i%2==0) x=480;
+    y=32;if(i>=2) y=360;
+    $players[i]=new Player{
+    x,y, p:16, c:8, pc:$colors[i]};
+}
 
 p=0; c=15;
 while(true) {
