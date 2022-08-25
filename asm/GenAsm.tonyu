@@ -336,6 +336,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             enter{lval:true} \{
                 visit(left);
             };
+            return;
         } else if (op.type==="arrayElem") {
             let ae:ArrayElem=op;
             let subscript:Expression=ae.subscript;
