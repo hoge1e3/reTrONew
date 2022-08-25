@@ -26,7 +26,7 @@ while (true) {
         die();
     }
     var foe=crashTo(Player);
-    if (foe && foe.pc!=pc) {
+    if (foe && foe.pc!=pc && !foe.defeatBy) {
         foe.defeatBy=pc;
         die();
     }
