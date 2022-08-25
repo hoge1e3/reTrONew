@@ -5,7 +5,7 @@ native Tonyu;
         "spr.scale"=1,
         //"crashTo.size"=32,
         "obj.limits"={
-            PBullet: 5, Enemy: 10
+            PBullet: 12, Player: 4
         },
         "th.count"=20,
 
@@ -16,8 +16,8 @@ native Tonyu;
         ],
         // unimplemented: global int arrays
         "intArrays": {
-            "$mem": 50, // int16[50]
-            "$colors": [8, 7, 3, 11], // int16[4] with initial values
+            "$players": 4, // int16[4]
+            "$colors": [9,7,3,11], // int16[4] with initial values
             "$mat": [[1,3,5],[10,12]], // (int*)[2] 
             // [1,3,5] and [10,12] may not be placed in contiguous memory areas.
             "$f_ary": [1.2, 2.3, 4.5] //double[3] 

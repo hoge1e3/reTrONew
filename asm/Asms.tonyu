@@ -640,11 +640,33 @@ fld.top equ th.ofs.spini-2
 th.st.blank equ 0c9h
 th.st.active equ 31h
 
-macro th.for,lb
- ld HL,th.start
- ld de,th.end
- ld bc,th.size
- for lb
+;macro th.for,lb
+; ld HL,th.start
+; ld de,th.end
+; ld bc,th.size
+; for lb
+;endm
+macro th.for.a, nx, st, en
+ if nul st
+  th.for.a nx, 0, th.count
+  exitm
+ endif
+ local do, loop
+ ld a,st+(high th.start)
+ loop:
+  cp en+(high th.start)
+  jp nc, nx
+  push af
+  ld h,a
+  ld l,0
+  call do
+  popa
+  ld h,a
+  ld l,0
+  jp c, nx
+  inc a
+ jr loop
+ do:
 endm
 
 macro th.new.range,st,en
@@ -699,7 +721,7 @@ endsub th.new
 defsub th.init
 proc
  local lbend
- th.for lbend
+ th.for.a lbend
   ; TODO th.ofs.stp
   ld L, th.ofs.stp
   ld (HL),th.st.blank
@@ -714,7 +736,7 @@ endp
 endsub th.init
 
 defsub th.stepall
- th.for thnx
+ th.for.a thnx
   ;todo th.ofs.stp
   ld (th.cur),hl
   call th.isblank.a
@@ -1452,7 +1474,7 @@ proc
  local t1,t2,t3,t4
  ld hl, 1b00h
  call SETWRT
- th.for sprl
+ th.for.a sprl
   ld a,h
   tgconst t1
   tgconst t2
@@ -1637,10 +1659,12 @@ def RActor.crashTo,1,0
  const cr.class,hl
  call isobj.a
  jr c, cr1
-  ld hl, th.start
-  ld de, th.end
-  call crashTo1
-  jr endc
+  unreach "C"
+  ; "Cannot call target.crashTo(Class) "
+  ;ld hl, th.start
+  ;ld de, th.end
+  ;call crashTo1
+  ;jr endc
  cr1:
   getthis 0
   call crashTo1
@@ -1649,21 +1673,22 @@ def RActor.crashTo,1,0
 enddef RActor.crashTo
 
 macro crashToClass,Class,st,en
+ local nx,found
  ; a=this
  call crashTo.setXY
- ld hl,Class
- const cr.class,hl
- ld hl,th.start+st*th.size
- ld de,th.start+en*th.size
- call crashToC
+ foreach.a Class,st,en,nx
+  call crashTo1
+  break c
+  continue
+ nx:
+ getthis 0
+ jr c, found
+  ld hl,null
+ found:
 endm
 
-macro foreach, Class,st,en,nxt
-;uses a
- ld hl,th.start+st*th.size
- ld de,th.start+en*th.size
- ld bc,th.size
- for nxt
+macro foreach.a, Class,st,en,nxt
+ th.for.a nxt, st, en
   all.skip Class
 endm
 
@@ -1693,7 +1718,7 @@ macro all.skip, Class
  all.skip.isnot Class
 endm
 
-defsub crashToC
+defsub crashToC.abolished
  ;before:
  ; call crashTo.setXY
  ; const cr.class,Class
@@ -1718,9 +1743,10 @@ defsub crashToC
  getthis 0
  ret c
  ld hl,null
-endsub all
+endsub crashToC.abolished
 
 defsub crashTo1
+ ; call crashTo.setXY before
  ;hl=tg
  ;cy:true
  ;hl is used
@@ -2492,7 +2518,7 @@ def Player.main,0,0
  getfld .y
  new.arg .y
  new PBullet,2,15,20
- foreach Enemy,5,14,nxx
+ foreach.a Enemy,5,14,nxx
   ld a,h
   ld hl,8
   setfld .c

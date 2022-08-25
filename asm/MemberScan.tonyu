@@ -104,7 +104,7 @@ for (let klass of ks) {
     for(let i=max;i>=min;i-=2){
         let k=rev [i];
         if(!k){
-            printf("unused%n");
+            printf("unuse 0%n");
             continue;
         }
         let ri=r [k];
