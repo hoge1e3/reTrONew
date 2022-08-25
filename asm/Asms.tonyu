@@ -260,7 +260,19 @@ macro flagtobool,fl
  yes:
  ld hl,true
  skp: 
-endm`,
+endm
+
+defsub nothl
+proc
+ local fls
+ jpf fls
+ ld hl, false
+ ret
+ fls:
+ ld hl, true
+endp
+endsub nothl
+`,
     'mem':`include const
 ;
 rdslt:

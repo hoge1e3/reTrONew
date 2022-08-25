@@ -286,6 +286,18 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     let mem: Member=tgme.op;
     return [tgme.left, mem.name];
 }
+\v_prefix(n:Prefix) {
+    let op:TNode=n.op;
+    let right:Expression=n.right;
+    visit(right);
+    if (op.text==="!") {
+        printf("call nothl%n");
+    } else if (op.text==="-") {
+        printf("call neghl%n");
+    } else {
+        unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
+    }
+}
 \v_postfix(n:Postfix){
     let left:Expression=n.left;
     let op:TNode=n.op;
