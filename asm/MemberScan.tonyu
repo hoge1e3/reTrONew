@@ -28,20 +28,22 @@ native Tonyu;
     return res;
 }
 \inherits(klass, parent) {
+    if (typeof parent==="string" && 
+    (klass.shortName===parent || klass.fullName===parent)) return true;
     if (klass===parent) return true;
     if (!klass.superclass) return false;
     return inherits(klass.superclass,parent);
 }
 let genasm:GenAsm;
 let anodes=genasm.anodes;
-let Za=(anodes.filter \(e){
+let Za="RActor";/*(anodes.filter \(e){
     return e.shortName==="RActor";
-}[0]);
+}[0])*/;
 let fld=new FldIdx;
 let ks=anodes.filter \(klass){
     return
     inherits(klass, Za) &&
-    klass!==Za;
+    klass.shortName!==Za;
 };
 let obj_limits=initLimitRange($config["obj.limits"]||{});
 let name2klass={};
