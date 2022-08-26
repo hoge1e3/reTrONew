@@ -1,1 +1,1 @@
-{"images":[{"type":"wh","name":"$pat_spr","url":"ls:images/spr.png","pwidth":16,"pheight":16},{"type":"wh","name":"$pat_font","url":"ls:images/font.png","pwidth":8,"pheight":8}],"sounds":[]}
+{"images":[{"type":"wh","name":"$pat_spr","url":"ls:images/spr.png","pwidth":16,"pheight":16},{"type":"wh","name":"$pat_font","url":"ls:images/font.png","pwidth":8,"pheight":8},{"name":"$icon_thumbnail","pwidth":200,"pheight":200,"url":"ls:images/icon_thumbnail.png"}],"sounds":[]}
