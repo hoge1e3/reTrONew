@@ -43,7 +43,9 @@ native Tonyu;
             Tonyu.setGlobal(k,v);
         }
     }
-    $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0};
+    $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0,
+        curx:0,cury:0,
+    };
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
     $exporter=new GenAsm;
     let ide=$Boot.getIDE();

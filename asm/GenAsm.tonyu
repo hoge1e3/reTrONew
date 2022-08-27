@@ -32,6 +32,7 @@ printf(`org 08000h
 include tnu
 include map
 include bool
+include dac
 
 main:
 tnu.run ${$mainClassName}
@@ -451,6 +452,17 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         printf("call map.set%s.a%n",
         mname.match(/At/)?"at":"");
         printf("getthis 0%n");
+    } else if (mname==="locate") {
+        if (args.length!==2) {
+            unsup(left, "'locate should give (x,y)");
+        }
+        visit(args[1]); // y
+        printf("push hl%n");
+        visit(args[0]); // x
+        printf("pop de%n");
+        printf("call locate%n");
+        //printf("getthis 0%n");
+    
     } else if (mname.match(/^map_get(At)?/)) {
         if (args.length!==2) {
             unsup(left, "'map_get(At) should give (x,y)");
@@ -496,13 +508,11 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             if (k.type==="literal") {
                 setLit(k);
                 printf("call print.a%n");
-                printf("getthis 0%n");
             }else {
                 visit(k);
-                printf("call print.i%n");
-                
+                printf("call printi.a%n");
             }
-                
+            printf("getthis 0%n");
         }
     } else {
         for(let a of args){
@@ -517,11 +527,11 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     printf("proc%n");
     printf("local st,nx%n");
     printf("ld hl,st%n");
-    printf("jp nx");
+    printf("jp nx%n");
     printf(`st: db "${s}"%n`);
     printf("db 0%n");
     printf("nx:%n");
-    printf("endp");
+    printf("endp%n");
 }
 \cmp(n:Infix){
     let left:Expression=n.left;

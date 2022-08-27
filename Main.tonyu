@@ -13,12 +13,14 @@ while(true) {
     //i+=1;
 }
 function showScore() {
-    tmps=$score;
+    locate(0,0);
+    print ("Score = ",$score);
+    /*   tmps=$score;
     map_set(1,0,64+19);
     map_set(2,0,64+3);
     
     for (i=5;i>1;i-=1){
         map_set(i,1,tmps%10+48);
         tmps=div(tmps,10);
-    }
+    }*/
 }

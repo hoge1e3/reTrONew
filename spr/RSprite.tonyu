@@ -33,6 +33,25 @@ let dotAlign=1;
 \div(x,y) {
     return floor(x/y);
 }
+
+\locate(x,y) {
+    $map.curx=x;
+    $map.cury=y;
+}
+\print(){
+    let a=new ArgParser(arguments);
+    let s=a.toArray().map\(e){
+        return (typeof e=="number"&& e>=0 ? " "+e:e);
+    }.join("");
+    for (let i=0;i<s.length;i++) {
+        map_set($map.curx, $map.cury, s.charCodeAt(i));
+        $map.curx++;
+        if ($map.curx>=$map.col) {
+            $map.curx=0;
+            $map.cury=($map.cury+1)%$map.row;
+        }
+    }
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

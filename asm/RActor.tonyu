@@ -16,9 +16,3 @@ let x,y,p,c;
     return x<0 || x>$MScreen.width<<spr_scale || 
     y<0 || y>$MScreen.height<<spr_scale;
 }
-\print(){
-    let a=new ArgParser(arguments);
-    let s=a.toArray().join("");
-    
-    
-}

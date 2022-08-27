@@ -2976,6 +2976,7 @@ VALTYP equ 0F663H;1
 DAC equ 0F7F6H;16
 ARG equ 0F847H;16
 FOUT equ 3425H
+PUFOUT equ 3426H
 
 defsub int2dac
  push af
@@ -3007,12 +3008,14 @@ ret
 str:
 endp
 
-defsub printi
+defsub printi.a
  call int2dac 
  ld hl,strbuf.i
+ ;ld a,128
+ ;ld b,0
  call FOUT
  call print.a
-endsub printi
+endsub printi.a
 defwork strbuf.i
 ds 16
 endwork strbuf.i
