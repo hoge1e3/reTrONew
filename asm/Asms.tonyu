@@ -1021,6 +1021,16 @@ proc
  ret
 endp
 endsub wrt
+
+defsub print.a
+ ld a,(hl)
+ cp 0
+ ret z
+ call wrt
+ inc hl
+ jr print.a
+endsub print.a
+
 `,
     'sp':`include mem
 include debug
@@ -2918,7 +2928,7 @@ enddef 0
 endusr:
 end main`,
     'dac':`org 09000h
-jp main
+;jp main
 include const
 include ctrl
 include math
@@ -2976,6 +2986,8 @@ defsub int2dac
 endsub int2dac
 ;===your code 
 
+proc
+local main,nxt,str
 main:
 ld hl,12345
 call int2dac
@@ -2987,14 +2999,23 @@ reptb nxt
  ld a,(hl)
  cp 0
  break z
- call wrt2
+ call wrt
  inc hl
  continue
 nxt:
 ret
 str:
+endp
 
-
+defsub printi
+ call int2dac 
+ ld hl,strbuf.i
+ call FOUT
+ call print.a
+endsub printi
+defwork strbuf.i
+ds 16
+endwork strbuf.i
 `,
     'setvrm':`org 09000h
 jp main

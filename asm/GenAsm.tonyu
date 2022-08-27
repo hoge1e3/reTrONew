@@ -398,6 +398,11 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
    invoketg.a .push
    popthis 0*/
 }
+\lit2s(l){
+    let s=l.text;
+    return s.substring(1,s.length-1);
+    ;
+}
 \myMeth(left: VarAccess, op:Call) {
     let args=op.args;
     let mname=left.name.text;
@@ -408,8 +413,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             let kn=args[0];
             if (kn.type==="literal") {
                 let lit:Token=kn;
-                let s=lit.text;
-                s=s.substring(1,s.length-1);
+                let s=lit2s(lit);
                 if (!keynames[s]) {
                     unsup(kn, `Undefined key name '${s}'.`);
                 }
@@ -487,6 +491,19 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             return unsup("'div' should supply 2 numbers");
         }
         arith2(args[0],"/",args[1]);
+    } else if (mname==="print") {
+        for (let k of args){
+            if (k.type==="literal") {
+                setLit(k);
+                printf("call print.a%n");
+                printf("getthis 0%n");
+            }else {
+                visit(k);
+                printf("call print.i%n");
+                
+            }
+                
+        }
     } else {
         for(let a of args){
             visit(a);
@@ -494,6 +511,17 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         printf("invoke .%s%n", mname);
     }
+}
+\setLit(l){
+    let s=lit2s(l);
+    printf("proc%n");
+    printf("local st,nx%n");
+    printf("ld hl,st%n");
+    printf("jp nx");
+    printf(`st: db "${s}"%n`);
+    printf("db 0%n");
+    printf("nx:%n");
+    printf("endp");
 }
 \cmp(n:Infix){
     let left:Expression=n.left;
