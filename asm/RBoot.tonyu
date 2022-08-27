@@ -39,6 +39,8 @@ native Tonyu;
                 let n=v;
                 v=[];
                 for (let i=0;i<n;i++) v.push(0);
+            } else {
+                v=v.slice();// TODO matrix deep slice
             }
             Tonyu.setGlobal(k,v);
         }

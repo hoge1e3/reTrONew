@@ -3,6 +3,7 @@ For details:
 https://github.com/hoge1e3/reTrONew
 */
 $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
+$players[0];
 var i=0, tmps, coli=0;
 $score=0;
 while(true) {
