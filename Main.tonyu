@@ -6,6 +6,8 @@ $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 $players[0];
 var i=0, tmps, coli=0;
 $score=0;
+locate(10,10);
+print(fact(5));
 while(true) {
     new Enemy{x:rnd(512), y:0, p:5, c:$colors[coli]};
     coli=(coli+1)%4;
@@ -24,4 +26,12 @@ function showScore() {
         map_set(i,1,tmps%10+48);
         tmps=div(tmps,10);
     }*/
+}
+function testSub(i) {
+    var r=i*2;
+    return r;
+}
+function fact(n) {
+    if (n<=1) return 1;
+    return n*fact(n-1);
 }

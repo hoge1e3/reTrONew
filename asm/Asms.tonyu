@@ -1089,6 +1089,10 @@ macro getarg ,n
  ld l,(ix+argidx+n*2)
  ld h,(ix+argidx+n*2+1)
 endm
+macro setarg ,n
+ ld (ix+argidx+n*2),l
+ ld (ix+argidx+n*2+1),h
+endm
 
 macro setlcl ,n
  ld (IX-(n*2-1)),h

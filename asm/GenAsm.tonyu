@@ -16,6 +16,8 @@ let klass, klassSrc;
 let problems=[];
 let builtins={getkey:"getkey",rnd:"rnd"};
 let globals={};
+let locals={};
+let params={};
 let lbexit="lbexit";
 let keynames={space: 0x0108, 
 right:0x8008,down:0x4008,up:0x2008,left:0x1008};
@@ -64,11 +66,27 @@ for (klass of mem.ks) {
         text=klass.shortName+"."+mname;
         //print(text);
         //fldc.visit(method.stmts);
-        if (method.params.length>0) {
-            unsup(method.params[0],"Parameters is not yet supported");
+        params={};
+        let ln=1;
+        for (let i,pa of method.params) {
+            params[pa.name.text]=ln;
+            ln++;
         }
+        locals={};
+        ln=1;
+        for (let k,v of method.locals.varDecls) {
+            locals[v.name.text]=ln;
+            ln++;
+        }
+        //if (Object.keys(locals).length) print("LOCAL",locals);
+        /*if (method.params.length>0) {
+            unsup(method.params[0],"Parameters is not yet supported");
+        }*/
         //print(method.locals.varDecls);
-        printf("def %s.%s,%d,0%{",klass.shortName, mname, method.params.length);
+        printf("def %s.%s,%d,%d%{",
+        klass.shortName, mname, 
+        method.params.length,
+        Object.keys(locals).length);
         printf("proc%nlocal %s%n",lbexit);
         for(let s of method.stmts) visit(s);
         printf("%s:%nendp%n",lbexit);
@@ -672,6 +690,26 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             printf("ld hl,(%s)%n",globalLabel(name.text));
         }
         break;
+        case "local":
+        if (!locals[name.text]){
+            unsup(name,`Undefined local variable ${name.text}`);
+        }
+        if (lval) {
+            printf ("setlcl %d%n",locals[name.text]);
+        } else {
+            printf ("getlcl %d%n",locals[name.text]);
+        }
+        break;
+        case "param":
+        if (!params[name.text]){
+            unsup(name,`Undefined paramter ${name.text}`);
+        }
+        if (lval) {
+            printf ("setarg %d%n",params[name.text]);
+        } else {
+            printf ("getarg %d%n",params[name.text]);
+        }
+        break;
         default:
         unsup(n,`${name.text}: Unsupported variable type '${a.scopeInfo.type}'`);
     }
@@ -803,13 +841,21 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     let typeDecl:TypeDecl?=n.typeDecl;
     let value:Expression?=n.value;
     let a=annotation(n);
-    if (!a.varInMain) {
+    /*if (!a.varInMain) {
         unsup(n,"Local Variables are not yet supported.");
         return;
-    }
+    }*/
     if (!value) return;
     visit(value);
-    printf("setfld .%s%n",name);
+    if (a.varInMain) {
+        printf("setfld .%s%n",name);
+    } else {
+        if (!locals[name.text]) {
+            unsup(n,`Undefined variable: ${name.text}`);
+            return;
+        }
+        printf("setlcl %s%n",locals[name.text]);
+    }
 }
 \v_varsDecl(n:VarsDecl){
     let decls:VarDecl[]=n.decls;
