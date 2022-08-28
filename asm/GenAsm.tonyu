@@ -408,7 +408,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     }
     printf("pushthis 0%n");
     let args=op.args;
-    for(let a of args){
+    for(let a of args.reverse()){
         visit(a);
         printf("push hl%n");
     }
@@ -537,7 +537,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             printf("getthis 0%n");
         }
     } else {
-        for(let a of args){
+        for(let a of args.reverse()) {
             visit(a);
             printf("push hl%n");
         }
