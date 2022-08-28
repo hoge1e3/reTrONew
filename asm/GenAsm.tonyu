@@ -16,6 +16,7 @@ let klass, klassSrc;
 let problems=[];
 let builtins={getkey:"getkey",rnd:"rnd"};
 let globals={};
+let lbexit="lbexit";
 let keynames={space: 0x0108, 
 right:0x8008,down:0x4008,up:0x2008,left:0x1008};
 let closestBrk;
@@ -66,8 +67,11 @@ for (klass of mem.ks) {
         if (method.params.length>0) {
             unsup(method.params[0],"Parameters is not yet supported");
         }
+        //print(method.locals.varDecls);
         printf("def %s.%s,%d,0%{",klass.shortName, mname, method.params.length);
+        printf("proc%nlocal %s%n",lbexit);
         for(let s of method.stmts) visit(s);
+        printf("%s:%nendp%n",lbexit);
         printf("enddef %s.%s%n", klass.shortName, mname);
         printf("%}");
         update();
@@ -694,7 +698,12 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     printf("jp %s%n",sh);
     printf("%s:%n",se);
 }
-
+\v_return(n:Return) {
+    if (n.value) {
+        visit(n.value);
+    }
+    printf("jp %s%n",lbexit);
+}
 \v_break(n) {
     if (!closestBrk) {
         unsup(n,"break outside loop ")   ;

@@ -1,3 +1,4 @@
+var e,d;
 while(true) {
     map_setAt(x,y,$pat_font+1);
     if (getkey("left")) x-=3;
@@ -20,7 +21,17 @@ while(true) {
         for (e of all(Enemy)) {
             e.c=r;
         }*/
+        e=getNearEnemy();
+        if (e) e.c=rnd(10)+5;
     }
     update();
     
+}
+\getNearEnemy() {
+    for (e of all(Enemy)) {
+        d=abs(e.x-x)+abs(e.y-y);
+        if (d<200) {
+            return e;
+        }
+    }
 }

@@ -1120,14 +1120,6 @@ macro pushlcl ,n
  push HL
 endm
 
-macro enter ,locals
- push ix
- ld ix,0
- add ix,sp
- rept locals
-  push HL
- endm
-endm
 
 macro pops ,n
  rept n*2
@@ -1136,18 +1128,6 @@ macro pops ,n
 endm
 
 
-macro exit,n
- ld sp,ix
- pop ix
- if n!=0
-  exx
-  pop bc
-  pops n
-  push bc
-  exx
- endif
- ret
-endm
 
 macro pushthis
  getthis
@@ -1385,22 +1365,50 @@ macro yield
  popthis
 endm
 
-macro def,n,args,lcls
+macro def,n,args,lcls, noent
 head n
  def.args:defl args
  def.locals:defl lcls
- if args>0 or lcls>0
+ if nul noent
+  def.noent: defl 0
   enter lcls
+ else
+  def.noent: defl 1
  endif
+ ;if args>0 or lcls>0
+ ;endif
+endm
+macro enter ,locals
+ ;  arg2 arg1 retad oldix lcl1 lcl2 
+ push ix
+ ld ix,0
+ add ix,sp
+ rept locals
+  push HL
+ endm
 endm
 macro enddef,n
- if def.args>0 or def.locals>0
+ ;if def.args>0 or def.locals>0
+ if def.noent eq 0
   exit def.args
  else
   ret
  endif
  marker.e n
 endm
+macro exit,n
+ ld sp,ix
+ pop ix
+ if n!=0
+  exx
+  pop bc
+  pops n
+  push bc
+  exx
+ endif
+ ret
+endm
+
 
 defsub isobj.a
  ;hl=obj?
