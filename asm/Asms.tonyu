@@ -1526,8 +1526,18 @@ endsub spr.puts
 
 defsub spr.puts
 proc
- local rsta
+ local rsta, rdir
  call spr.putslp
+ ld a,(spr.puts.s-1)
+ cp 1
+ jr nz,rdir
+  ld a, th.count-1
+  ld (spr.puts.s-1),a
+  ret
+ rdir:
+ ld a,1
+ ld (spr.puts.s-1),a
+
  ld a,(spr.puts.b-1)
  inc a
  cp high th.end
