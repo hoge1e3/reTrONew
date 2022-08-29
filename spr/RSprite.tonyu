@@ -52,6 +52,9 @@ let dotAlign=1;
         }
     }
 }
+\freeStack() {
+    return 200;
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

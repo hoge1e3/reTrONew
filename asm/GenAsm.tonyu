@@ -536,6 +536,11 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
             }
             printf("getthis 0%n");
         }
+    } else if (mname==="freeStack") {
+        printf("ld h,a%n");
+        printf("ld l,th.ofs.sp%n");
+        printf("ld l,(hl)%n");
+        printf("ld h,0%n");
     } else {
         for(let a of args.reverse()) {
             visit(a);
