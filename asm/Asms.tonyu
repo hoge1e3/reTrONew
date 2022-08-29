@@ -1488,10 +1488,9 @@ macro spr.unscale
   srlhl
  endm
  LD A,L
- sub 8 
 endm
 
-defsub spr.puts
+defsub spr.puts_old
 proc
  local t1,t2,t3,t4
  ld hl, 1b00h
@@ -1505,10 +1504,12 @@ proc
 
   tgconst.g hl,t1,.y 
   spr.unscale 0
+  sub 8
   outwrt 0
   
   tgconst.g hl,t2,.x 
   spr.unscale 0
+  sub 8
   outwrt 0
   
   tgconst.g a,t3,.p 
@@ -1522,6 +1523,73 @@ proc
  sprl:
 endp
 endsub spr.puts
+
+defsub spr.puts
+proc
+ local rsta
+ call spr.putslp
+ ld a,(spr.puts.b-1)
+ inc a
+ cp high th.end
+ jr c,rsta
+  sub th.count
+ rsta:
+ ld (spr.puts.b-1),a
+endp
+endsub spr.puts_new
+
+defsub spr.putslp
+proc
+ local sprl, nrst
+ ld hl, 1b00h
+ call SETWRT
+ ld a, high th.start
+ spr.puts.b:
+ ld b, th.count
+ sprl:
+  call spr.put1
+  add a,1
+  spr.puts.s:
+  cp high th.end
+  jr c,nrst
+   sub th.count
+  nrst:
+ djnz sprl
+endp
+endsub spr.putslp
+
+ 
+defsub spr.put1
+proc
+; a: th.id
+  local t1,t2,t3,t4
+  push af
+  
+  tgconst t1
+  tgconst t2
+  tgconst t3
+  tgconst t4
+
+  tgconst.g hl,t1,.y 
+  spr.unscale 0
+  sub 8
+  outwrt 0
+  
+  tgconst.g hl,t2,.x 
+  spr.unscale 0
+  sub 8
+  outwrt 0
+  
+  tgconst.g a,t3,.p 
+  sla a
+  sla a
+  outwrt 0
+  
+  tgconst.g a,t4,.c 
+  outwrt 0
+  pop af
+endp
+endsub spr.put1
  
  `,
     'sprpat':`include const
@@ -1928,8 +1996,6 @@ defsub map.adrat.a
  pop hl
  ld l,h
  ld h,0
- inc hl
- inc de
  call map.adr
 endsub map.adrat.a
 
