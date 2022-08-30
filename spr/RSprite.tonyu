@@ -55,6 +55,12 @@ let dotAlign=1;
 \freeStack() {
     return 200;
 }
+\sound_vol(ch, vol) {
+    $PSG[ch].set{vol:vol*8};   
+}
+\sound_scale(ch, scale) {
+    $PSG[ch].set{scale};   
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

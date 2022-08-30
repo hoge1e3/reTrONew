@@ -62,6 +62,9 @@ native Tonyu;
         };
     }
     $mainClassName=mainClass.meta.shortName;
+    $PSG=[
+    new Beep,new Beep,new Beep
+    ];
     new mainClass;
 }
 super.main();
