@@ -36,6 +36,7 @@ include tnu
 include map
 include bool
 include dac
+include mus
 
 main:
 tnu.run ${$mainClassName}
@@ -557,7 +558,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         visit(args[0]);// ch
         printf("ld a,l%n");
         printf("pop hl%n");
-        printf("call mus.scale.a");
+        printf("call mus.scale.a%n");
         printf("getthis 0%n");
     } else {
         for(let a of args.reverse()) {

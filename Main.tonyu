@@ -8,9 +8,11 @@ var i=0, tmps, coli=0;
 $score=0;
 locate(10,10);
 print(fact(5));
+sound_vol(0,8);
 while(true) {
     new Enemy{x:rnd(512), y:0, p:5, c:$colors[coli]};
     coli=(coli+1)%4;
+    sound_scale(0,coli*8+36);
     updateEx(30);
     showScore();
     //i+=1;
