@@ -1,0 +1,27 @@
+extends TObject;
+includes FileMod;
+let mapper:Mapper;//=new Mapper;
+if (!mapper) throw new Error("Mapper is not set");
+let r=$currentProject.getResource();
+//print(r.sounds);
+let adrs={}, arrays={};
+for (let e of r.sounds) {
+    //print(e.name);
+    let path=e.url.replace(/^ls:/,"");
+    let mzof=file("../").rel(path);
+    //print(mzof.name(), mzof.exists());
+    if (!mzof.exists()) continue;
+    //print(mzof.bytes());
+    let b=mzof.bytes();
+    adrs[e.name]=mapper.assignAry8(b);
+    arrays[e.name]=b;
+}/*
+print(adrs);
+
+for (let name,adr of adrs) {
+    print(name);
+    for (let i=0;i<10;i++) {
+        print(adr+i, mapper.peek(adr+i) );
+    }
+}
+print(mapper);*/

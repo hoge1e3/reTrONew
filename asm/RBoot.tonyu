@@ -29,6 +29,14 @@ native Tonyu;
     $MLayer=$MScreen.addLayer();
     $crashTo_size=8<<$config["spr.scale"];
     $RSprPat=new RSprPat;
+    $mapper=new Mapper;
+    if (!$mapper) throw new Error("Mapper is not set");
+    $sound.initMMTimer().interval=1/57;
+    
+    $MZO=new MZO{mapper:$mapper};
+    for (var k,v in $MZO.adrs) {
+        Tonyu.setGlobal(k,v);
+    }
     $MScreen.setBGColor($RSprPat.palette[3]);
     $Screen.setBGColor($RSprPat.palette[6]);
     $pat_font_orig=$pat_font;
@@ -43,6 +51,7 @@ native Tonyu;
                 v=v.slice();// TODO matrix deep slice
             }
             Tonyu.setGlobal(k,v);
+            //$mapper.assignAry16(v);
         }
     }
     $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0,
@@ -65,6 +74,8 @@ native Tonyu;
     $PSG=[
     new Beep,new Beep,new Beep
     ];
+    $Boot.onInter=\{};
+    $sound.on("interval", \{$Boot.onInter();});
     new mainClass;
 }
 super.main();

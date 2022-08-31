@@ -1,0 +1,46 @@
+extends TObject;
+let adr=0x8000;
+let arys=[];
+\assignAry16(ary) {
+    let pa=adr;
+    arys.push{type:2, ary, adr};
+    adr+=ary.length*2;
+    return pa;
+}
+\assignAry8(ary) {
+    let pa=adr;
+    arys.push{type:1, ary, adr};
+    adr+=ary.length;
+    //print("ADR=",adr);
+    return pa;
+}
+\getEntry(adr, type) {
+    for (let e of arys) {
+        let ofs=adr-e.adr;
+        if (ofs>=0 && ofs<e.ary.length) {
+            if (e.type!==type) throw new Error(`type mismatch: expected ${type} buf got ${e.type} `);
+            if (ofs%e.type!==0) throw new Error(`Invalid address in int ${adr}`);
+            let i=ofs/e.type;
+            if (i>=e.ary.length) throw new Error(
+            `len=${e.ary.length} i=${i} ofs=${ofs} adr=${adr} e.adr=${e.adr}`);
+            return {ary:e.ary, i};
+        }
+    }   
+    throw new Error(`Invalid address :${adr}`);
+}
+\peek(adr) {
+    let e=getEntry(adr,1);
+    return e.ary[e.i];
+}
+\poke(adr, v) {
+    let e=getEntry(adr,1);
+    return e.ary[e.i]=v;
+}
+\peekw(adr) {
+    let e=getEntry(adr,2);
+    return e.ary[e.i];
+}
+\pokew(adr, v) {
+    let e=getEntry(adr,2);
+    return e.ary[e.i]=v;
+}

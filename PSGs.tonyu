@@ -1,0 +1,27 @@
+var mpoint;
+var ch1,ch2;
+\init() {
+    //print(mpoint);
+    mpoint+=4; // version
+    //print(peek(mpoint));
+    mpoint++; // chs
+    var size=read16();
+    //print("size",size);
+    mpoint+=4;
+    ch1=new PSG{chn:0, mpoint};
+    mpoint+=size;
+    var size=read16();
+    print("size",size);
+    mpoint+=4;
+    ch2=new PSG{chn:1, mpoint};
+    mpoint+=size;
+    
+}
+\step() {
+    //print("STEP");
+    ch1.step();
+    ch2.step();
+}
+\read16() {
+    return peek(mpoint)+(peek(mpoint+1)<<8);
+}

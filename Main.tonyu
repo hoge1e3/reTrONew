@@ -5,17 +5,30 @@ https://github.com/hoge1e3/reTrONew
 $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 $players[0];
 var i=0, tmps, coli=0;
+$sndc=0;$sndv=0;
 $score=0;
+//$sound.playBGM($se_mhmain);
+//updateEx(60);
+//$sound.setBGMVolume(30);
 locate(10,10);
 print(fact(5));
 sound_vol(0,8);
+setInterval(inter);
+$psg=new PSGs{mpoint:$se_mhmain};
+$psg.init();
+//print(123+ (255 << 8) );
+//print($se_mhmain, $se_mhget);
+//$mpoint=$se_mhmain;
 while(true) {
     new Enemy{x:rnd(512), y:0, p:5, c:$colors[coli]};
     coli=(coli+1)%4;
-    sound_scale(0,coli*8+36);
     updateEx(30);
     showScore();
     //i+=1;
+}
+
+function inter() {
+    $psg.step();
 }
 function showScore() {
     locate(0,0);

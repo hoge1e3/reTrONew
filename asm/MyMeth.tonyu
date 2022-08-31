@@ -1,0 +1,155 @@
+extends Actor;
+let g:GenAsm;
+
+\unsup(...a) {return g.unsup(...a);}
+\printf(...a) {return g.printf(...a);}
+\visit(...a) {return g.visit(...a);}
+\myMeth(left: VarAccess, op:Call) {
+    let args=op.args;
+    let mname=left.name.text;
+    if (mname==="getkey") {
+        if (!args[0]) {
+            unsup(left, "'getkey' should give a string constant.");
+        } else {
+            let kn=args[0];
+            if (kn.type==="literal") {
+                let lit:Token=kn;
+                let s=g.lit2s(lit);
+                let keynames=g.keynames;
+                if (!keynames[s]) {
+                    unsup(kn, `Undefined key name '${s}'.`);
+                }
+                printf("ld hl, %s%n", keynames[s]);
+                printf("call getkey%n");
+            } else {
+                unsup(kn,`'${kn.type}' is not a string constant `);
+                //print(kn.type);
+            }
+        }
+    } else if (mname==="rnd") {
+        if (!args[0]) {
+            unsup(left, "'rnd' should give a number.");
+        }
+        visit(args[0]);
+        printf("call rnd%n");
+    } else if (mname==="abs") {
+        if (!args[0]) {
+            unsup(left, "'abs' should give a number.");
+        }
+        visit(args[0]);
+        printf("call abs%n");
+    } else if (mname.match(/^map_set(At)?/)) {
+        if (args.length!==3) {
+            unsup(left, "'map_set(At) should give (x,y,p)");
+        }
+        visit(args[1]); // y
+        printf("push hl%n");
+        visit(args[0]); // x
+        printf("push hl%n");
+        visit(args[2]); // p
+        printf("ld a,l%n");
+        printf("pop hl%n");
+        printf("pop de%n");
+        printf("call map.set%s.a%n",
+        mname.match(/At/)?"at":"");
+        printf("getthis 0%n");
+    } else if (mname==="locate") {
+        if (args.length!==2) {
+            unsup(left, "'locate should give (x,y)");
+        }
+        visit(args[1]); // y
+        printf("push hl%n");
+        visit(args[0]); // x
+        printf("pop de%n");
+        printf("call locate%n");
+        //printf("getthis 0%n");
+    
+    } else if (mname.match(/^map_get(At)?/)) {
+        if (args.length!==2) {
+            unsup(left, "'map_get(At) should give (x,y)");
+        }
+        visit(args[1]); // y
+        printf("push hl%n");
+        visit(args[0]); // x
+        printf("pop de%n");
+        printf("call map.get%s.a%n",
+        mname.match(/At/)?"at":"");
+        printf("ld h,0%n");
+        printf("ld l,a%n");
+        printf("getthis 0%n");
+
+    } else if (mname==="crashTo") {
+        let tg=args[0];
+        if (!tg) {
+            unsup(left, "'crashTo' should give a object or Class.");
+        }
+        let klass=(tg.type==="varAccess" && g.isClassConst(tg));
+        if (klass) {
+            let range=g.mem.objRange(klass);
+            printf("crashToClass %s, %d, %d%n",klass.shortName,range[0],range[1]);
+            /*printf("call crashTo.setXY%n");
+            printf("ld hl,%s%n",klass.shortName);
+            printf("const crashTo.kls,hl%n");
+            printf("ld hl,%s%n",rangeToAd(range[0]));
+            printf("ld de,%s%n",rangeToAd(range[1]));
+            printf("call crashToC%n");*/
+        } else {
+            printf("call crashTo.setXY%n");
+            visit(tg);
+            printf("call crashTo1%n");
+            printf("flagtobool c%n");
+        }
+    } else if (mname==="div") {
+        if (args.length!==2) {
+            return unsup("'div' should supply 2 numbers");
+        }
+        g.arith2(args[0],"/",args[1]);
+    } else if (mname==="print") {
+        for (let k of args){
+            if (k.type==="literal") {
+                g.setLit(k);
+                printf("call print.a%n");
+            }else {
+                visit(k);
+                printf("call printi.a%n");
+            }
+            printf("getthis 0%n");
+        }
+    } else if (mname==="freeStack") {
+        printf("ld h,a%n");
+        printf("ld l,th.ofs.sp%n");
+        printf("ld l,(hl)%n");
+        printf("ld h,0%n");
+    } else if (mname==="sound_vol") {
+        visit(args[1]);// vol
+        printf("ld e,l%n");
+        printf("push de%n");
+        visit(args[0]);// ch
+        printf("ld a,l%n");
+        printf("pop de%n");
+        printf("add a,8%n");
+        printf("call WRTPSG%n");
+        printf("getthis 0%n");
+    } else if (mname==="sound_scale") {
+        visit(args[1]);// scale
+        printf("push hl%n");
+        visit(args[0]);// ch
+        printf("ld a,l%n");
+        printf("pop hl%n");
+        printf("call mus.scale.a%n");
+        printf("getthis 0%n");
+    } else if (mname==="setInterval") {
+        visit(args[0]);
+        printf("call setInterval%n");
+    } else if (mname==="peek") {
+        visit(args[0]);
+        printf("peekw hl,hl%n");
+        printf("ld h,0%n");
+    } else {
+        for(let a of args.reverse()) {
+            visit(a);
+            printf("push hl%n");
+        }
+        printf("invoke .%s%n", mname);
+    }
+}

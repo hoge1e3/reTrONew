@@ -56,10 +56,19 @@ let dotAlign=1;
     return 200;
 }
 \sound_vol(ch, vol) {
-    $PSG[ch].set{vol:vol*8};   
+    $PSG[ch].set{vol:vol*(128/15)};   
 }
 \sound_scale(ch, scale) {
     $PSG[ch].set{scale};   
+}
+\setInterval(f){
+    $Boot.onInter=f;
+}
+\peek(ad) {
+    return $mapper.peek(ad);
+}
+\poke(ad,v) {
+    return $mapper.poke(ad,v);
 }
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);

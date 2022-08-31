@@ -1,0 +1,90 @@
+var mpoint;
+var v;
+var chn;
+var mcount;
+\step() {
+    //print(mpoint);
+    if (!mpoint) return;
+    //print("cmd", cmd);
+    if (mcount>0) {
+        sound_vol(chn,v);
+        mcount--;
+        if (v>0) v--;
+        return;
+    }
+    while(true) {
+        var cmd=peek(mpoint);
+        if (cmd>=0 && cmd<96) {
+            sound_scale(chn,cmd);
+            v=12;
+            mcount=6;
+            mpoint++;
+            break;
+        } else if (cmd==99) {
+            v=0;
+            mcount=6;
+            mpoint++;
+            break;
+        } else if (cmd==100) {//MVol
+            mpoint+=2;
+        } else if (cmd==101) {//Mps
+            mpoint+=2;
+        } else if (cmd==102) {//MSelWav
+            mpoint+=2;
+        } else if (cmd==107) {//MSelEnv
+            mpoint+=2;
+        } else if (cmd==110) {//MDet
+            mpoint+=2;
+        } else if (cmd==115) {//MLfo
+            mpoint+=4;
+        } else if (cmd==116) {//MSync
+            mpoint+=2;
+        } else if (cmd==118) {//MLfoD
+            mpoint+=2;
+        } else if (cmd==120) {//MLabel
+            mpoint+=2;
+        } else if (cmd==122) {//MSetLen
+            mpoint+=3;
+        } else if (cmd==104) {//Jump
+            mpoint++;
+            var ofs=read16();
+            //print(ofs);
+            mpoint+=ofs-65536;
+        } else {
+            print ("Inv" ,cmd);
+            die();
+            break;
+        //throw new Error(`Invalid code ${cmd}`);
+        }
+    }
+}
+\read16() {
+    return peek(mpoint)+(peek(mpoint+1)<<8);
+}
+/*
+MRest = 99,
+        MVol = 100,
+        Mps = 101,
+        MSelWav = 102,
+        MTempo = 103,
+        MJmp = 104,
+        MSlur = 105,
+        MPor = 106,
+        MSelEnv = 107,
+        MWait = 108,
+        MCom = 109,
+        MDet = 110,
+        MWOut = 111,
+        MWEnd = 112,
+        MWrtWav = 113,
+        MWrtEnv = 114,
+        MLfo = 115,
+        MSync = 116,
+        MPCMReg = 117,
+        MLfoD = 118,
+        MBaseVol = 119,
+        MLabel = 120,
+        MWrtWav2 =121,
+        MSetLen=122, //   L cmd
+        MLenMark=123, // after realsound/ not used in por
+*/
