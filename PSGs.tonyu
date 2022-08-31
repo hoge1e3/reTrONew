@@ -1,27 +1,41 @@
-var mpoint;
-var ch1,ch2;
-\init() {
-    //print(mpoint);
+//var mpoint;
+var ch1,ch2,ch3;
+\initBGM(mpoint) {
     mpoint+=4; // version
     //print(peek(mpoint));
     mpoint++; // chs
-    var size=read16();
+    var size=read16(mpoint);
     //print("size",size);
     mpoint+=4;
+    //print(mpoint);
+    if (ch1) ch1.die();
     ch1=new PSG{chn:0, mpoint};
+    //return;
     mpoint+=size;
-    var size=read16();
-    print("size",size);
+    var size=read16(mpoint);
+    //print("size",size);
     mpoint+=4;
+    if (ch2) ch1.die();
     ch2=new PSG{chn:1, mpoint};
     mpoint+=size;
-    
+}
+\initSE(mpoint) {
+    mpoint+=4; // version
+    //print(peek(mpoint));
+    mpoint++; // chs
+    var size=read16(mpoint);
+    //print("size",size);
+    mpoint+=4;
+    //print(mpoint);
+    if (ch3) ch3.die();
+    ch3=new PSG{chn:2, mpoint};
 }
 \step() {
     //print("STEP");
-    ch1.step();
-    ch2.step();
+    if(ch1) ch1.step();
+    if(ch2) ch2.step();
+    if(ch3) ch3.step();
 }
-\read16() {
+\read16(mpoint) {
     return peek(mpoint)+(peek(mpoint+1)<<8);
 }

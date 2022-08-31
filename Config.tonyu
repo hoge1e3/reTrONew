@@ -4,7 +4,7 @@ extends RBoot;
         "spr.scale"=1,
         //"crashTo.size"=32,
         "obj.limits"={
-            PBullet: 3, Player: 1, EBullet:4, Enemy:5,
+            PBullet: 3, Player: 1, EBullet:4, Enemy:5, PSGs:1 ,PSG:3,
         },
         "th.count"=20,
         // unimplemented: the variables treated as double(common to all classes) 

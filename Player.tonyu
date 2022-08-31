@@ -16,6 +16,7 @@ while(true) {
     if (getkey("space")==1) {
         new PBullet{x,y};
         $colors[3]=15;
+        $psg.initSE($se_mhget);
         /*var e;
         var r=rnd(10)+1;
         for (e of all(Enemy)) {

@@ -927,16 +927,26 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 \v_newExpr(n:NewExpr){
     let klass:VarAccess=n.klass;
     let params:Call?=n.params;
-    if (params.args.length==1 && params.args[0].type=="objlit") {
-        let objlit:Objlit=params.args[0];
-        let elems:JsonElem[]=objlit.elems;
-        for (let elem of elems) {
-            if (elem.value) {
-                visit(elem.value);
-            } else {
-                printf("getfld .%s%n",elem.key);
+    if (!params || (params.args.length==1 && params.args[0].type=="objlit")) {
+        let alen=0;
+        if (params) {
+            let objlit:Objlit=params.args[0];
+            let elems:JsonElem[]=objlit.elems;
+            for (let elem of elems) {
+                if (elem.value) {
+                    visit(elem.value);
+                } else {
+                    if (this.params[elem.key.text]) {
+                        printf ("getarg %d%n",this.params[elem.key.text]);
+                    } else if (locals[elem.key.text] ) {
+                        printf ("getlcl %d%n",locals[elem.key.text]);
+                    } else {
+                        printf("getfld .%s%n",elem.key);
+                    }
+                }
+                printf("new.arg .%s%n",elem.key);
             }
-            printf("new.arg .%s%n",elem.key);
+            alen=elems.length;
         }
         let resKlass=isClassConst(klass);
         if (!resKlass) {
@@ -944,7 +954,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         }
         let range=mem.objRange(resKlass);
         printf("new %s,%d,%s,%s%n",
-        klass.name, elems.length,
+        klass.name, alen,
         range[0], range[1]);
         //rangeToAd(range[0]),rangeToAd(range[1]));
         return;

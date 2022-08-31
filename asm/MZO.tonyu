@@ -1,5 +1,7 @@
 extends TObject;
+
 includes FileMod;
+native Uint8Array;
 let mapper:Mapper;//=new Mapper;
 if (!mapper) throw new Error("Mapper is not set");
 let r=$currentProject.getResource();
@@ -12,7 +14,7 @@ for (let e of r.sounds) {
     //print(mzof.name(), mzof.exists());
     if (!mzof.exists()) continue;
     //print(mzof.bytes());
-    let b=mzof.bytes();
+    let b=new Uint8Array(mzof.bytes());
     adrs[e.name]=mapper.assignAry8(b);
     arrays[e.name]=b;
 }/*
