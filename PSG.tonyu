@@ -6,26 +6,31 @@ var mcount;
     if (!mpoint) return;
     //print(mpoint);
     //print("cmd", cmd);
-    if (mcount>0) {
-        sound_vol(chn,v);
-        mcount--;
-        if (v>0) v--;
-        return;
-    }
-    while(true) {
+    sound_vol(chn,v);
+    mcount--;
+    if (v>0) v--;
+    while(!(mcount>0)) {
         var cmd=peek(mpoint);
         if (cmd>=0 && cmd<96) {
             sound_scale(chn,cmd);
             v=12;
-            mcount=6;
+            mcount=7;
             if (chn==2) mcount=1;
             mpoint++;
             break;
         } else if (cmd==99) {
             v=0;
-            mcount=6;
+            mcount=7;
             mpoint++;
             break;
+        } else if (cmd==124) {//MIni
+            v=0;
+            mpoint++;
+        } else if (cmd==104) {//Jump
+            mpoint++;
+            var ofs=read16();
+            //print(ofs);
+            mpoint+=ofs-65536;
         } else if (cmd==255) {//MEnd
             mpoint=0;
             die();
@@ -51,11 +56,6 @@ var mcount;
             mpoint+=2;
         } else if (cmd==122) {//MSetLen
             mpoint+=3;
-        } else if (cmd==104) {//Jump
-            mpoint++;
-            var ofs=read16();
-            //print(ofs);
-            mpoint+=ofs-65536;
         } else {
             print ("Inv" ,cmd);
             die();
