@@ -1,279 +1,13 @@
-extends Visitor;
-includes Buf, Context;
-native Tonyu;
-initModule();
-x=256;y=20;fillStyle="black";
-let IDEPrj=$currentProject.compiler;
-text="get Nodes...";
-let anodes=waitFor(IDEPrj.serializeAnnotatedNodes());
-//print(anodes);
-let mem=new MemberScan{genasm:this};
-waitEvent(mem,"complete");
-let lval=false;
-let symSeq=1;
-let ide=$Boot.getIDE();
-let klass, klassSrc;
-let problems=[];
-let builtins={getkey:"getkey",rnd:"rnd"};
-let globals={};
-let locals={};
-let params={};
-let myMeth=new MyMeth{g:this};
-let lbexit="lbexit";
-let keynames={space: 0x0108, 
-right:0x8008,down:0x4008,up:0x2008,left:0x1008};
-let closestBrk;
-//debug=true;
-let opmap={
-    "*":"call IMULT.a%n", 
-    "/":"call IDIV.a%n",
-    "%":"call IMOD.a%n",
-    "+":"add hl, de%n",
-    "-":"subhl de%n",
-};
+extends GenBase;
 
-printf(`org 08000h
-include tnu
-include map
-include bool
-include dac
-include mus
-
-main:
-tnu.run ${$mainClassName}
-`);
-let anode;
-\annotation(n) {
-    let res=anode[n._id];
-    if (!res) {
-        return {};
-    }
-    return res;
+\extractSrc(n:TNode) {
+    return klassSrc.substring(n.pos, n.pos+n.len);
 }
-for (klass of mem.ks) {
-    let r=mem.objRange(klass);
-    text=klass.shortName;
-    //print("KLS",klass);
-    printf(";range %d-%d%n",r[0],r[1]);
-    mem.header(klass);
-    klassSrc=klass.src.tonyu.text();
-    //print(klass.src.tonyu);
-    let methods=klass.decls.methods;
-    anode=(klass.annotation);
-    //let fldc=(new FldCollect{anode});
-    //print("FLDC", fldc, fldc.visit);
-    for (let mname, me of methods) {
-        let method:FuncInfo=me;
-        
-        text=klass.shortName+"."+mname;
-        //print(text);
-        //fldc.visit(method.stmts);
-        params={};
-        let ln=1;
-        for (let i,pa of method.params) {
-            params[pa.name.text]=ln;
-            ln++;
-        }
-        locals={};
-        ln=1;
-        for (let k,v of method.locals.varDecls) {
-            locals[v.name.text]=ln;
-            ln++;
-        }
-        //if (Object.keys(locals).length) print("LOCAL",locals);
-        /*if (method.params.length>0) {
-            unsup(method.params[0],"Parameters is not yet supported");
-        }*/
-        //print(method.locals.varDecls);
-        printf("def %s.%s,%d,%d%{",
-        klass.shortName, mname, 
-        method.params.length,
-        Object.keys(locals).length);
-        printf("proc%nlocal %s%n",lbexit);
-        for(let s of method.stmts) visit(s);
-        printf("%s:%nendp%n",lbexit);
-        printf("enddef %s.%s%n", klass.shortName, mname);
-        printf("%}");
-        update();
-    }
-    update();
-}
-text="";
-let outp=new OutPat;
-let outbg=new OutBG;
-waitEvent(outbg,"complete");
-
-printf(`
-${Object.keys($MZO.arrays).map \(k) {
-    return globalLabel(k)+":dw $+2\n"+
-    "db "+Array.from($MZO.arrays[k]).join(", ")+"\n";
-}.join("\n")}
-${Object.keys(globals).map \(k){
-    if ($MZO.arrays[k]) return "";
-    if ($config.intArrays && $config.intArrays[k]) {
-        let i= $config.intArrays[k];
-        if (typeof i==="number") {
-            return globalLabel(k)+":dw $+2\n"+
-            "ds "+(i*2);
-        } else {
-            // 1-d array only currently
-            return globalLabel(k)+":dw $+2\n"+
-            "dw "+i.join(", ");
-        }
-    } else {
-        return globalLabel(k)+":dw 0";
-    }
-}.join("\n")}
-endusr:
-macro inivrm, n, dst
- ld de,dst
- ld hl,n
- ld bc,end.##n-n
- call LDIRVM
-endm
-
-spr.inipat:
- inivrm spr.pat, 3800h
- ret
-
-spr.pat:
-${outp.buf}
-end.spr.pat:
-
-bg.inipat:
- inivrm bg.gen, 0000h
- inivrm bg.gen, 0800h
- inivrm bg.gen, 1000h
- inivrm bg.col, 2000h
- inivrm bg.col, 2800h
- inivrm bg.col, 3000h
- inivrm bg.name, 1800h
- ret
-
-bg.gen:
-${toDB(outbg.patgen)}
-end.bg.gen:
-
-bg.col:
-${toDB(outbg.coltbl)}
-end.bg.col:
-
-bg.name:
- ds 256*3,32
-end.bg.name:
-
-end main`);
-/*print(Object.keys(n.decls.fields));
-print(n.superclass.fullName);
-*/
-//print("buf="+buf);
-let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
-
-//msxpen.com/codes/-N8kjRrkOlaH4vlLV7MY";
-
-
-//msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
-
-
-new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
-\toDB(bytes) {
-    let buf="",c=[];
-    while(bytes.length) {
-        let b=bytes.shift();
-        c.push("0"+b.toString(16)+"h");
-        if (c.length>=8) {
-            buf+="db "+c.join(", ")+"\n";
-            c=[];
-        }
-    }
-    if (c.length) buf+="db "+c.join(", ")+"\n";
-    return buf;
-}
-\showDiag() {
-    //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
-    if (problems.length) {
-        let tx=new HTMLUI{
-            content:["div",
-            {style:'background: #fee;'},
-            ["h2","Problem(s) found"],
-            ["ul"].concat(
-            problems.map\(p) {
-                return ["li",["a",{
-                    href:"javascript:;",
-                    onclick: \{
-                        ide.jump(p.file, p.row, p.col);  
-                    }
-                },
-                p.file.name(),":",p.row,":",p.col," - ",p.mesg
-                ]];
-            }),
-            ["button",{onclick:\{tx.die();}},"Close"]
-            ],
-            left:10, top: 20, width:300,
-            height:400,
-        };
-        return;
-    }
-    let tx=new HTMLUI{
-        content:["div",
-        {style:'background: #eee;'},
-        ["h2","Code copied!"],
-        ["ul",
-        ["li",
-        "Open ",
-        ["a",{target:"pen",href:url},
-        "this MSXpen page "],
-        "."],
-        ["li","Paste the copied code",
-        " to 'Asm' tab."]],
-        ["textarea",{rows:"10", cols:"30",name:"val"},
-        "test\ndesu"],
-        ["button",{onclick:\{tx.die();}},"Close"]
-        ],
-        left:10, top: 20, width:300,
-        height:400,
-    };
-    if (getkey("n")) {
-        tx.setValue("val", buf+"");
-    } else {
-        let cg=new Includer;
-        tx.setValue("val", cg.gensrc(buf+""));
-    }
-    tx.copyToClipboard("val");
-}
-
-\def(n){
-    if(!n){
-        print(n);
-        return;
-    }
-    print(n.type,":",
-    Object.keys(n));
-    unsup(n);
-}
-\unsup(n:TNode, mesg:String) {
-    mesg=mesg|| "Unsupported syntax";
-    let file=klass.src.tonyu;
-    let rc=Tonyu.TError.calcRowCol(klassSrc,n.pos);
-    let p={file, row:rc.row, col: rc.col, mesg};
-    problems.push(p);
-    //ide.jump( file, rc.row, rc.col);
-    print(p.file.name(),":",p.row,":",p.col," - ",p.mesg);
-}
-\v_program(n:Program){
-    let ext:Extends?=n.ext;
-    let incl:Includes?=n.incl;
-    let stmts:Stmt[]=n.stmts;
-    for (let s of stmts){
-        visit(s);
-    }
-    printf("ret%n");
+\genSym() {
+    return "lb"+(symSeq++);
 }
 \v_parenExpr(n:ParenExpr) {
     visit(n.expr);
-}
-\extractSrc(n:TNode) {
-    return klassSrc.substring(n.pos, n.pos+n.len);
 }
 \v_exprstmt(n:Exprstmt){
     let expr:Expression=n.expr;
@@ -451,145 +185,6 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     return s.substring(1,s.length-1);
     ;
 }
-/*
-\myMeth(left: VarAccess, op:Call) {
-    let args=op.args;
-    let mname=left.name.text;
-    if (mname==="getkey") {
-        if (!args[0]) {
-            unsup(left, "'getkey' should give a string constant.");
-        } else {
-            let kn=args[0];
-            if (kn.type==="literal") {
-                let lit:Token=kn;
-                let s=lit2s(lit);
-                if (!keynames[s]) {
-                    unsup(kn, `Undefined key name '${s}'.`);
-                }
-                printf("ld hl, %s%n", keynames[s]);
-                printf("call getkey%n");
-            } else {
-                unsup(kn,`'${kn.type}' is not a string constant `);
-                //print(kn.type);
-            }
-        }
-    } else if (mname==="rnd") {
-        if (!args[0]) {
-            unsup(left, "'rnd' should give a number.");
-        }
-        visit(args[0]);
-        printf("call rnd%n");
-    } else if (mname==="abs") {
-        if (!args[0]) {
-            unsup(left, "'abs' should give a number.");
-        }
-        visit(args[0]);
-        printf("call abs%n");
-    } else if (mname.match(/^map_set(At)?/)) {
-        if (args.length!==3) {
-            unsup(left, "'map_set(At) should give (x,y,p)");
-        }
-        visit(args[1]); // y
-        printf("push hl%n");
-        visit(args[0]); // x
-        printf("push hl%n");
-        visit(args[2]); // p
-        printf("ld a,l%n");
-        printf("pop hl%n");
-        printf("pop de%n");
-        printf("call map.set%s.a%n",
-        mname.match(/At/)?"at":"");
-        printf("getthis 0%n");
-    } else if (mname==="locate") {
-        if (args.length!==2) {
-            unsup(left, "'locate should give (x,y)");
-        }
-        visit(args[1]); // y
-        printf("push hl%n");
-        visit(args[0]); // x
-        printf("pop de%n");
-        printf("call locate%n");
-        //printf("getthis 0%n");
-    
-    } else if (mname.match(/^map_get(At)?/)) {
-        if (args.length!==2) {
-            unsup(left, "'map_get(At) should give (x,y)");
-        }
-        visit(args[1]); // y
-        printf("push hl%n");
-        visit(args[0]); // x
-        printf("pop de%n");
-        printf("call map.get%s.a%n",
-        mname.match(/At/)?"at":"");
-        printf("ld h,0%n");
-        printf("ld l,a%n");
-        printf("getthis 0%n");
-
-    } else if (mname==="crashTo") {
-        let tg=args[0];
-        if (!tg) {
-            unsup(left, "'crashTo' should give a object or Class.");
-        }
-        let klass=(tg.type==="varAccess" && isClassConst(tg));
-        if (klass) {
-            let range=mem.objRange(klass);
-            printf("crashToClass %s, %d, %d%n",klass.shortName,range[0],range[1]);
-        } else {
-            printf("call crashTo.setXY%n");
-            visit(tg);
-            printf("call crashTo1%n");
-            printf("flagtobool c%n");
-        }
-    } else if (mname==="div") {
-        if (args.length!==2) {
-            return unsup("'div' should supply 2 numbers");
-        }
-        arith2(args[0],"/",args[1]);
-    } else if (mname==="print") {
-        for (let k of args){
-            if (k.type==="literal") {
-                setLit(k);
-                printf("call print.a%n");
-            }else {
-                visit(k);
-                printf("call printi.a%n");
-            }
-            printf("getthis 0%n");
-        }
-    } else if (mname==="freeStack") {
-        printf("ld h,a%n");
-        printf("ld l,th.ofs.sp%n");
-        printf("ld l,(hl)%n");
-        printf("ld h,0%n");
-    } else if (mname==="sound_vol") {
-        visit(args[1]);// vol
-        printf("ld e,l%n");
-        printf("push de%n");
-        visit(args[0]);// ch
-        printf("ld a,l%n");
-        printf("pop de%n");
-        printf("add a,8%n");
-        printf("call WRTPSG%n");
-        printf("getthis 0%n");
-    } else if (mname==="sound_scale") {
-        visit(args[1]);// scale
-        printf("push hl%n");
-        visit(args[0]);// ch
-        printf("ld a,l%n");
-        printf("pop hl%n");
-        printf("call mus.scale.a%n");
-        printf("getthis 0%n");
-    } else if (mname==="setInterval") {
-        visit(args[0]);
-        printf("call setInterval");
-    } else {
-        for(let a of args.reverse()) {
-            visit(a);
-            printf("push hl%n");
-        }
-        printf("invoke .%s%n", mname);
-    }
-}*/
 \setLit(l){
     let s=lit2s(l);
     printf("proc%n");
@@ -707,9 +302,6 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 \v_number(n:Token){
     printf("ld hl,%d%n",n.text-0);
 }
-\globalLabel(n:String) {
-    return `gbl_${n.replace(/\$/g,"")}`;
-}
 \v_varAccess(n:VarAccess){
     let name:Token=n.name;
     let a=annotation(n);
@@ -762,8 +354,55 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         unsup(n,`${name.text}: Unsupported variable type '${a.scopeInfo.type}'`);
     }
 }
-\genSym() {
-    return "lb"+(symSeq++);
+
+\v_newExpr(n:NewExpr){
+    let klass:VarAccess=n.klass;
+    let params:Call?=n.params;
+    if (!params || (params.args.length==1 && params.args[0].type=="objlit")) {
+        let alen=0;
+        if (params) {
+            let objlit:Objlit=params.args[0];
+            let elems:JsonElem[]=objlit.elems;
+            for (let elem of elems) {
+                if (elem.value) {
+                    visit(elem.value);
+                } else {
+                    if (this.params[elem.key.text]) {
+                        printf ("getarg %d%n",this.params[elem.key.text]);
+                    } else if (locals[elem.key.text] ) {
+                        printf ("getlcl %d%n",locals[elem.key.text]);
+                    } else {
+                        printf("getfld .%s%n",elem.key);
+                    }
+                }
+                printf("new.arg .%s%n",elem.key);
+            }
+            alen=elems.length;
+        }
+        let resKlass=isClassConst(klass);
+        if (!resKlass) {
+            unsup(klass , `Only class name is allowed`);
+        }
+        let range=mem.objRange(resKlass);
+        printf("new %s,%d,%s,%s%n",
+        klass.name, alen,
+        range[0], range[1]);
+        //rangeToAd(range[0]),rangeToAd(range[1]));
+        return;
+    }
+    unsup(n,`'new ${klass.name}' can be followed by only {key:value...}`);
+}
+
+
+//Statements
+\v_program(n:Program){
+    let ext:Extends?=n.ext;
+    let incl:Includes?=n.incl;
+    let stmts:Stmt[]=n.stmts;
+    for (let s of stmts){
+        visit(s);
+    }
+    printf("ret%n");
 }
 \v_compound(n:Compound) {
     for (let s of n.stmts) {
@@ -914,9 +553,10 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         visit(d);
     }
 }
+/*
 \rangeToAd(r) {
     return `th.start+${r}*th.size`;
-}
+}*/
 \isClassConst(klass:VarAccess) {
     let a=annotation(klass);
     if (a.scopeInfo.type!=="class") {
@@ -924,40 +564,4 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     }
     return a.scopeInfo.info;
 }
-\v_newExpr(n:NewExpr){
-    let klass:VarAccess=n.klass;
-    let params:Call?=n.params;
-    if (!params || (params.args.length==1 && params.args[0].type=="objlit")) {
-        let alen=0;
-        if (params) {
-            let objlit:Objlit=params.args[0];
-            let elems:JsonElem[]=objlit.elems;
-            for (let elem of elems) {
-                if (elem.value) {
-                    visit(elem.value);
-                } else {
-                    if (this.params[elem.key.text]) {
-                        printf ("getarg %d%n",this.params[elem.key.text]);
-                    } else if (locals[elem.key.text] ) {
-                        printf ("getlcl %d%n",locals[elem.key.text]);
-                    } else {
-                        printf("getfld .%s%n",elem.key);
-                    }
-                }
-                printf("new.arg .%s%n",elem.key);
-            }
-            alen=elems.length;
-        }
-        let resKlass=isClassConst(klass);
-        if (!resKlass) {
-            unsup(klass , `Only class name is allowed`);
-        }
-        let range=mem.objRange(resKlass);
-        printf("new %s,%d,%s,%s%n",
-        klass.name, alen,
-        range[0], range[1]);
-        //rangeToAd(range[0]),rangeToAd(range[1]));
-        return;
-    }
-    unsup(n,`'new ${klass.name}' can be followed by only {key:value...}`);
-}
+super.main();
