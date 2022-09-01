@@ -4,13 +4,17 @@ with Web-based developing environment.
 
 # Quick Start
 
-## Application running on Tonyu2:
+## Modify sample games:
 
-https://run.tonyu.jp/?hoge_ship/reTrONew
+- Open https://run.tonyu.jp/?hoge_ship/reTrONew
 - Push "Edit Page" to View/Modify Source
 - Push "to MSXPen" to export to MSXPen
 - See [Wiki](https://github.com/hoge1e3/reTrONew/wiki) for details.
+- Sample Application running on MSXPen
+  - https://msxpen.com/codes/-N9V4XvDIEZQ5-U5ggls
 
-## Application running on MSXPen
-https://msxpen.com/codes/-N9V4XvDIEZQ5-U5ggls
+## Start from blank project
+
+- https://run.tonyu.jp/?hoge_ship/blank
+
 
