@@ -5,6 +5,7 @@ while(true) {
     if (getkey("right")) x+=3;
     if (getkey("up")) y-=3;
     if (getkey("down")) y+=3;
+    x=clamp(x,16,512-16);
     // TODO combine these crashTo with hierarchical index
     //   AbstractEnemy <- {Enemy, EBullet}
     if (crashTo(Enemy)) {

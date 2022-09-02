@@ -170,6 +170,30 @@ neghl:
  ret
 marker.e abs
 
+marker.b clamp
+clamp:
+proc
+ local notmin
+ ; hl value
+ ; bc min
+ ; de max
+ push hl
+ subhl bc
+ pop hl
+ jr nc, notmin
+  ld h,b
+  ld l,c
+  ret
+ notmin:
+ push hl
+ subhl de
+ pop hl
+ ret c
+ ex de,hl
+ ret
+endp
+marker.e clamp
+
  `,
     'bool':`include math
 include ctrl

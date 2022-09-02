@@ -145,6 +145,15 @@ let g:GenAsm;
         visit(args[0]);
         printf("peekw hl,hl%n");
         printf("ld h,0%n");
+    } else if (mname==="clamp") {
+        visit(args[2]);
+        printf("push hl%n");
+        visit(args[1]);
+        printf("push hl%n");
+        visit(args[0]);
+        printf("pop bc%n");
+        printf("pop de%n");
+        printf("call clamp%n");
     } else {
         for(let a of args.reverse()) {
             visit(a);
