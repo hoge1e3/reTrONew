@@ -103,8 +103,7 @@ macro cpde.a
 endm
 
 
-marker.b xrnd.a
-xrnd.a:
+defsub xrnd.a
 proc 
  local rhl,rde,rdhlde
  ; s[0] ^= s[0] << 13
@@ -135,7 +134,7 @@ proc
   xorrm e,rde-2
   ret
 endp
-marker.e xrnd.a
+endsub xrnd.a
 
 
 marker.b rnd
@@ -179,16 +178,18 @@ proc
  ; de max
  push hl
  subhl bc
+ bit 7,h
  pop hl
- jr nc, notmin
+ jr z, notmin
   ld h,b
   ld l,c
   ret
  notmin:
  push hl
  subhl de
+ bit 7,h
  pop hl
- ret c
+ ret nz
  ex de,hl
  ret
 endp
@@ -649,7 +650,39 @@ macro stride,lim,to
   exitm
  endif
  ds 256+to-(low $),0cdh
-endm`,
+endm
+
+
+macro unreach, mesg
+ ;trace mesg
+ call h.unreach
+endm
+macro head, lb
+ unreach lb
+ marker.b lb
+ lb:
+endm
+
+macro defsub, n
+ head n
+endm
+macro endsub, n
+ ret
+ marker.e n
+endm
+macro defwork, n
+ head n
+endm
+macro endwork, n
+ marker.e n
+endm
+
+defsub h.unreach
+ ld a,'u'
+ ld hl,1800h
+ call 4dh
+ dw 0x18,0xfe
+endsub h.unreach`,
     'th':`include ctrl
 include sp
 include vdp
@@ -885,6 +918,8 @@ endm
 `,
     'sub':``,
     'debug':`include math
+include ctrl
+
 ;debug
 macro show,reg
  ld (hexval+1),reg
@@ -903,7 +938,19 @@ macro showlb,lb
  call showhex
  pop hl
 endm
-showhex:
+
+macro trace,v
+ if not nul v
+  push af
+  ld a,v
+  ld (trad),a
+  pop af
+ endif
+ call trace.s
+endm
+
+
+defsub showhex
 proc
  local loop
  push af
@@ -927,7 +974,9 @@ proc
  pop af
  ret
 endp
-showhex1:
+endsub showhex
+
+defsub showhex1
 proc
  local els
  cp 10
@@ -938,21 +987,15 @@ proc
  add a,65-10
  jp wrt
 endp
-abort:
+endsub showhex1
+
+
+defsub abort
  call wrt
  db 018h,0feh
-ret
+endsub abort
 
-macro trace,v
- if not nul v
-  push af
-  ld a,v
-  ld (trad),a
-  pop af
- endif
- call trace.s
-endm
-trace.s:
+defsub trace.s
  push af
  push hl
  ld a,(trad)
@@ -965,11 +1008,12 @@ trace.s:
  call wrt 
  pop hl
  pop af
- ret
-trad:
+endsub trace.s
+defwork trad
  db 65
+endwork trace.s
 
-showz:
+defsub showz
  push af
  jr z,showz.s
  ld a,"N"
@@ -980,10 +1024,10 @@ showz:
  ld a,32
  call wrt
  pop af
- ret
+endsub showz
  
 
-showc:
+defsub showc
  push af
  jr c,showc.s
  ld a,"N"
@@ -994,36 +1038,8 @@ showc:
  ld a,32
  call wrt
  pop af
- ret
+endsub showc
  
-
-
-
-
-
-macro unreach, mesg
- trace mesg
- dw 0x18,0xfe
-endm
-macro head, lb
- unreach lb
- marker.b lb
- lb:
-endm
-
-macro defsub, n
- head n
-endm
-macro endsub, n
- ret
- marker.e n
-endm
-macro defwork, n
- head n
-endm
-macro endwork, n
- marker.e n
-endm
 
 defsub wrt
 proc
@@ -1055,7 +1071,22 @@ defsub print.a
  jr print.a
 endsub print.a
 
-`,
+defsub unreach.new
+ ld hl,unreach.m
+ call print.a
+ pop hl
+ show hl
+ db 18h,0feh
+ unreach.m:
+ db "unreach"
+ db 0
+endsub unreach.new
+macro unreach.new.init
+ld hl,h.unreach
+ld (hl),0c3h
+ld hl,unreach.new
+ld (h.unreach+1),hl
+endm`,
     'sp':`include mem
 include debug
 macro sp.get
@@ -1899,6 +1930,7 @@ endp
 
 
 macro tnu.run,Main
+ unreach.new.init 0
  ld sp,sp.ini
  call screen2
  
@@ -2179,514 +2211,12 @@ include sprpat
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't2':`org 08000h
-include tnu
-include bool
-include map
-
+    't2':`org 8000h
+include debug
 main:
-tnu.run Main
-;range 0-5
-class EBullet,RActor
- meth EBullet,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth RActor,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- fld .vx,0
- fld .vy,0
- end.const 0
-def EBullet.main,0,0
- ;p=7;
- ld hl,7
- setfld .p
- ;c=15;
- ld hl,15
- setfld .c
- lb1:
- ld hl,true
- jpf lb2
- ;x+=vx;
- getfld .vx
- push hl
- getfld .x
- pop de
- add hl, de
- setfld .x
- ;y+=vy;
- getfld .vy
- push hl
- getfld .y
- pop de
- add hl, de
- setfld .y
- invoke .screenOut
- jpf lb4
- ;die();
- invoke .die
- jp lb3
- lb4:
- lb3:
- ;update();
- invoke .update
- jp lb1
- lb2:
- ret
-;range 5-15
-class Enemy,RActor
- meth Enemy,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth RActor,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- fld .vx,0
- fld .bvx,0
- fld .bvy,0
- fld .bdist,0
- meth Enemy,fire
- end.const 0
-def Enemy.main,0,0
- lb5:
- ld hl,200
- push hl
- getfld .y
- pop de
- call hlltde
- jpf lb6
- ;y+=2;
- ld hl,2
- push hl
- getfld .y
- pop de
- add hl, de
- setfld .y
- ;update();
- invoke .update
- jp lb5
- lb6:
- ld hl,(gbl_player)
- getfldtg .x
- push hl
- getfld .x
- pop de
- call hlgtde
- jpf lb8
- ;vx=0-2;
- ld hl,2
- push hl
- ld hl,0
- pop de
- subhl de
- setfld .vx
- jp lb7
- lb8:
- ;vx=2;
- ld hl,2
- setfld .vx
- lb7:
- ;fire();
- invoke .fire
- lb9:
- ld hl,true
- jpf lb10
- invoke .screenOut
- jpf lb12
- ;die();
- invoke .die
- jp lb11
- lb12:
- lb11:
- ;y+=2;
- ld hl,2
- push hl
- getfld .y
- pop de
- add hl, de
- setfld .y
- ;x+=vx;
- getfld .vx
- push hl
- getfld .x
- pop de
- add hl, de
- setfld .x
- ;update();
- invoke .update
- jp lb9
- lb10:
- ret
-def Enemy.fire,0,0
- ;bvx=$player.x-x;
- getfld .x
- push hl
- ld hl,(gbl_player)
- getfldtg .x
- pop de
- subhl de
- setfld .bvx
- ;bvy=$player.y-y;
- getfld .y
- push hl
- ld hl,(gbl_player)
- getfldtg .y
- pop de
- subhl de
- setfld .bvy
- ;bdist=abs(bvx)+abs(bvy);
- getfld .bvy
- call abs
- push hl
- getfld .bvx
- call abs
- pop de
- add hl, de
- setfld .bdist
- ;bdist/=8;
- pushthis
- getfld .bdist
- push hl
- ld hl,8
- pop de
- call IDIV.a
- popthis
- setfld .bdist
- ;bvx/=bdist;
- pushthis
- getfld .bvx
- push hl
- getfld .bdist
- pop de
- call IDIV.a
- popthis
- setfld .bvx
- ;bvy/=bdist;
- pushthis
- getfld .bvy
- push hl
- getfld .bdist
- pop de
- call IDIV.a
- popthis
- setfld .bvy
- ;new EBullet{        x,y,vx:bvx,vy:bvy    };
- getfld .x
- new.arg .x
- getfld .y
- new.arg .y
- getfld .bvx
- new.arg .vx
- getfld .bvy
- new.arg .vy
- new EBullet,4,0,5
- ret
-;range 0-5
-class Main,RActor
- meth Main,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth RActor,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- fld .i,0
- end.const 0
-def Main.main,0,0
- ;$player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
- ld hl,256
- new.arg .x
- ld hl,300
- new.arg .y
- ld hl,4
- push hl
- ld hl,(gbl_pat_spr)
- pop de
- add hl, de
- new.arg .p
- ld hl,15
- new.arg .c
- new Player,4,0,5
- ld (gbl_player),hl
- ld hl,0
- setfld .i
- lb13:
- ld hl,20
- push hl
- getfld .i
- pop de
- call hlltde
- jpf lb14
- ;new Enemy{x:rnd(512), y:0, p:5, c:7};
- ld hl,512
- call rnd
- new.arg .x
- ld hl,0
- new.arg .y
- ld hl,5
- new.arg .p
- ld hl,7
- new.arg .c
- new Enemy,4,5,15
- ;updateEx(30);
- ld hl,30
- push hl
- invoke .updateEx
- jp lb13
- lb14:
- ret
-;range 15-20
-class PBullet,RActor
- meth PBullet,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth PBullet,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- fld .e,0
- end.const 0
-def PBullet.main,0,0
- ;p=6;
- ld hl,6
- setfld .p
- ;c=8;
- ld hl,8
- setfld .c
- lb15:
- ld hl,true
- jpf lb16
- invoke .screenOut
- jpf lb18
- ;die();
- invoke .die
- jp lb17
- lb18:
- lb17:
- ;y-=6;
- ld hl,6
- push hl
- getfld .y
- pop de
- subhl de
- setfld .y
- crashToClass Enemy, 5, 15
- setfld .e
- getfld .e
- jpf lb20
- ;e.die();
- pushthis 0
- getfld .e
- invoketg.a .die
- popthis 0
- ;die();
- invoke .die
- jp lb19
- lb20:
- lb19:
- ;update();
- invoke .update
- jp lb15
- lb16:
- ret
-def PBullet.onUpdate,0,0
- ;c+=1;
- ld hl,1
- push hl
- getfld .c
- pop de
- add hl, de
- setfld .c
- ld hl,14
- push hl
- getfld .c
- pop de
- call hlgtde
- jpf lb22
- ;c=0;
- ld hl,0
- setfld .c
- jp lb21
- lb22:
- lb21:
- ret
-;range 0-5
-class Player,RActor
- meth Player,main
- fld .x,0
- fld .y,0
- fld .p,0
- fld .c,0
- meth RActor,onUpdate
- meth RActor,update
- meth RActor,screenOut
- meth RActor,die
- meth RActor,updateEx
- meth RActor,crashTo
- end.const 0
-def Player.main,0,0
- lb23:
- ld hl,3
- ld de,10
- call locate
- getfld .y
- ld a,l
- call wrt
- ld a,h
- call wrt
- getthis 0
- 
- ex de,hl
- getfld .x
- ld a,35
- call map.setat.a
- getthis 0
- ld hl,true
- jpf lb24
- ld hl, 4104
- call getkey
- jpf lb26
- ;x-=3;
- ld hl,3
- push hl
- getfld .x
- pop de
- subhl de
- setfld .x
- jp lb25
- lb26:
- lb25:
- ld hl, 32776
- call getkey
- jpf lb28
- ;x+=3;
- ld hl,3
- push hl
- getfld .x
- pop de
- add hl, de
- setfld .x
- jp lb27
- lb28:
- lb27:
- ld hl, 8200
- call getkey
- jpf lb30
- ;y-=3;
- ld hl,3
- push hl
- getfld .y
- pop de
- subhl de
- setfld .y
- jp lb29
- lb30:
- lb29:
- ld hl, 16392
- call getkey
- jpf lb32
- ;y+=3;
- ld hl,3
- push hl
- getfld .y
- pop de
- add hl, de
- setfld .y
- jp lb31
- lb32:
- lb31:
- crashToClass Enemy, 5, 15
- jpf lb34
- ;die();
- invoke .die
- jp lb33
- lb34:
- lb33:
- crashToClass EBullet, 0, 5
- jpf lb36
- ;die();
- invoke .die
- jp lb35
- lb36:
- lb35:
- ld hl,1
- push hl
- ld hl, 264
- call getkey
- pop de
- call hleqde
- jpf lb38
- ;new PBullet{x,y};
- getfld .x
- new.arg .x
- getfld .y
- new.arg .y
- new PBullet,2,15,20
- foreach.a Enemy,5,14,nxx
-  ld a,h
-  ld hl,8
-  setfld .c
-  continue 
- nxx:
- getthis 0
- 
- 
- jp lb37
- lb38:
- lb37:
- ;update();
- invoke .update
- jp lb23
- lb24:
- ret
-enddef 0
-endusr:
-gbl_player:dw 0
-gbl_pat_spr:dw 0
-spr.inipat:
- ld de,3800h
- ld hl,spr.pat
- ld bc,2048
- jp LDIRVM
-spr.pat:
-db $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$6f,$f,$6,$c
-db $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$f6,$f0,$60,$70
-db $c,$e,$f,$4f,$3d,$1d,$7f,$1b,$c,$3f,$7f,$7f,$ef,$ef,$6,$6
-db $18,$38,$f8,$f9,$de,$dc,$7f,$6c,$98,$fc,$fe,$fe,$d4,$78,$f0,$0
-db $18,$1c,$1f,$9f,$7b,$3b,$fe,$36,$19,$3f,$7f,$7f,$2b,$1e,$f,$0
-db $30,$70,$f0,$f2,$bc,$b8,$fe,$d8,$30,$fc,$fe,$fe,$f7,$f7,$60,$60
-db $2c,$8e,$f,$4b,$3d,$11,$7f,$1d,$ca,$ff,$7f,$3f,$15,$1f,$e,$0
-db $1c,$39,$f8,$e9,$de,$c4,$7f,$5c,$ab,$ff,$ff,$fe,$ac,$f8,$70,$0
-db $1,$1,$1,$2,$3,$92,$96,$f6,$f6,$fe,$fe,$fe,$ff,$af,$26,$0
-db $80,$80,$80,$40,$c0,$49,$69,$6f,$6f,$7f,$7f,$7f,$ff,$f5,$64,$0
-db $8,$10,$30,$30,$18,$f,$3f,$37,$7b,$7d,$3f,$1f,$37,$60,$70,$c
-db $8,$4,$6,$6,$c,$f8,$fe,$f6,$ef,$df,$fe,$fc,$f6,$3,$7,$18
-db $0,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$1,$0,$0
-db $80,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$c0,$80,$0
-db $0,$0,$0,$0,$3,$f,$f,$1f,$1f,$1f,$1f,$f,$f,$3,$0,$0
-db $0,$0,$0,$0,$c0,$f0,$f0,$f8,$f8,$f8,$f8,$f0,$f0,$c0,$0,$0
-bg.inipat:
- ret
+unreach.new.init 0
 
-
+unreach 0
 end main`,
     't3':`org 09000h
 
