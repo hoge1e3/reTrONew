@@ -77,7 +77,11 @@ for (klass of mem.ks) {
         locals={};
         ln=1;
         for (let k,v of method.locals.varDecls) {
-            locals[v.name.text]=ln;
+            /*if (!v.name) {
+                print("V.name", k,v,method.locals.varDecls);
+            }*/
+            // v:VarDecl|Forin|Catch|Token (See definition of SemCtx)
+            locals[k]=ln;
             ln++;
         }
         //if (Object.keys(locals).length) print("LOCAL",locals);

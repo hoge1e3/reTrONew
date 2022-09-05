@@ -478,8 +478,10 @@ extends GenBase;
         //print (va);
         if (va.scopeInfo.type==="field") {
             printf("setfld .%s%n", vars[0].text);
+        } else if (va.scopeInfo.type==="local") {
+            printf("setlcl %d%n",locals[vars[0].text]);
         } else {
-            unsup(vars,"only field supports");
+            unsup(vars[0],"only field/local supports");
         }
         enter{closestBrk:"BREAK"} \{
             visit(loop);
