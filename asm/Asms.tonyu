@@ -137,15 +137,14 @@ endp
 endsub xrnd.a
 
 
-marker.b rnd
-rnd:
+defsub rnd
  push af
  call rnd.a
  pop af
  ret
-marker.e rnd
-marker.b rnd.a
-rnd.a:
+endsub rnd 
+
+defsub rnd.a
  ld de,07fffh
  call IDIV.a
  push hl
@@ -156,10 +155,9 @@ rnd.a:
  inc hl
  call IDIV.a
  ret
-marker.e rnd.a
+endsub rnd.a
 
-marker.b abs
-abs:
+defsub abs
  bit 7,h
  ret z
 neghl:
@@ -167,10 +165,9 @@ neghl:
  ex de,hl 
  subhl de
  ret
-marker.e abs
+endsub abs
 
-marker.b clamp
-clamp:
+defsub clamp
 proc
  local notmin
  ; hl value
@@ -193,7 +190,7 @@ proc
  ex de,hl
  ret
 endp
-marker.e clamp
+endsub clamp
 
  `,
     'bool':`include math
@@ -881,7 +878,7 @@ defsub th.loop
  ; hook before stepall
  db 0cdh
  h.thent:
- dw th.nop
+ dw int.nop
  ; save prev timecnt
  ld a,(timecnt)
  push af
@@ -890,7 +887,7 @@ defsub th.loop
  ; hook after stepall
  db 0cdh
  h.thlop:
- dw th.nop
+ dw int.nop
  ; wait until timecnt changes
  pop af
  bwat:
@@ -906,8 +903,6 @@ defsub th.loop
  jr th.loop
 endsub th.loop
 
-th.nop:
- ret
 
 
 macro th.pushi, val
@@ -2814,23 +2809,27 @@ loop:
 ;https://www.msx.org/wiki/VDP_Mode_Registers
 ;ctrl 1 bit 5 set 0
 include const
+include ctrl
+;include th
 
-susint:
+defsub susint
  ld a,(RG1SAV)
  res 5,a
  ld b,A
  ld c,1
  jp WRTVDP
-;rstint:
+endsub susint
+defsub rstint
  ld a,(RG1SAV)
  set 5,a
  ld b,A
  ld c,1
  jp WRTVDP
-inted:
+endsub rstint
+defsub inted
  call RDVDP
  bit 7,a
- ret
+endsub inted
 doint:
  call inted
  jr z, norst
@@ -2841,12 +2840,16 @@ doint:
  ;call rstint
  ret
 h.tntimi:
- call th.nop
+ call int.nop
  ret
 defsub setInterval
  ld (h.tntimi+1), hl
  ret
 endsub setInterval
+
+defsub int.nop
+ret
+endsub int.nop
  
 timecnt:
 db 0
