@@ -28,6 +28,13 @@ native Tonyu;
     $MScreen=new Screen{x:256,y:224,width:256,height:192,scaleX:2};
     $MLayer=$MScreen.addLayer();
     $crashTo_size=8<<$config["spr.scale"];
+    $screenWidth=256<<$config["spr.scale"];
+    $screenHeight=192<<$config["spr.scale"];
+    $builtinGlobals={
+        $screenWidth: $screenWidth,
+        $screenHeight: $screenHeight,
+        $frameCount: 0,
+    };
     $RSprPat=new RSprPat;
     $mapper=new Mapper;
     if (!$mapper) throw new Error("Mapper is not set");

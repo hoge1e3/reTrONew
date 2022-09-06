@@ -295,6 +295,9 @@ extends GenBase;
         printf("ld h,a%n");
         printf("ld l,0%n");
         return;
+    } else if (n.text==="null") {
+        printf("ld hl,null%n");
+        return;
     } else {
         unsup(n,`Unsupported reserved word '${n.text}'.`);
     }
