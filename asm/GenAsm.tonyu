@@ -47,7 +47,7 @@ extends GenBase;
     let left:Expression=n.left;
     let op:Token=n.op;
     let right:Expression=n.right;
-    let ops={">>":"srlhl",">>>":"srahl","<<":"slhl"};
+    let ops={">>>":"srlhl",">>":"srahl","<<":"slhl"};
     visit(right);
     printf("push hl%n");
     visit(left);
