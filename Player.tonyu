@@ -8,11 +8,11 @@ while(true) {
     x=clamp(x,16,512-16);
     // TODO combine these crashTo with hierarchical index
     //   AbstractEnemy <- {Enemy, EBullet}
-    if (crashTo(Enemy)) {
-        die();
-    }
-    if (crashTo(EBullet)) {
-        die();
+    if (crashTo(Enemy) || crashTo(EBullet)) {
+        c=0;
+        updateEx(60);
+        loadPage(Main);
+        //die();
     }
     if (getkey("space")==1) {
         new PBullet{x,y};

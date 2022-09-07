@@ -70,6 +70,11 @@ let dotAlign=1;
 \poke(ad,v) {
     return $mapper.poke(ad,v);
 }
+\loadPage(Class) {
+    all(RSprite).die();
+    die();
+    new Class;
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

@@ -154,6 +154,14 @@ let g:GenAsm;
         printf("pop bc%n");
         printf("pop de%n");
         printf("call clamp%n");
+    } else if (mname==="loadPage") {
+        let k=g.isClassConst(args[0]);
+        if(!k) unsup(args[0]," Should be class");
+        let range=g.mem.objRange(k);
+        let alen=0; 
+        printf("loadPage %s,%d,%s,%s%n",
+        k.shortName, alen,
+        range[0], range[1]);
     } else {
         for(let a of args.reverse()) {
             visit(a);

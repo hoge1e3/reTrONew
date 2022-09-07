@@ -23,6 +23,7 @@ let lbexit="lbexit";
 let keynames={space: 0x0108, 
 right:0x8008,down:0x4008,up:0x2008,left:0x1008};
 let closestBrk;
+//let mainClass;
 //debug=true;
 let opmap={
     "*":"call IMULT.a%n", 
@@ -39,8 +40,7 @@ include bool
 include dac
 include mus
 
-main:
-tnu.run ${$mainClassName}
+
 `);
 let anode;
 \annotation(n) {
@@ -53,6 +53,9 @@ let anode;
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
+    if (text===$mainClassName) {
+        printf("main:%ntnu.run %s,%d,%d%n",$mainClassName,r[0],r[1]);
+    }
     //print("KLS",klass);
     printf(";range %d-%d%n",r[0],r[1]);
     mem.header(klass);

@@ -1,5 +1,10 @@
 extends TObject;
 let data={'main':`org 09000h
+; TODO 
+; loadPage
+; frameCount
+; eraseSprite
+; strig
 
 include ctrl
 include math
@@ -1622,13 +1627,25 @@ endsub spr.putslp
 defsub spr.put1
 proc
 ; a: th.id
-  local t1,t2,t3,t4
+  local t1,t2,t3,t4,has
   push af
   
   tgconst t1
   tgconst t2
   tgconst t3
   tgconst t4
+  ld h,a
+  call th.isblank.a
+  jr nz,has
+   ld a,240
+   outwrt 0
+   xor a
+   outwrt 0
+   outwrt 0
+   outwrt 0
+   pop af
+   ret
+  has:
 
   tgconst.g hl,t1,.y 
   spr.unscale 0
@@ -1806,7 +1823,7 @@ endsub crashTo.setXY
 def RActor.crashTo,1,0
  call crashTo.setXY
  getarg 1
- const cr.class,hl
+ ;const cr.class,hl
  call isobj.a
  jr c, cr1
   unreach "C"
@@ -1868,33 +1885,6 @@ macro all.skip, Class
  all.skip.isnot Class
 endm
 
-defsub crashToC.abolished
- ;before:
- ; call crashTo.setXY
- ; const cr.class,Class
- ; hl start
- ; de end
- ld bc,th.size
- for fe
-  all.skip.blank.self 0
-  ; skip object not instance of *Class*
-  push hl
-  ld a,h
-  ldconst de,cr.class
-  call instanceof
-  pop hl
-  continue nz
-  ; do crashTo1
-  getthis 0
-  call crashTo1
-  break c
-  continue
- fe:
- getthis 0
- ret c
- ld hl,null
-endsub crashToC.abolished
-
 defsub crashTo1
  ; call crashTo.setXY before
  ;hl=tg
@@ -1924,7 +1914,7 @@ endsub crashTo1
 endp
 
 
-macro tnu.run,Main
+macro tnu.run,Main,st,en
  unreach.new.init 0
  ld sp,sp.ini
  call screen2
@@ -1942,13 +1932,32 @@ macro tnu.run,Main
  
  call th.init
  ;call mus.ini
- new Main, 0
+ new Main, 0,st ,en
  movw (h.thlop),spr.puts
  movw (h.thent),keyall
  jp th.loop
 endm
 
-;aaaa`,
+defsub all.die
+proc
+ local nxt
+ pushthis 0
+ th.for.a nxt
+  call th.isblank.a
+  continue z
+  invoketg.a .die
+  continue
+ nxt:
+ popthis 0
+endp
+endsub all.die
+
+macro loadPage,Class,args,st,en
+call all.die
+new Class,args,st,en
+endm
+
+`,
     'key':`include debug
 
 defsub keyall
