@@ -50,9 +50,13 @@ let fields;
 \v_forin(node:Forin) {
     node.vars.forEach \(v:Token){
         let a=annotation(v);
-        if (a.varInMain) {
+        //print(v.text, a);
+        if (a.scopeInfo.type==="field") {
             addField(v);
         }
+        /*if (a.varInMain) {
+            addField(v);
+        }*/
     };
     
 }

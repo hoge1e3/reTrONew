@@ -801,9 +801,41 @@ defsub th.stepall
   call th.isblank.a
   continue z
   call th.step
+
+  ; chk reserved kill
+  ld hl,0
+  ld (th.cur),hl
+  ld a,(th.kill.reserve)
+  cp 0
+  continue z
+  ld h,a
+  call th.kill.a
+  xor a
+  ld (th.kill.reserve),a
   continue
  thnx:
 endsub th.stepall
+
+defsub th.kill.a
+; th.term = self kill
+; th.kill = kill from either external or internal
+proc
+ local reserve
+ ; h: th
+ ld a,(th.cur+1)
+ cp h
+ jr z, reserve
+  ld l, th.ofs.stp
+  ld (hl), th.st.blank
+  ret
+ reserve:
+  ld (th.kill.reserve),a
+endp
+endsub th.kill.a
+
+defwork th.kill.reserve
+db 0
+endwork
 
 defsub th.step
  sp2mem adrssp+1
@@ -1785,10 +1817,9 @@ proc
 endp
 def RActor.die,0,0
  ld h,a
- ld l,th.ofs.stp
- ld (hl),th.st.blank
- ld hl, 0
- setfld .c
+ push af
+ call th.kill.a
+ pop af
 enddef RActor.die
 
 def RActor.updateEx,1,0
@@ -1918,7 +1949,7 @@ macro tnu.run,Main,st,en
  unreach.new.init 0
  ld sp,sp.ini
  call screen2
- 
+
  showsp
  showlb endusr
  call spr.inipat
@@ -1953,6 +1984,7 @@ endp
 endsub all.die
 
 macro loadPage,Class,args,st,en
+call clearInterval
 call all.die
 new Class,args,st,en
 endm
@@ -2853,8 +2885,11 @@ h.tntimi:
  ret
 defsub setInterval
  ld (h.tntimi+1), hl
- ret
 endsub setInterval
+defsub clearInterval
+ ld hl, int.nop
+ jp setInterval
+endsub clearInterval
 
 defsub int.nop
 ret
@@ -2899,8 +2934,9 @@ screen1:
  ret
 
 defsub screen2
- ld a,2
- call CHGMOD
+ ;ld a,2
+ ;call CHGMOD
+ call 72h
  ld a,(RG1SAV)
  set 1,a
  ld b,A

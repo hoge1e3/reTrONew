@@ -75,6 +75,9 @@ let dotAlign=1;
     die();
     new Class;
 }
+\asm_label(n){
+    return 0;
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;
