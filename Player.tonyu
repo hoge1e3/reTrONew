@@ -1,10 +1,15 @@
 var e,d;
 while(true) {
     map_setAt(x,y,$pat_font+1);
-    if (getkey("left")) x-=3;
+    //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
+    if (getkey("left")||getkey("j1_left")) x-=3;
+    if (getkey("right")||getkey("j1_right")) x+=3;
+    if (getkey("up")||getkey("j1_up")) y-=3;
+    if (getkey("down")||getkey("j1_down")) y+=3;
+    /*if (getkey("left")) x-=3;
     if (getkey("right")) x+=3;
     if (getkey("up")) y-=3;
-    if (getkey("down")) y+=3;
+    if (getkey("down")) y+=3;*/
     x=clamp(x,16,512-16);
     // TODO combine these crashTo with hierarchical index
     //   AbstractEnemy <- {Enemy, EBullet}
@@ -14,7 +19,7 @@ while(true) {
         loadPage(Main);
         //die();
     }
-    if (getkey("space")==1) {
+    if (getkey("space")==1 || getkey("j1_trig1")==1) {
         new PBullet{x,y};
         $colors[3]=15;
         $psg.initSE($se_mhget);

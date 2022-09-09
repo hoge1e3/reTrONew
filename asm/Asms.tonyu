@@ -1996,7 +1996,7 @@ proc
  local lp
  ld hl,keymat1
  ld de,keymat2
- ld bc,11
+ ld bc,13
  ldir
  ld a,0
  ld hl,keymat1
@@ -2010,16 +2010,70 @@ proc
  inc a
  cp 11
  jr c,lp
+ ld a,1
+ call snstk.a
+ ld (hl),d
+ inc hl
+ ld a,2
+ call snstk.a
+ ld (hl),d
 endp
 endsub keyall
+defsub snstk.a
+proc
+ local skp1,skp2
+ push hl
+  ld e,a
+  push de
+   call 0d5h
+  pop de
+  ld c,a
+  ld b,0
+  ld hl,trig2mat
+  add hl,bc
+  ld d,(hl)
+  ld a,e
+  push de
+   call 0d8h
+  pop de
+  cp 0
+  jr z,skp1
+  set 0,d
+  skp1:
+  ld a,e
+  inc a
+  inc a
+  push de
+   call 0d8h
+  pop de
+  cp 0
+  jr z,skp2
+  set 1,d
+  skp2: 
+ pop hl
+endp 
+endsub snstk.a
 
 defwork keymat1
-ds 11
+ds 13
 endwork keymat1
 defwork keymat2
-ds 11
+ds 13
 endwork keymat2
+defwork trig2mat
+db 0
 
+;  rdul
+db 00100000b
+db 10100000b
+db 10000000b
+db 11000000b
+db 01000000b
+db 01010000b
+db 00010000b
+db 00110000b
+
+endwork trig2mat
 
 proc
 defsub getkey.a
@@ -2590,18 +2644,36 @@ jp main`,
     'gen':`org 09000h
 include tnu
 include bool
+include debug
+include spr
+include map
+include key
 
 main:
-tnu.run Main
-class Main,Actor
- Actor.noovr Main
+tnu.run Main,0,5
+class Main,RActor
+ RActor.noovr Main
  end.const 0
 def Main.main,0,0
-
+mlp:
+ ld hl,0
+ 
+ ld de,0
+ call locate
+ ld A,1
+ call snstk.a
+ show A
+ getthis 0
+ invoke .update
+ jr mlp
  showlb .main
  showlb .crashTo
 enddef 0
 endusr:
+spr.inipat:
+bg.inipat:
+ret
+
 end main`,
     'dac':`org 09000h
 ;jp main
