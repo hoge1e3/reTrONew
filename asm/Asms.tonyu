@@ -1,9 +1,7 @@
 extends TObject;
 let data={'main':`org 09000h
 ; TODO 
-; loadPage
 ; frameCount
-; eraseSprite
 ; strig
 
 include ctrl
