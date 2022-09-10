@@ -81,6 +81,15 @@ let dotAlign=1;
 \keycode(c) {
     return c;
 }
+\strigX(n, v) {
+    if (n==0) {
+        return getkey("left")?-v:getkey("right")?v:0;
+    }
+    if (n==3) {
+        return getkey("a")?-v:getkey("d")?v:0;
+    }
+    return 0;
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

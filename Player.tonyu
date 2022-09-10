@@ -2,8 +2,9 @@ var e,d;
 while(true) {
     map_setAt(x,y,$pat_font+1);
     //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
-    if (getkey("left")||getkey("j1_left")) x-=3;
-    if (getkey("right")||getkey("j1_right")) x+=3;
+    /*if (getkey("left")||getkey("j1_left")) x-=3;
+    if (getkey("right")||getkey("j1_right")) x+=3;*/
+    x+=strigX(0,3)+strigX(1,3)+strigX(2,3)+strigX(3,3);
     if (getkey("up")||getkey("j1_up")) y-=3;
     if (getkey("down")||getkey("j1_down")) y+=3;
     /*if (getkey("left")) x-=3;

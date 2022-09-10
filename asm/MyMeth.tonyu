@@ -46,6 +46,13 @@ let g:GenAsm;
                 return unsup(kn,`'${kn.type}' is not a string constant `);
             }
         }
+    } else if (mname==="strigX") {
+        visit(args[0]);
+        printf("ld h,l%npush hl%n");
+        visit(args[1]);
+        printf("pop af%n");
+        printf("call strigX.a%n");
+        printf("getthis 0%n");
     } else if (mname==="rnd") {
         if (!args[0]) {
             unsup(left, "'rnd' should give a number.");
