@@ -16,6 +16,7 @@ sound_vol(0,8);
 setInterval(inter);
 $psg=new PSGs;
 $psg.initBGM($se_mhmain);
+print(keycode("j1_up"));
 //print(123+ (255 << 8) );
 //print($se_mhmain, $se_mhget);
 //$mpoint=$se_mhmain;

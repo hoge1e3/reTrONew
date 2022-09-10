@@ -78,6 +78,9 @@ let dotAlign=1;
 \asm_label(n){
     return 0;
 }
+\keycode(c) {
+    return c;
+}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

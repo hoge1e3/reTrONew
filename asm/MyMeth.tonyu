@@ -4,12 +4,13 @@ let g:GenAsm;
 \unsup(...a) {return g.unsup(...a);}
 \printf(...a) {return g.printf(...a);}
 \visit(...a) {return g.visit(...a);}
+
 \myMeth(left: VarAccess, op:Call) {
     let args=op.args;
     let mname=left.name.text;
     if (mname==="getkey") {
         if (!args[0]) {
-            unsup(left, "'getkey' should give a string constant.");
+            return unsup(left, "'getkey' should give a string constant.");
         } else {
             let kn=args[0];
             if (kn.type==="literal") {
@@ -17,13 +18,32 @@ let g:GenAsm;
                 let s=g.lit2s(lit);
                 let keynames=g.keynames;
                 if (!keynames[s]) {
-                    unsup(kn, `Undefined key name '${s}'.`);
+                    return unsup(kn, `Undefined key name '${s}'.`);
                 }
                 printf("ld hl, %s%n", keynames[s]);
                 printf("call getkey%n");
             } else {
-                unsup(kn,`'${kn.type}' is not a string constant `);
+                visit(args[0]);
+                printf("call getkey%n");
+                //unsup(kn,`'${kn.type}' is not a string constant `);
                 //print(kn.type);
+            }
+        }
+    } else if (mname==="keycode") {
+        if (!args[0]) {
+            return unsup(left, "'keycode' should give a string constant.");
+        } else {
+            let kn=args[0];
+            if (kn.type==="literal") {
+                let lit:Token=kn;
+                let s=g.lit2s(lit);
+                let keynames=g.keynames;
+                if (!keynames[s]) {
+                    return unsup(kn, `Undefined key name '${s}'.`);
+                }
+                printf("ld hl, %s%n", keynames[s]);
+            } else {
+                return unsup(kn,`'${kn.type}' is not a string constant `);
             }
         }
     } else if (mname==="rnd") {
