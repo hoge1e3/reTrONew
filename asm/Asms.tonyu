@@ -2152,6 +2152,52 @@ endp
 endsub strigX.a
 
 
+defsub strigY.a
+proc 
+local nx1,nx2,nx3,nx4
+; a :stickid
+; hl:  vec norm
+ cp 0
+ jr nz,nx1
+  ld a,(keymat1+8)
+  bit 6,a
+  ret nz
+  bit 5,a
+  jp nz,neghl
+  ld hl,0
+  ret
+ nx1:
+ cp 1
+ jr nz,nx2
+  ld a,(keymat1+11)
+  bit 6,a
+  ret nz
+  bit 5,a
+  jp nz,neghl
+  ld hl,0
+  ret
+ nx2:
+ cp 2
+ jr nz,nx3
+  ld a,(keymat1+12)
+  bit 6,a
+  ret nz
+  bit 5,a
+  jp nz,neghl
+  ld hl,0
+  ret
+ nx3:
+ ; w 5-b4  a 2-b6  s 5-b0  d 3-b1
+  ld a,(keymat1+5);s
+  bit 0,a
+  ret nz
+  bit 4,a ; w
+  jp nz,neghl
+  ld hl,0
+endp
+endsub strigY.a
+
+
 endp`,
     'map':`include sub
 include math
