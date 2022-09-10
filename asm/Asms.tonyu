@@ -2105,6 +2105,25 @@ call getkey.a
 pop af
 endsub getkey
 
+defsub strigX.a
+proc 
+local nx1,nx11,nx2,nx3,nx4
+; a stkid
+ cp 0
+ jr nz,nx1
+ ld a,(keymat1+8)
+ bit 7,a
+ ret nz
+ bit 4,a
+ jp nz,neghl
+ ld hl,0
+ ret
+ 
+ nx1:
+endp
+endsub strigX.a
+
+
 endp`,
     'map':`include sub
 include math
@@ -2650,11 +2669,6 @@ include map
 include key
 
 main:
-tnu.run Main,0,5
-class Main,RActor
- RActor.noovr Main
- end.const 0
-def Main.main,0,0
 mlp:
  ld hl,0
  
@@ -2662,13 +2676,9 @@ mlp:
  call locate
  ld A,1
  call snstk.a
- show A
- getthis 0
- invoke .update
+ show de
  jr mlp
- showlb .main
- showlb .crashTo
-enddef 0
+ 
 endusr:
 spr.inipat:
 bg.inipat:
