@@ -258,6 +258,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
 
 \def(n){
     if(!n){
+        throw new Error("Visited undefined");
         print(n);
         return;
     }

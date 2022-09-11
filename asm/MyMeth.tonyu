@@ -46,7 +46,10 @@ let g:GenAsm;
                 return unsup(kn,`'${kn.type}' is not a string constant `);
             }
         }
-    } else if (mname==="strigX" || mname==="strigY") {
+    } else if (mname==="stickX" || mname==="stickY") {
+        if (args.length<2) {
+            return unsup(left, "'stickX/Y' should give 2 args (stickID, speed)");
+        }
         visit(args[0]);
         printf("ld h,l%npush hl%n");
         visit(args[1]);

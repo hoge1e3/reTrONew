@@ -2105,7 +2105,7 @@ call getkey.a
 pop af
 endsub getkey
 
-defsub strigX.a
+defsub stickX.a
 proc 
 local nx1,nx2,nx3,nx4
 ; a :stickid
@@ -2149,10 +2149,10 @@ local nx1,nx2,nx3,nx4
   jp nz,neghl
   ld hl,0
 endp
-endsub strigX.a
+endsub stickX.a
 
 
-defsub strigY.a
+defsub stickY.a
 proc 
 local nx1,nx2,nx3,nx4
 ; a :stickid
@@ -2195,7 +2195,7 @@ local nx1,nx2,nx3,nx4
   jp nz,neghl
   ld hl,0
 endp
-endsub strigY.a
+endsub stickY.a
 
 
 endp`,
