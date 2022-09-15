@@ -15,7 +15,7 @@ let ide=$Boot.getIDE();
 let klass, klassSrc;
 let problems=[];
 let builtins={getkey:"getkey",rnd:"rnd"};
-let globals={};
+let globalVars={};
 let locals={};
 let params={};
 let myMeth=new MyMeth{g:this};
@@ -122,22 +122,22 @@ ${Object.keys($MZO.arrays).map \(k) {
     return globalLabel(k)+":dw $+2\n"+
     "db "+Array.from($MZO.arrays[k]).join(", ")+"\n";
 }.join("\n")}
-${Object.keys(globals).map \(k){
+${Object.keys($config.intArrays||{}).map \(k) {
+    let i= $config.intArrays[k];
+    if (typeof i==="number") {
+        return globalLabel(k)+":dw $+2\n"+
+        "ds "+(i*2);
+    } else {
+        // 1-d array only currently
+        return globalLabel(k)+":dw $+2\n"+
+        "dw "+i.join(", ");
+    }
+}.join("\n")};
+${Object.keys(globalVars).map \(k){
     if ($MZO.arrays[k]) return "";
     if ($config.consts[k]) return "";
-    if ($config.intArrays && $config.intArrays[k]) {
-        let i= $config.intArrays[k];
-        if (typeof i==="number") {
-            return globalLabel(k)+":dw $+2\n"+
-            "ds "+(i*2);
-        } else {
-            // 1-d array only currently
-            return globalLabel(k)+":dw $+2\n"+
-            "dw "+i.join(", ");
-        }
-    } else {
-        return globalLabel(k)+":dw 0";
-    }
+    if ($config.intArrays[k]) return "";
+    return globalLabel(k)+":dw 0";
 }.join("\n")}
 endusr:
 macro inivrm, n, dst

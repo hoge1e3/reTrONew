@@ -17,9 +17,9 @@ extends RBoot;
             "$players": 4, // int16[4]
             "$colors": [9,7,3,11], // int16[4] with initial values
             // unimplemented:
-            "$mat": [[1,3,5],[10,12]], // (int*)[2] 
+            //"$mat": [[1,3,5],[10,12]], // (int*)[2] 
             // [1,3,5] and [10,12] may not be placed in contiguous memory areas.
-            "$f_ary": [1.2, 2.3, 4.5] //double[3] 
+            //"$f_ary": [1.2, 2.3, 4.5] //double[3] 
         },
         "consts":{
             "$rtn_test":10,

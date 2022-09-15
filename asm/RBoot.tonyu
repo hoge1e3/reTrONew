@@ -29,6 +29,7 @@ native Tonyu;
         $config.consts=$config.consts();
     }
     $config.consts=$config.consts||{};
+    $config.intArrays=$config.intArrays||{};
     //--------
     getMainClass();
     $excludeFromAll=$Screen.all();
@@ -63,18 +64,16 @@ native Tonyu;
     $Screen.setBGColor($RSprPat.palette[6]);
     $pat_font_orig=$pat_font;
     $pat_font=0;
-    if ($config.intArrays ) {
-        for (let k,v in $config.intArrays) {
-            if (typeof v==="number") {
-                let n=v;
-                v=[];
-                for (let i=0;i<n;i++) v.push(0);
-            } else {
-                v=v.slice();// TODO matrix deep slice
-            }
-            Tonyu.setGlobal(k,v);
-            //$mapper.assignAry16(v);
+    for (let k,v in $config.intArrays) {
+        if (typeof v==="number") {
+            let n=v;
+            v=[];
+            for (let i=0;i<n;i++) v.push(0);
+        } else {
+            v=v.slice();// TODO matrix deep slice
         }
+        Tonyu.setGlobal(k,v);
+            //$mapper.assignAry16(v);
     }
     $map=new Map2{chipWidth:8,chipHeight:8,row:24,col:32,layer:$MLayer, x:0,y:0,
         curx:0,cury:0,

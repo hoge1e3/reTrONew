@@ -325,8 +325,8 @@ extends GenBase;
         }
         break;
         case "global":
-        globals[name.text]=1;
-        let isc=$config.consts [name.text];
+        globalVars[name.text]=1;
+        let isc=$config.consts[name.text];
         if (lval) {
             if (isc!=null){
                 return unsup(name,"Cannot assign to constant"); 
