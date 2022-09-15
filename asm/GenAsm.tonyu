@@ -326,10 +326,18 @@ extends GenBase;
         break;
         case "global":
         globals[name.text]=1;
+        let isc=$config.consts [name.text];
         if (lval) {
+            if (isc!=null){
+                return unsup(name,"Cannot assign to constant"); 
+            }
             printf("ld (%s),hl%n",globalLabel(name.text));
         } else {
-            printf("ld hl,(%s)%n",globalLabel(name.text));
+            if (isc!=null){
+                printf("ld hl,%d%n",isc);
+            } else {
+                printf("ld hl,(%s)%n",globalLabel(name.text));
+            }
         }
         break;
         case "local":

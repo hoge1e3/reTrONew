@@ -10,7 +10,11 @@ native Tonyu;
         // unimplemented: the variables treated as double(common to all classes) 
         "defdbl": [
         ],
-        // unimplemented: global int arrays
+        // global constants, either object literal or function
+        "consts":{
+            "$rtn_test":10,
+        },
+        // global int arrays
         "intArrays": {
         },
         // unimplemented: global strings(char*). length cannot be changed.
@@ -21,6 +25,10 @@ native Tonyu;
 \createMainObject() {
     //--config section---
     config();
+    if(typeof $config.consts=="function"){
+        $config.consts=$config.consts();
+    }
+    $config.consts=$config.consts||{};
     //--------
     getMainClass();
     $excludeFromAll=$Screen.all();
@@ -31,9 +39,16 @@ native Tonyu;
     $screenWidth=256<<$config["spr.scale"];
     $screenHeight=192<<$config["spr.scale"];
     $builtinGlobals={
-        $screenWidth: $screenWidth,
-        $screenHeight: $screenHeight,
+        $screenWidth,
+        $screenHeight,
         $frameCount: 0,
+    };
+    for (let k,v of $config.consts) {
+        Tonyu.setGlobal(k,v);
+    }
+    Object.assign($config.consts){
+        $screenWidth,
+        $screenHeight,
     };
     $RSprPat=new RSprPat;
     $mapper=new Mapper;

@@ -124,6 +124,7 @@ ${Object.keys($MZO.arrays).map \(k) {
 }.join("\n")}
 ${Object.keys(globals).map \(k){
     if ($MZO.arrays[k]) return "";
+    if ($config.consts[k]) return "";
     if ($config.intArrays && $config.intArrays[k]) {
         let i= $config.intArrays[k];
         if (typeof i==="number") {
