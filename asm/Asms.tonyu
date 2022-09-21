@@ -30,46 +30,46 @@ end main`,
     'math':`include ctrl
 
 ;16bit shifts
-macro slhl
+slhl macro 
  sla l
  rl h
 endm
-macro srahl
+srahl macro 
  sra h
  rr l
 endm
-macro srlhl
+srlhl macro 
  srl h
  rr l
 endm
-macro slde
+slde macro 
  sla e
  rl d
 endm
-macro srade
+srade macro 
  sra d
  rr e
 endm
-macro srlde
+srlde macro 
  srl d
  rr e
 endm
-macro slbc
+slbc macro 
  sla c
  rl b
 endm
-macro srabc
+srabc macro 
  sra b
  rr c
 endm
-macro srlbc
+srlbc macro 
  srl b
  rr c
 endm
 
 
 ; for xrnd
-macro sldehl,n
+sldehl macro n
   local loop
   ld b,n
  loop:
@@ -79,7 +79,7 @@ macro sldehl,n
   rl l
   djnz loop
 endm
-macro srdehl,n
+srdehl macro n
  local loop
  ld b,n
  loop:
@@ -90,18 +90,18 @@ macro srdehl,n
  djnz loop
 endm
  
-macro xorrm,re,me
+xorrm macro re,me
   ld A,(me)
   xor re
   ld (me),a
 endm
 
-macro subhl,rp
+subhl macro rp
  and a
  sbc hl,rp
 endm
 
-macro cpde.a
+cpde.a macro 
  rst dcompr
 endm
 
@@ -201,7 +201,7 @@ include ctrl
 true equ -1
 false equ 0
 
-macro rethl,val,flg
+rethl macro val,flg
  local tru
  if not nul flg
   iff flg ,tru
@@ -264,20 +264,20 @@ ziffalse.a:
  ret
 endp
 
-macro jpf,to
+jpf macro to
  call ziffalse
  jp z,to
 endm
 
-macro andand,fls
+andand macro fls
  jpf fls
 endm
-macro oror,tru
+oror macro tru
  call ziffalse
  jp nz,tru
 endm
 
-macro flagtobool,fl
+flagtobool macro fl
  local yes,skp
  jr fl, yes
  ld hl,false
@@ -367,20 +367,20 @@ memini:
  LD Hl,04000H
  jp ENASLT
 
-macro peekw ,regv,regm
+peekw macro regv,regm
   local w
   ld (w-2),regm
   ld regv,(0)
   w:
 endm
 
-macro pokew ,regm,regv
+pokew macro regm,regv
   local w
   ld (w-2),regm
   ld (0),regv
   w:
 endm
-macro movw,dst,src,rp
+movw macro dst,src,rp
  if nul rp
   push hl
   movw dst,src,hl
@@ -391,19 +391,19 @@ macro movw,dst,src,rp
  endif 
 endm
 
-macro popa
+popa macro 
   ex (sp),hl
   ld a,h
   pop HL
 endm
 
-macro pushall
+pushall macro 
  push af
  push bc
  push de
  push hl
 endm
-macro popall
+popall macro 
  pop hl
  pop de
  pop bc
@@ -411,7 +411,7 @@ macro popall
 endm
  
 
-macro pushi, n,rp
+pushi macro n,rp
  local rrr
  if nul rp
   ld (rrr-2),hl
@@ -424,14 +424,14 @@ macro pushi, n,rp
   push rp
  endif
 endm
-macro const,n,reg
+const macro n,reg
  ld (n-2),reg
 endm
-macro ldconst,reg,n
+ldconst macro reg,n
  ld reg,0
  n:
 endm
-macro peekconst,reg,n
+peekconst macro reg,n
  ld reg,(0)
  n:
 endm
@@ -476,10 +476,10 @@ CSRX equ 0F3DDH
 
 null equ 0
 
-macro marker.b, n
+marker.b macro n
  last.marker: defl $
 endm
-macro marker.e, n
+marker.e macro n
  len.##n: defl $-last.marker
 endm
 `,
@@ -488,7 +488,7 @@ freeze:
 halt
 jr freeze
 
-macro for ,lbend
+for macro lbend
  ; uses a
  ; c: breaked
  proc
@@ -510,7 +510,7 @@ macro for ,lbend
  endp
 endm
 
-macro repti ,n,lbend
+repti macro n,lbend
  proc
   local s,lb, lbend2
   push bc
@@ -529,7 +529,7 @@ macro repti ,n,lbend
 endm
 
 
-macro reptb ,lbend
+reptb macro lbend
   local s,lb
  inc b
  djnz lb
@@ -546,7 +546,7 @@ endm
 
 
 
-macro callsva,pp
+callsva macro pp
  local sva
  ld (sva-1),a
  call pp
@@ -564,7 +564,7 @@ bcis0.a:
  and a
  ret
 
-macro reptbc ,lbend
+reptbc macro lbend
  local s,lb
  call bcis0
  jp z,lbend 
@@ -586,7 +586,7 @@ iff.Z  equ 1
 iff.NC equ 2
 iff.C  equ 3
 
-macro iff,cnd,to
+iff macro cnd,to
  local iff.
  if iff.##cnd eq iff.NZ
   jr z,to
@@ -605,7 +605,7 @@ macro iff,cnd,to
  ;skip:
 endm
 
-macro break,cnd
+break macro cnd
  if NUL cnd
   scf
   ret
@@ -618,7 +618,7 @@ macro break,cnd
   endp
  endif
 endm
-macro continue,cnd
+continue macro cnd
  if NUL cnd 
   or a
   ret
@@ -633,19 +633,19 @@ macro continue,cnd
 endm
 
 
-macro djnzr,reg, j
+djnzr macro reg,j
  dec reg
  jr NZ,j
 endm
 
-macro callhl
+callhl macro 
  local LCD
  ld (LCD-2),HL
  call LCD
  LCD:
 endm
 
-macro stride,lim,to
+stride macro lim,to
  if (low $)<lim
   exitm
  endif
@@ -653,27 +653,27 @@ macro stride,lim,to
 endm
 
 
-macro unreach, mesg
+unreach macro mesg
  ;trace mesg
  call h.unreach
 endm
-macro head, lb
+head macro lb
  unreach lb
  marker.b lb
  lb:
 endm
 
-macro defsub, n
+defsub macro n
  head n
 endm
-macro endsub, n
+endsub macro n
  ret
  marker.e n
 endm
-macro defwork, n
+defwork macro n
  head n
 endm
-macro endwork, n
+endwork macro n
  marker.e n
 endm
 
@@ -703,7 +703,7 @@ th.st.active equ 31h
 ; ld bc,th.size
 ; for lb
 ;endm
-macro th.for.a, nx, st, en
+th.for.a macro nx,st,en
  if nul st
   th.for.a nx, 0, th.count
   exitm
@@ -726,7 +726,7 @@ macro th.for.a, nx, st, en
  do:
 endm
 
-macro th.new.range,st,en
+th.new.range macro st,en
  ld bc,st
  ld(th.new.start),bc
  ld bc,en
@@ -860,21 +860,21 @@ defsub th.term
  jr adrssp
 endsub th.term
 
-macro th.with.do, to
+th.with.do macro to
  local pr
  th.with pr
  jr to
  pr:
 endm
 
-macro th.with.setdst, reg
+th.with.setdst macro reg
  ld (th.jpdest-2),reg
 endm
-macro th.with,pr
+th.with macro pr
  movw (th.jpdest-2), pr
  call th.with.s
 endm
-macro th.with.ret
+th.with.ret macro 
  jp th.ewith
 endm
 
@@ -940,7 +940,7 @@ endsub th.loop
 
 
 
-macro th.pushi, val
+th.pushi macro val
  ld bc,val
  call th.push
 endm
@@ -951,17 +951,17 @@ endm
 include ctrl
 
 ;debug
-macro show,reg
+show macro reg
  ld (hexval+1),reg
  call showhex
 endm
-macro showm ,ad
+showm macro ad
  push hl
  ld HL,(ad)
  show HL
  pop HL
 endm
-macro showlb,lb
+showlb macro lb
  push hl
  ld hl,lb
  ld (hexval+1),hl
@@ -969,7 +969,7 @@ macro showlb,lb
  pop hl
 endm
 
-macro trace,v
+trace macro v
  if not nul v
   push af
   ld a,v
@@ -1111,7 +1111,7 @@ defsub unreach.new
  db "unreach"
  db 0
 endsub unreach.new
-macro unreach.new.init
+unreach.new.init macro 
 ld hl,h.unreach
 ld (hl),0c3h
 ld hl,unreach.new
@@ -1119,14 +1119,14 @@ ld (h.unreach+1),hl
 endm`,
     'sp':`include mem
 include debug
-macro sp.get
+sp.get macro 
  ld HL,0
  ADD hl, sp
 endm
-macro sp.set
+sp.set macro 
  ld sp,hl
 endm
-macro mem2sp,ad
+mem2sp macro ad
  local rs
  if nul ad
   ld (rs-2),hl
@@ -1136,7 +1136,7 @@ macro mem2sp,ad
   ld sp,(ad)
  endif
 endm
-macro sp2mem,ad
+sp2mem macro ad
  local spad
  if nul ad
   ld (spad-2),hl
@@ -1147,13 +1147,13 @@ macro sp2mem,ad
  endif
 endm
 
-macro showsp
+showsp macro 
  ld (sptmp),sp
  showm sptmp
 endm
 sptmp:
 dw 0
-macro showstk
+showstk macro 
  showsp
  ld (sva),a
  ld a,":"
@@ -1170,26 +1170,26 @@ include assert
 
 ;a2 a1  oldpc oldix lcl1 lcl2
 argidx equ 2
-macro getarg ,n
+getarg macro n
  ld l,(ix+argidx+n*2)
  ld h,(ix+argidx+n*2+1)
 endm
-macro setarg ,n
+setarg macro n
  ld (ix+argidx+n*2),l
  ld (ix+argidx+n*2+1),h
 endm
 
-macro setlcl ,n
+setlcl macro n
  ld (IX-(n*2-1)),h
  ld (ix-n*2),l
 endm
 
-macro getlcl ,n
+getlcl macro n
  ld h,(IX-(n*2-1))
  ld l,(ix-n*2)
 endm
 
-macro addarg
+addarg macro 
  push hl
 ; hl=arg  stktp=af
 ;ex (sp),hl
@@ -1199,18 +1199,18 @@ endm
 
 
 
-macro pusharg ,n
+pusharg macro n
  getarg n
  push HL
 endm
 
-macro pushlcl ,n
+pushlcl macro n
  getlcl n
  push HL
 endm
 
 
-macro pops ,n
+pops macro n
  rept n*2
   inc sp
  endm
@@ -1218,17 +1218,17 @@ endm
 
 
 
-macro pushthis
+pushthis macro 
  getthis
  push af
 endm
-macro popthis
+popthis macro 
  popa
  ld (this),a
 endm
 
 
-macro invoketg.a,fld,args
+invoketg.a macro fld,args
 ; pushthis before arg push
 ; hl=target 
  ld a,h
@@ -1239,69 +1239,69 @@ macro invoketg.a,fld,args
 ; popthis after 
 endm
 
-macro invoke,fld
+invoke macro fld
  getfld fld
  callhl
 ; pops args
  getthis
 endm
 
-macro getfld, n
+getfld macro n
  local ad
  ld (ad-1),a
  ld hl,(n)
  ad:
 endm
 
-macro setfld, n
+setfld macro n
  local ad
  ld (ad-1),a
  ld (n),hl
  ad:
 endm
 
-macro getfldtg,n
+getfldtg macro n
 ;hl=tg
  ld l,n
  peekw hl,hl
 endm
 
-macro setfldtg,n
+setfldtg macro n
 ; stk=val hl=tg
  ld l,n
  pop de
  pokew hl,de
 endm
 
-macro getfldtg, n
+getfldtg macro n
 ; hl=target
  ld d,h
  ld e,n
  peekw HL,de
 endm
 
-macro tgconst,n
+tgconst macro n
  ld (n-1),a
 endm
-macro tgconst.g ,r16,n,fld
+tgconst.g macro r16,n,fld
  ld r16,(fld)
  n:
 endm
-macro tgconst.s ,n,fld,r16
+tgconst.s macro n,fld,r16
  ld (fld),r16
  n:
 endm
 
 
-macro curth2this
+curth2this macro 
  ld a,(th.cur+1)
  ld (this),a
 endm
-macro getthis
+getthis macro 
  ld a,(this)
 endm
 
-macro new,Class,flds,st,en
+new macro Class,flds,st,en
  if nul st
   th.new.range th.start, th.end
  else
@@ -1370,7 +1370,7 @@ proc
 endp
 endsub o.new
 
-macro new.arg, n, v
+new.arg macro n,v
  if not nul v
   ld hl,v
  endif
@@ -1378,7 +1378,7 @@ macro new.arg, n, v
  pushi n,bc
 endm
  
-macro o.assert.eq,fld, v
+o.assert.eq macro fld,v
  local aa
  assert.do aa
   getfld fld
@@ -1390,11 +1390,11 @@ endm
 this:
 db 0
 
-macro fld.def,n
+fld.def macro n
  n equ fldidx
  fldidx:defl fldidx-2
 endm
-macro class,Class,super
+class macro Class,super
  unreach "c"
  marker.b 0
  dw super
@@ -1402,7 +1402,7 @@ macro class,Class,super
  Class:
   fld .class,Class
 endm
-macro fld.bottom,Class
+fld.bottom macro Class
  if defined Class##.bottom 
   if Class##.bottom ne fldidx
    .error bottom ne fldidx
@@ -1411,7 +1411,7 @@ macro fld.bottom,Class
  Class##.bottom:defl fldidx
  endif
 endm 
-macro fld,n,v
+fld macro n,v
  if defined n
   if n ne fldidx
    .error n ne fldidx
@@ -1423,14 +1423,14 @@ macro fld,n,v
  endif
  pushi v,bc
 endm
-macro unuse
+unuse macro 
  fldidx:defl fldidx-2
  pushi 0,bc
 endm
-macro meth,Class,n
+meth macro Class,n
  fld .##n, Class##.##n
 endm
-macro met2,Class,n
+met2 macro Class,n
  fld n, Class##n
 endm
 
@@ -1446,7 +1446,7 @@ defsub o.boot
 endsub o.boot
 
 
-macro yield
+yield macro 
  pushthis
  push ix
  call th.yield
@@ -1454,7 +1454,7 @@ macro yield
  popthis
 endm
 
-macro def,n,args,lcls, noent
+def macro n,args,lcls,noent
 head n
  def.args:defl args
  def.locals:defl lcls
@@ -1467,7 +1467,7 @@ head n
  ;if args>0 or lcls>0
  ;endif
 endm
-macro enter ,locals
+enter macro locals
  ;  arg2 arg1 retad oldix lcl1 lcl2 
  push ix
  ld ix,0
@@ -1476,7 +1476,7 @@ macro enter ,locals
   push HL
  endm
 endm
-macro enddef,n
+enddef macro n
  ;if def.args>0 or def.locals>0
  if def.noent eq 0
   exit def.args
@@ -1485,7 +1485,7 @@ macro enddef,n
  endif
  marker.e n
 endm
-macro exit,n
+exit macro n
  ld sp,ix
  pop ix
  if n!=0
@@ -1562,12 +1562,12 @@ class Sprite,Object
  fld.bottom Sprite
  marker.e Sprite
  
-macro outwrt
+outwrt macro 
   out (98h),a
 endm
 
 
-macro spr.unscale
+spr.unscale macro 
  ; HL -> A
  rept spr.scale
   srlhl
@@ -1745,14 +1745,14 @@ include key
 ;.die equ .screenOut-2
 ;.updateEx equ .die-2
 
-macro end.const, n
+end.const macro n
  pushi RActor.wait,bc
  pushi o.boot,bc
  th.with.ret 0 
  marker.e n
 endm
 
-macro RActor.noovr,Class
+RActor.noovr macro Class
  meth Class,main
  fld.bottom Object
  fld .x, 0
@@ -1862,7 +1862,7 @@ def RActor.crashTo,1,0
  endc:
 enddef RActor.crashTo
 
-macro crashToClass,Class,st,en
+crashToClass macro Class,st,en
  local nx,found
  ; a=this
  call crashTo.setXY
@@ -1877,13 +1877,13 @@ macro crashToClass,Class,st,en
  found:
 endm
 
-macro foreach.a, Class,st,en,nxt
+foreach.a macro Class,st,en,nxt
  th.for.a nxt, st, en
   all.skip Class
 endm
 
 
-macro all.skip.blank.self
+all.skip.blank.self macro 
  ; skip blank
   ; TODO th.ofs.stp
   call th.isblank.a
@@ -1893,7 +1893,7 @@ macro all.skip.blank.self
   cp h
   continue z
 endm
-macro all.skip.isnot,Class
+all.skip.isnot macro Class
   ; skip object not instance of *Class*
   push hl
   ld a,h
@@ -1903,7 +1903,7 @@ macro all.skip.isnot,Class
   pop hl
   continue nz
 endm
-macro all.skip, Class
+all.skip macro Class
  all.skip.blank.self 0
  all.skip.isnot Class
 endm
@@ -1937,7 +1937,7 @@ endsub crashTo1
 endp
 
 
-macro tnu.run,Main,st,en
+tnu.run macro Main,st,en
  unreach.new.init 0
  ld sp,sp.ini
  call screen1
@@ -1976,7 +1976,7 @@ proc
 endp
 endsub all.die
 
-macro loadPage,Class,args,st,en
+loadPage macro Class,args,st,en
 call clearInterval
 call all.die
 new Class,args,st,en
@@ -2883,22 +2883,22 @@ a.reg.val:
 dw 0
 a.reg.max:
 dw 0
-macro a.regi,n,v
+a.regi macro n,v
  push hl
  ld hl,v
  ld (a.reg.##n),hl
  pop hl
 endm
-macro a.regr,n,v
+a.regr macro n,v
  ld (a.reg.##n),v
 endm
 
-macro a.dummy
+a.dummy macro 
  local a.reg.,trc,adr,min,val,nax
 endm
  
 
-macro assert.eq,o
+assert.eq macro o
  storelastpc
  pushall 
  if not nul o
@@ -2913,7 +2913,7 @@ macro assert.eq,o
  popall
 endm
 
-macro assert.do,nx
+assert.do macro nx
  storelastpc
  pushall
  call to
@@ -2922,7 +2922,7 @@ macro assert.do,nx
  to:
 endm
 
-macro storelastpc
+storelastpc macro 
  push hl
  call getpc
  ld (lastpc),hl
@@ -2946,7 +2946,7 @@ assert.fail:
  showm a.reg.adr
  showm lastpc
  call freeze
-macro assert.meqw,ad,val
+assert.meqw macro ad,val
  a.regi adr,ad
  push hl
  ld hl,(ad)
@@ -3046,7 +3046,7 @@ endsub int.nop
  
 timecnt:
 db 0
-macro vdptest
+vdptest macro 
 local stk1,stk2,stk3,vl
 stk1:
  ds 256,35
