@@ -605,31 +605,26 @@ iff macro cnd,to
  ;skip:
 endm
 
-break macro cnd
- if NUL cnd
-  scf
-  ret
- else
-  proc 
-   local jj
-   iff cnd ,jj
-   break
-  jj:
-  endp
- endif
+break macro
+ scf
+ ret
 endm
-continue macro cnd
- if NUL cnd 
-  or a
-  ret
- else
-  proc 
-   local jj
-   iff cnd,jj
-   continue
-  jj:
-  endp
- endif
+break.if macro cnd
+ local jj
+ iff cnd ,jj
+  break
+ jj:
+endm
+
+continue macro
+ or a
+ ret
+endm
+continue.if macro cnd
+ local jj
+ iff cnd,jj
+  continue
+ jj:
 endm
 
 
@@ -755,7 +750,7 @@ proc
  for lbend
   ; TODO th.ofs.stp
   call th.isblank.a
-  break z
+  break.if z
   continue
  lbend:
  ret nc
@@ -797,7 +792,7 @@ defsub th.stepall
   ;todo th.ofs.stp
   ld (th.cur),hl
   call th.isblank.a
-  continue z
+  continue.if z
   call th.step
 
   ; chk reserved kill
@@ -805,7 +800,7 @@ defsub th.stepall
   ld (th.cur),hl
   ld a,(th.kill.reserve)
   cp 0
-  continue z
+  continue.if z
   ld h,a
   call th.kill.a
   xor a
@@ -1868,7 +1863,7 @@ crashToClass macro Class,st,en
  call crashTo.setXY
  foreach.a Class,st,en,nx
   call crashTo1
-  break c
+  break.if c
   continue
  nx:
  getthis 0
@@ -1887,11 +1882,11 @@ all.skip.blank.self macro
  ; skip blank
   ; TODO th.ofs.stp
   call th.isblank.a
-  continue z
+  continue.if z
   ; skip hl==this
   getthis 0
   cp h
-  continue z
+  continue.if z
 endm
 all.skip.isnot macro Class
   ; skip object not instance of *Class*
@@ -1901,7 +1896,7 @@ all.skip.isnot macro Class
   call instanceof
   getthis 0
   pop hl
-  continue nz
+  continue.if nz
 endm
 all.skip macro Class
  all.skip.blank.self 0
@@ -1968,7 +1963,7 @@ proc
  pushthis 0
  th.for.a nxt
   call th.isblank.a
-  continue z
+  continue.if z
   invoketg.a .die
   continue
  nxt:
@@ -2826,7 +2821,7 @@ ld b,10
 reptb nxt
  ld a,(hl)
  cp 0
- break z
+ break.if z
  call wrt
  inc hl
  continue
