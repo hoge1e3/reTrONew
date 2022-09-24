@@ -696,10 +696,6 @@ th.st.active equ 31h
 ; for lb
 ;endm
 th.for.a macro nx,st,en
- if nul st
-  th.for.a nx, 0, th.count
-  exitm
- endif
  local do, loop
  ld a,st+(high th.start)
  loop:
@@ -770,7 +766,7 @@ endsub th.new
 defsub th.init
 proc
  local lbend
- th.for.a lbend
+ th.for.a lbend, 0, th.count
   ; TODO th.ofs.stp
   ld L, th.ofs.stp
   ld (HL),th.st.blank
@@ -785,7 +781,7 @@ endp
 endsub th.init
 
 defsub th.stepall
- th.for.a thnx
+ th.for.a thnx, 0, th.count
   ;todo th.ofs.stp
   ld (th.cur),hl
   call th.isblank.a
@@ -1556,7 +1552,7 @@ proc
  local t1,t2,t3,t4
  ld hl, 1b00h
  call SETWRT
- th.for.a sprl
+ th.for.a sprl, 0, th.count
   ld a,h
   tgconst t1
   tgconst t2
@@ -1942,7 +1938,7 @@ defsub all.die
 proc
  local nxt
  pushthis 0
- th.for.a nxt
+ th.for.a nxt, 0, th.count
   call th.isblank.a
   continue.if z
   invoketg.a .die
