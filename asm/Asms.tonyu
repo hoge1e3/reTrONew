@@ -1116,15 +1116,12 @@ endm
 sp.set macro 
  ld sp,hl
 endm
-mem2sp macro ad
+mem2sp macro
+ ;(hl)->sp
  local rs
- if nul ad
-  ld (rs-2),hl
-  ld sp,(0)
-  rs:
- else
-  ld sp,(ad)
- endif
+ ld (rs-2),hl
+ ld sp,(0)
+ rs:
 endm
 sp2mem macro ad
  local spad
