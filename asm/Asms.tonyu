@@ -828,7 +828,7 @@ db 0
 endwork
 
 defsub th.step
- sp2mem adrssp+1
+ ld (adrssp+1),sp
  ld HL,(th.cur)
  ld l,th.ofs.stp
  ;call susint
@@ -871,7 +871,7 @@ th.with.ret macro
 endm
 
 defsub th.with.s
- sp2mem th.wrssp-2
+ ld (th.wrssp-2),sp
  ld l, th.ofs.sp
  ld (th.updsp-2),hl
  mem2sp
@@ -1123,15 +1123,12 @@ mem2sp macro
  ld sp,(0)
  rs:
 endm
-sp2mem macro ad
+sp2mem macro
+ ;sp->(hl)
  local spad
- if nul ad
-  ld (spad-2),hl
-  ld (0),sp
-  spad:
- else
-  ld (ad),sp
- endif
+ ld (spad-2),hl
+ ld (0),sp
+ spad:
 endm
 
 showsp macro 
