@@ -1286,11 +1286,7 @@ getthis macro
 endm
 
 new macro Class,flds,st,en
- if nul st
-  th.new.range th.start, th.end
- else
-  th.new.range th.start+st*th.size, th.start+en*th.size
- endif
+ th.new.range th.start+st*th.size, th.start+en*th.size
  pushi flds, bc
  pushi Class, bc
  call o.new
@@ -2264,11 +2260,11 @@ new.arg.i .vx,1
 new.arg.i .vy,0
 new.arg.i .x,0
 new.arg.i .y,100
-new Cat,4
+new Cat,4,0,16
 
 new.arg.i .x,100
 new.arg.i .y,100
-new Target,2
+new Target,2,0,16
 
 ld (right),hl
 ld a,h
@@ -2402,7 +2398,7 @@ call spr.inipat
 ;call mus.ini
 
 
-new Main, 0
+new Main, 0,0,16
 show hl
 
 
@@ -2450,7 +2446,7 @@ Main.main:
    ld de,15
    sbc hl,de
    new.arg .vy
-   new Bullet, 4
+   new Bullet, 4,0,16
    call dstk
   doap:
   ld a,8
@@ -2584,21 +2580,21 @@ new.arg.i .vx,1
 new.arg.i .vy,0
 new.arg.i .x,0
 new.arg.i .y,100
-new Cat,4
+new Cat,4,0,16
 
 new.arg.i .x,100
 new.arg.i .y,100
-new Target,2
+new Target,2,0,16
 
 new.arg.i .x,200
 new.arg.i .y,100
-new Target,2
+new Target,2,0,16
 
 
 new.arg.i .x,150
 new.arg.i .y,100
 new.arg.i .c,8
-new NTarget,3
+new NTarget,3,0,16
 
 ld (right),hl
 ld a,h
