@@ -390,15 +390,11 @@ pokew macro regm,regv
   ld (0),regv
   w:
 endm
-movw macro dst,src,rp
- if nul rp
-  push hl
-  movw dst,src,hl
-  pop hl
- else
-  ld rp,src
-  ld dst,rp
- endif 
+movw macro dst,src
+ push hl
+ ld hl,src
+ ld dst,hl
+ pop hl
 endm
 
 popa macro 
