@@ -1373,10 +1373,11 @@ proc
 endp
 endsub o.new
 
-new.arg macro n,v
- if not nul v
-  ld hl,v
- endif
+new.arg.i macro n,v
+ ld hl,v
+ new.arg n
+endm
+new.arg macro n
  push hl
  pushi n,bc
 endm
@@ -2283,14 +2284,14 @@ right:dw 0
 main:
 tnu.run Main
 def Main.main,0,0
-new.arg .vx,1
-new.arg .vy,0
-new.arg .x,0
-new.arg .y,100
+new.arg.i .vx,1
+new.arg.i .vy,0
+new.arg.i .x,0
+new.arg.i .y,100
 new Cat,4
 
-new.arg .x,100
-new.arg .y,100
+new.arg.i .x,100
+new.arg.i .y,100
 new Target,2
 
 ld (right),hl
@@ -2603,24 +2604,24 @@ right:dw 0
 main:
 tnu.run Main
 def Main.main,0,0
-new.arg .vx,1
-new.arg .vy,0
-new.arg .x,0
-new.arg .y,100
+new.arg.i .vx,1
+new.arg.i .vy,0
+new.arg.i .x,0
+new.arg.i .y,100
 new Cat,4
 
-new.arg .x,100
-new.arg .y,100
+new.arg.i .x,100
+new.arg.i .y,100
 new Target,2
 
-new.arg .x,200
-new.arg .y,100
+new.arg.i .x,200
+new.arg.i .y,100
 new Target,2
 
 
-new.arg .x,150
-new.arg .y,100
-new.arg .c,8
+new.arg.i .x,150
+new.arg.i .y,100
+new.arg.i .c,8
 new NTarget,3
 
 ld (right),hl
