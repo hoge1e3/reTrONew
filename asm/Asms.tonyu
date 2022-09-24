@@ -975,12 +975,10 @@ showlb macro lb
 endm
 
 trace macro v
- if not nul v
-  push af
-  ld a,v
-  ld (trad),a
-  pop af
- endif
+ push af
+ ld a,v
+ ld (trad),a
+ pop af
  call trace.s
 endm
 
@@ -2906,9 +2904,7 @@ endm
 assert.eq macro o
  storelastpc
  pushall 
- if not nul o
-  a.regi val, o
- endif
+ a.regi val, o
  ld de,(a.reg.val)
  ld(a.reg.val),hl
  ld(a.reg.min),de
