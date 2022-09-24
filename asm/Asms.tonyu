@@ -418,17 +418,8 @@ endm
  
 
 pushi macro n,rp
- local rrr
- if nul rp
-  ld (rrr-2),hl
-  ld hl,n
-  push hl
-  ld hl,0
-  rrr:
- else
-  ld rp,n
-  push rp
- endif
+ ld rp,n
+ push rp
 endm
 const macro n,reg
  ld (n-2),reg
