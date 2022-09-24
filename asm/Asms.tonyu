@@ -201,52 +201,62 @@ include ctrl
 true equ -1
 false equ 0
 
-rethl macro val,flg
+ret.true.if macro flg
  local tru
- if not nul flg
-  iff flg ,tru
- endif
- ld hl,val
- ret
+ iff flg ,tru
+  ld hl,true
+  ret
  tru:
+endm
+
+ret.false.if macro flg
+ local tru
+ iff flg ,tru
+  ret.false
+ tru:
+endm
+
+ret.false macro
+ ld hl,false
+ ret
 endm
 
 hleqde:
  subhl de
- rethl true,z
- rethl false
+ ret.true.if z
+ ret.false
 
 hlnede:
  subhl de
- rethl true,nz
- rethl false
+ ret.true.if nz
+ ret.false
  
 hlgtde:
  subhl de
- rethl false,z
+ ret.false.if z
  bit 7,h
- rethl true,z
- rethl false
+ ret.true.if z
+ ret.false
 
 hlltde:
  subhl de
  bit 7,h
- rethl true,nz
- rethl false
+ ret.true.if nz
+ ret.false
  
 hlgede:
  subhl de
- rethl true,z
+ ret.true.if z
  bit 7,h
- rethl true,z
- rethl false
+ ret.true.if z
+ ret.false
 
 hllede:
  subhl de
- rethl true,z
+ ret.true.if z
  bit 7,h
- rethl true,nz
- rethl false
+ ret.true.if nz
+ ret.false
  
 proc
 ziffalse:
