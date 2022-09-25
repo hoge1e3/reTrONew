@@ -638,10 +638,10 @@ callhl macro
 endm
 
 stride macro lim,to
- if (low $)<lim
+ if low($)<lim
   exitm
  endif
- ds 256+to-(low $),0cdh
+ ds 256+to-low($),0cdh
 endm
 
 
@@ -697,9 +697,9 @@ th.st.active equ 31h
 ;endm
 th.for.a macro nx,st,en
  local do, loop
- ld a,st+(high th.start)
+ ld a,st+(high(th.start))
  loop:
-  cp en+(high th.start)
+  cp en+(high(th.start))
   jp nc, nx
   push af
   ld h,a
@@ -821,7 +821,7 @@ endsub th.kill.a
 
 defwork th.kill.reserve
 db 0
-endwork
+endwork th.kill.reserve
 
 defsub th.step
  ld (adrssp+1),sp
@@ -862,7 +862,7 @@ th.with macro pr
  movw (th.jpdest-2), pr
  call th.with.s
 endm
-th.with.ret macro 
+th.with.ret macro n
  jp th.ewith
 endm
 
@@ -1255,7 +1255,7 @@ setfldtg macro n
  pokew hl,de
 endm
 
-getfldtg macro n
+getfldtg_botu macro n
 ; hl=target
  ld d,h
  ld e,n
@@ -1377,7 +1377,7 @@ class macro Class,super
  unreach "c"
  marker.b 0
  dw super
- fldidx:defl fld.top; todo fld.top
+ fldidx:defl fld.top
  Class:
   fld .class,Class
 endm
@@ -1477,9 +1477,9 @@ defsub isobj.a
  ;hl=obj?
  ;cy=true
  ld a,h
- cp high th.start
+ cp high(th.start)
  jr c,notobj
- cp high th.end
+ cp high(th.end)
  jr nc,notobj
  scf
  ret
@@ -1599,7 +1599,7 @@ proc
 
  ld a,(spr.puts.b-1)
  inc a
- cp high th.end
+ cp high(th.end)
  jr c,rsta
   sub th.count
  rsta:
@@ -1612,14 +1612,14 @@ proc
  local sprl, nrst
  ld hl, 1b00h
  call SETWRT
- ld a, high th.start
+ ld a, high(th.start)
  spr.puts.b:
  ld b, th.count
  sprl:
   call spr.put1
   add a,1
   spr.puts.s:
-  cp high th.end
+  cp high(th.end)
   jr c,nrst
    sub th.count
   nrst:
