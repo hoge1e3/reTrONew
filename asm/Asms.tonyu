@@ -1382,12 +1382,12 @@ class macro Class,super
   fld .class,Class
 endm
 fld.bottom macro Class
- if defined Class##.bottom 
-  if Class##.bottom ne fldidx
+ if defined bottomOf##Class 
+  if bottomOf##Class ne fldidx
    .error bottom ne fldidx
   endif
  else
- Class##.bottom:defl fldidx
+ bottomOf##Class:defl fldidx
  endif
 endm 
 fld macro n,v
