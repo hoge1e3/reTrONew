@@ -940,7 +940,7 @@ include ctrl
 
 ;debug
 show macro reg
- ld (hexval+1),reg
+ ld (hexval),reg
  call showhex
 endm
 showm macro ad
@@ -952,7 +952,7 @@ endm
 showlb macro lb
  push hl
  ld hl,lb
- ld (hexval+1),hl
+ ld (hexval),hl
  call showhex
  pop hl
 endm
@@ -965,6 +965,9 @@ trace macro v
  call trace.s
 endm
 
+defwork hexval
+ dw 0
+endwork hexval
 
 defsub showhex
 proc
@@ -972,8 +975,7 @@ proc
  push af
  push bc
  push HL
- hexval:
- ld hl,0
+ ld hl,(hexval)
  ld b,4
  loop:
   xor a
@@ -1032,10 +1034,10 @@ endwork trace.s
 defsub showz
  push af
  jr z,showz.s
- ld a,"N"
+ ld a,'N'
  call wrt
  showz.s:
- ld a,"Z"
+ ld a,'Z'
  call wrt
  ld a,32
  call wrt
@@ -1046,10 +1048,10 @@ endsub showz
 defsub showc
  push af
  jr c,showc.s
- ld a,"N"
+ ld a,'N'
  call wrt
  showc.s:
- ld a,"C"
+ ld a,'C'
  call wrt
  ld a,32
  call wrt
