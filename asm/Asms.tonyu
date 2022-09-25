@@ -101,7 +101,7 @@ subhl macro rp
  sbc hl,rp
 endm
 
-cpde.a macro 
+cpde.a macro n
  rst dcompr
 endm
 
@@ -1421,7 +1421,7 @@ class Object,null
 
 defsub o.boot
  curth2this
- invoke .main,0
+ invoke .main
 endsub o.boot
 
 
@@ -1536,12 +1536,12 @@ class Sprite,Object
  fld.bottom Sprite
  marker.e Sprite
  
-outwrt macro 
+outwrt macro n 
   out (98h),a
 endm
 
 
-spr.unscale macro 
+spr.unscale macro n
  ; HL -> A
  rept spr.scale
   srlhl
@@ -1587,38 +1587,46 @@ defsub spr.puts
 proc
  local rsta, rdir
  call spr.putslp
- ld a,(spr.puts.s-1)
+ ld a,(spr.puts.s)
  cp 1
  jr nz,rdir
   ld a, th.count-1
-  ld (spr.puts.s-1),a
+  ld (spr.puts.s),a
   ret
  rdir:
  ld a,1
- ld (spr.puts.s-1),a
+ ld (spr.puts.s),a
 
- ld a,(spr.puts.b-1)
+ ld a,(spr.puts.b)
  inc a
  cp high(th.end)
  jr c,rsta
   sub th.count
  rsta:
- ld (spr.puts.b-1),a
+ ld (spr.puts.b),a
 endp
 endsub spr.puts_new
+
+defwork spr.puts.b
+ db high(th.start)
+endwork spr.puts.b
+
+defwork spr.puts.s
+ db 1
+endwork spr.puts.s
 
 defsub spr.putslp
 proc
  local sprl, nrst
  ld hl, 1b00h
  call SETWRT
- ld a, high(th.start)
- spr.puts.b:
+ ld a, (spr.puts.b)
  ld b, th.count
  sprl:
   call spr.put1
-  add a,1
-  spr.puts.s:
+  ld c,a
+  ld a,(spr.puts.s)
+  add a,c
   cp high(th.end)
   jr c,nrst
    sub th.count
@@ -1763,7 +1771,7 @@ proc
  jr nz, true
  getfld .y
  ld de,192*2
- cpde.a
+ cpde.a 0
  getthis
  jr nc,true
  ld hl,0
@@ -2458,7 +2466,7 @@ Main.main:
   inc hl
   setfld .x
   ld de,400
-  cpde.a
+  cpde.a 0
   jp c, olp
   golf:
   ld hl,0
@@ -2513,7 +2521,7 @@ Bullet.main:
   bit 7,h
   jr nz,blp
   ld de,5
-  cpde.a
+  cpde.a 0
   jr c,blp
  
   call dstk
