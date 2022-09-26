@@ -397,7 +397,7 @@ movw macro dst,src
  pop hl
 endm
 
-popa macro 
+popa macro xx 
   ex (sp),hl
   ld a,h
   pop HL
@@ -1200,17 +1200,17 @@ endm
 
 
 
-pushthis macro 
- getthis
+pushthis macro xx 
+ getthis xx
  push af
 endm
-popthis macro 
- popa
+popthis macro xx
+ popa xx
  ld (this),a
 endm
 
 
-invoketg.a macro fld,args
+invoketg.a macro fld
 ; pushthis before arg push
 ; hl=target 
  ld a,h
@@ -1225,7 +1225,7 @@ invoke macro fld
  getfld fld
  callhl
 ; pops args
- getthis
+ getthis 0
 endm
 
 getfld macro n
@@ -1279,7 +1279,7 @@ curth2this macro
  ld a,(th.cur+1)
  ld (this),a
 endm
-getthis macro 
+getthis macro xx 
  ld a,(this)
 endm
 
@@ -1426,7 +1426,7 @@ endsub o.boot
 
 
 yield macro 
- pushthis
+ pushthis 0
  push ix
  call th.yield
  pop ix
@@ -1772,7 +1772,7 @@ proc
  getfld .y
  ld de,192*2
  cpde.a 0
- getthis
+ getthis 0
  jr nc,true
  ld hl,0
  xor a
@@ -2306,7 +2306,7 @@ def Cat.main,0,0
   ld hl,0108h
   call getkey
   jpf nomov
-  getthis
+  getthis 0
   ;x+=vx
   getfld .x
   ex de, hl
@@ -2424,13 +2424,13 @@ class Main, RActor
 
 Main.main:
  olp:
-  getthis
+  getthis 0
   invoke .update
   call xrnd.a
   ld a,h
   and 15
   jr nz,doap
-   getthis
+   getthis 0
    getfld .x
    new.arg .x
    getfld .y
@@ -2453,7 +2453,7 @@ Main.main:
   and 1
   jr z,golf
   
-  getthis
+  getthis 0
   getfld .x
   inc hl
   inc hl
@@ -2463,7 +2463,7 @@ Main.main:
   jp c, olp
   golf:
   ld hl,0
-  getthis
+  getthis 0
   setfld .x
  jp olp
 
@@ -2490,7 +2490,7 @@ class Bullet,RActor
  
 Bullet.main:
  blp:
-  getthis
+  getthis 0
   ;x+=vx
   getfld .x
   ex de, hl
@@ -2518,14 +2518,14 @@ Bullet.main:
   jr c,blp
  
   call dstk
-  getthis
+  getthis 0
   ld hl,3
   setfld .p
   pushi 10,bc
   invoke .updateEx
 
  bleft:
-  getthis
+  getthis 0
   ld hl,2
   setfld .p
   getfld .x
@@ -2547,7 +2547,7 @@ Bullet.main:
 dstk:
  push af
  ld hl,th.start+256*3
- getthis
+ getthis 0
  ld h,a
  ld de,1900h
  ld bc,256
@@ -2640,7 +2640,7 @@ class Cat,Actor
  end.const 0
 def Cat.main,0,0
  blp:
-  getthis
+  getthis 0
   ;x+=vx
   getfld .x
   ex de, hl
