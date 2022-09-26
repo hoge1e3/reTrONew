@@ -1812,20 +1812,18 @@ enddef RActor.updateEx
 
 crashTo.size equ 8<<spr.scale
 
-proc
- local gx,gy,t1,t2
- local endc,cr1
- local fe
 
 defsub crashTo.setXY
  getfld .x
- const gx,hl
+ const cr.gx, hl
  getfld .y
- const gy,hl
+ const cr.gy, hl
 endsub crashTo.setXY
 
 
 def RActor.crashTo,1,0
+proc
+ local cr1
  call crashTo.setXY
  getarg 1
  ;const cr.class,hl
@@ -1833,15 +1831,11 @@ def RActor.crashTo,1,0
  jr c, cr1
   unreach "C"
   ; "Cannot call target.crashTo(Class) "
-  ;ld hl, th.start
-  ;ld de, th.end
-  ;call crashTo1
-  ;jr endc
  cr1:
   getthis 0
   call crashTo1
   flagtobool c
- endc:
+endp
 enddef RActor.crashTo
 
 crashToClass macro Class,st,en
@@ -1897,26 +1891,26 @@ defsub crashTo1
  ;hl is used
  push af
  ld a,h
- tgconst t1
- tgconst t2
+ tgconst cr.t1
+ tgconst cr.t2
  pop af
- tgconst.g hl,t1,.x
- ldconst bc,gx
+ tgconst.g hl, cr.t1, .x
+ ldconst bc, cr.gx
  subhl bc
  call abs
  ld bc,crashTo.size
  subhl bc
  ret nc
 
- tgconst.g hl,t2,.y
- ldconst bc,gy
+ tgconst.g hl, cr.t2, .y
+ ldconst bc, cr.gy
  subhl bc
  call abs
  ld bc,crashTo.size
  subhl bc
 endsub crashTo1
 
-endp
+
 
 
 tnu.run macro Main,st,en
@@ -2052,9 +2046,8 @@ db 00110000b
 
 endwork trig2mat
 
-proc
+
 defsub getkey.a
-local chkmat
 ex de,hl
 ld hl,keymat1
 call chkmat
@@ -2175,7 +2168,7 @@ endp
 endsub stickY.a
 
 
-endp`,
+`,
     'map':`include sub
 include math
 include tnu
