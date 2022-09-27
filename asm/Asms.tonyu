@@ -30,39 +30,39 @@ end main`,
     'math':`include ctrl
 
 ;16bit shifts
-slhl macro 
+slhl macro xx
  sla l
  rl h
 endm
-srahl macro 
+srahl macro xx
  sra h
  rr l
 endm
-srlhl macro 
+srlhl macro xx
  srl h
  rr l
 endm
-slde macro 
+slde macro xx
  sla e
  rl d
 endm
-srade macro 
+srade macro xx
  sra d
  rr e
 endm
-srlde macro 
+srlde macro xx
  srl d
  rr e
 endm
-slbc macro 
+slbc macro xx
  sla c
  rl b
 endm
-srabc macro 
+srabc macro xx
  sra b
  rr c
 endm
-srlbc macro 
+srlbc macro xx
  srl b
  rr c
 endm
@@ -705,7 +705,7 @@ th.for.a macro nx,st,en
   ld h,a
   ld l,0
   call do
-  popa
+  popa 0
   ld h,a
   ld l,0
   jp c, nx
@@ -980,7 +980,7 @@ proc
  loop:
   xor a
   rept 4
-   slhl
+   slhl 0
    rla
   endm
   call showhex1
@@ -1058,14 +1058,16 @@ defsub showc
  pop af
 endsub showc
  
+defwork cursor
+ dw 1800h
+endwork cursor
 
 defsub wrt
 proc
  local sk
  push hl
  push af
- ld hl,1800h
- cursor:
+ ld hl,(cursor)
  call 4dh
  inc hl
  ld a,h
@@ -1073,7 +1075,7 @@ proc
  jr c,sk
   ld h,18h
  sk:
- ld (cursor-2),hl
+ ld (cursor),hl
  pop af
  pop hl
  ret
@@ -1099,7 +1101,7 @@ defsub unreach.new
  db "unreach"
  db 0
 endsub unreach.new
-unreach.new.init macro 
+unreach.new.init macro 0
 ld hl,h.unreach
 ld (hl),0c3h
 ld hl,unreach.new
@@ -1430,7 +1432,7 @@ yield macro
  push ix
  call th.yield
  pop ix
- popthis
+ popthis 0
 endm
 
 def.noent: defl 0
@@ -1544,7 +1546,7 @@ endm
 spr.unscale macro n
  ; HL -> A
  rept spr.scale
-  srlhl
+  srlhl 0
  endm
  LD A,L
 endm
@@ -2233,7 +2235,7 @@ defsub locate
  ; hl=chipx
  ; de=chipy
  call map.adr
- ld (cursor-2),hl
+ ld (cursor),hl
 endsub locate
 `,
     'maze':``,
