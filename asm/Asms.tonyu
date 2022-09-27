@@ -729,16 +729,20 @@ defsub th.isblank.a
  cp th.st.blank
 endsub th.isblank.a
 
+ defwork th.new.start
+ dw th.start
+ endwork
+ defwork th.new.end
+ dw th.end
+ endwork
+ 
+
 defsub th.new
 ; nc for alloc fail
 proc 
  local lbend
- db 21h
- th.new.start:
- dw th.start
- db 11h
- th.new.end:
- dw th.end
+ ld hl,(th.new.start)
+ ld de,(th.new.end)
  ld bc,th.size
  for lbend
   ; TODO th.ofs.stp
@@ -1101,7 +1105,7 @@ defsub unreach.new
  db "unreach"
  db 0
 endsub unreach.new
-unreach.new.init macro 0
+unreach.new.init macro 
 ld hl,h.unreach
 ld (hl),0c3h
 ld hl,unreach.new
