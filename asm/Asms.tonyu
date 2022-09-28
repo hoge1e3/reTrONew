@@ -474,10 +474,10 @@ CSRX equ 0F3DDH
 null equ 0
 
 marker.b macro n
- last.marker: defl $
+ ;last.marker: defl $
 endm
 marker.e macro n
- len.##n: defl $-last.marker
+ ;len.##n: defl $-last.marker
 endm
 `,
     'ctrl':`include const
@@ -731,10 +731,10 @@ endsub th.isblank.a
 
  defwork th.new.start
  dw th.start
- endwork
+ endwork th.new.start
  defwork th.new.end
  dw th.end
- endwork
+ endwork th.new.end
  
 
 defsub th.new
