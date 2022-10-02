@@ -1,20 +1,20 @@
 extends TObject;
-let data={'main':`org 09000h
-; TODO 
+let data={'z_main':`org 09000h
+; TODO
 ; frameCount
 ; strig
 
-include ctrl
-include math
-include debug
-include sub
-include mem
-include sp
-include vdp
-include th
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_sp
+include z_vdp
+include z_th
 
 
-;===your code 
+;===your code
 
 main:
 ld a,5
@@ -27,7 +27,7 @@ nx:
 
 ret
 end main`,
-    'math':`include ctrl
+    'z_math':`include z_ctrl
 
 ;16bit shifts
 slhl macro xx
@@ -70,35 +70,37 @@ endm
 
 ; for xrnd
 sldehl macro n
-  local loop
-  ld b,n
+#local
+  ld b,&n
  loop:
   sla d
   rl e
   rl h
   rl l
   djnz loop
+#endlocal
 endm
 srdehl macro n
- local loop
- ld b,n
+#local
+ ld b,&n
  loop:
   srl l
   rr h
   rr e
   rr d
  djnz loop
+#endlocal
 endm
- 
+
 xorrm macro re,me
-  ld A,(me)
-  xor re
-  ld (me),a
+  ld A,(&me)
+  xor &re
+  ld (&me),a
 endm
 
 subhl macro rp
  and a
- sbc hl,rp
+ sbc hl,&rp
 endm
 
 cpde.a macro n
@@ -107,8 +109,7 @@ endm
 
 
 defsub xrnd.a
-proc 
- local rhl,rde,rdhlde
+#local
  ; s[0] ^= s[0] << 13
  call rdhlde
  sldehl 13
@@ -122,21 +123,21 @@ proc
  sldehl 5
  call wrtxor
  ret
- 
+
  rdhlde:
   ld hl,1234
  rhl:
   ld de,5678
  rde:
   ret
- 
+
  wrtxor:
   xorrm h,rhl-1
   xorrm l,rhl-2
   xorrm d,rde-1
   xorrm e,rde-2
   ret
-endp
+#endlocal
 endsub xrnd.a
 
 
@@ -145,7 +146,7 @@ defsub rnd
  call rnd.a
  pop af
  ret
-endsub rnd 
+endsub rnd
 
 defsub rnd.a
  ld de,07fffh
@@ -164,15 +165,14 @@ defsub abs
  bit 7,h
  ret z
 neghl:
- ld de,0 
- ex de,hl 
+ ld de,0
+ ex de,hl
  subhl de
  ret
 endsub abs
 
 defsub clamp
-proc
- local notmin
+#local
  ; hl value
  ; bc min
  ; de max
@@ -192,28 +192,30 @@ proc
  ret nz
  ex de,hl
  ret
-endp
+#endlocal
 endsub clamp
 
- `,
-    'bool':`include math
-include ctrl
+`,
+    'z_bool':`include z_math
+include z_ctrl
 true equ -1
 false equ 0
 
 ret.true.if macro flg
- local tru
- iff flg ,tru
+#local
+ iff &flg ,tru
   ld hl,true
   ret
  tru:
+#endlocal
 endm
 
 ret.false.if macro flg
- local tru
- iff flg ,tru
+#local
+ iff &flg ,tru
   ret.false
  tru:
+#endlocal
 endm
 
 ret.false macro
@@ -230,7 +232,7 @@ hlnede:
  subhl de
  ret.true.if nz
  ret.false
- 
+
 hlgtde:
  subhl de
  ret.false.if z
@@ -243,7 +245,7 @@ hlltde:
  bit 7,h
  ret.true.if nz
  ret.false
- 
+
 hlgede:
  subhl de
  ret.true.if z
@@ -257,10 +259,9 @@ hllede:
  bit 7,h
  ret.true.if nz
  ret.false
- 
-proc
+
 ziffalse:
- local resa
+#local
  ld (resa-1),a
  call ziffalse.a
  ld A,0
@@ -272,49 +273,49 @@ ziffalse.a:
  ret nz
  cp l
  ret
-endp
+#endlocal
 
 jpf macro to
  call ziffalse
- jp z,to
+ jp z,&to
 endm
 
 andand macro fls
- jpf fls
+ jpf &fls
 endm
 oror macro tru
  call ziffalse
- jp nz,tru
+ jp nz,&tru
 endm
 
 flagtobool macro fl
- local yes,skp
- jr fl, yes
+#local
+ jr &fl, yes
  ld hl,false
  jr skp
  yes:
  ld hl,true
- skp: 
+ skp:
+#endlocal
 endm
 
 defsub nothl
-proc
- local fls
+#local
  jpf fls
  ld hl, false
  ret
  fls:
  ld hl, true
-endp
+#endlocal
 endsub nothl
 `,
-    'mem':`include const
+    'z_mem':`include z_const
 ;
 rdslt:
  ex de,hl
  rept 5
  srl d;page*2
- endm
+endm
  CALL RSLREG
  ld e,d
  rdslt1:
@@ -322,18 +323,18 @@ rdslt:
   dec e
   jp nz,rdslt1
  AND    00000011B
- LD C,A;000000Pr
+ LD c,A;000000Pr
  LD B,0
  LD HL,EXPTBL
  ADD HL,BC
- LD C,A;000000Pr
+ LD c,A;000000Pr
  LD A,(HL)
  AND 80H;expand flag
- OR C
- LD C,A;e00000Pr
+ OR c
+ LD c,A;e00000Pr
  rept 4;const
  INC HL
- endm
+endm
  LD A,(HL);exp reg
  ld e,d
  rdslt2:
@@ -345,95 +346,97 @@ rdslt:
  sla a
  ;    0000Ex00
  and  00001100b
- OR C;e000ExPr
+ OR c;e000ExPr
  ret
 memini:
  CALL RSLREG
  rept 4
   RRCA
- endm
+endm
  AND    00000011B
- LD C,A;000000Pr
+ LD c,A;000000Pr
  LD B,0
  LD HL,EXPTBL
  ADD HL,BC
- LD C,A;000000Pr
+ LD c,A;000000Pr
  LD A,(HL)
  AND 80H;expand flag
- OR C
- LD C,A;e00000Pr
+ OR c
+ LD c,A;e00000Pr
  rept 4;const
  INC HL
- endm
+endm
  LD A,(HL);exp reg
  rept 4; page*2
  srl a
- endm;000000Ex
+endm;000000Ex
  sla a
  sla a
  ;    0000Ex00
  and  00001100b
- OR C;e000ExPr
+ OR c;e000ExPr
  LD Hl,04000H
  jp ENASLT
 
 peekw macro regv,regm
-  local w
-  ld (w-2),regm
-  ld regv,(0)
+#local
+  ld (w-2),&regm
+  ld &regv,(0)
   w:
+#endlocal
 endm
 
 pokew macro regm,regv
-  local w
-  ld (w-2),regm
-  ld (0),regv
+#local
+  ld (w-2),&regm
+  ld (0),&regv
   w:
+#endlocal
 endm
 movw macro dst,src
  push hl
- ld hl,src
- ld dst,hl
+ ld hl,&src
+ ld &dst,hl
  pop hl
 endm
 
-popa macro xx 
+popa macro xx
   ex (sp),hl
   ld a,h
   pop HL
 endm
 
-pushall macro 
+pushall macro
  push af
  push bc
  push de
  push hl
 endm
-popall macro 
+popall macro
  pop hl
  pop de
  pop bc
  pop af
 endm
- 
+
 
 pushi macro n,rp
- ld rp,n
- push rp
+ ld &rp,&n
+ push &rp
 endm
 const macro n,reg
- ld (n-2),reg
+ ld (&n-2),&reg
 endm
 ldconst macro reg,n
- ld reg,0
- n:
+ ld &reg,0
+ &n:
 endm
 peekconst macro reg,n
- ld reg,(0)
- n:
+ ld &reg,(0)
+ &n:
 endm
 `,
-    'const':`
+    'z_const':`
 ;wrt equ 0a2h
 dcompr equ 0020H
 sp.ini equ 0dc00h
@@ -464,7 +467,7 @@ CHGMOD equ 005FH
 
 IMULT.a equ 3193H;HL ← DE*HL
 IDIV.a equ 31E6H;HL ← DE/HL
-IMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL) 
+IMOD.a equ 323AH;HL ← DE mod HL (DE ← DE/HL)
 
 WRTPSG  equ 0093H
 
@@ -480,7 +483,7 @@ marker.e macro n
  ;len.##n: defl $-last.marker
 endm
 `,
-    'ctrl':`include const
+    'z_ctrl':`include z_const
 freeze:
 halt
 jr freeze
@@ -488,11 +491,10 @@ jr freeze
 for macro lbend
  ; uses a
  ; c: breaked
- proc
-  local s,lb
+#local
   lb:
   call dcompr; uses a
-  jp nc,lbend
+  jp nc,&lbend
   push HL
   push de
   push bc
@@ -500,18 +502,17 @@ for macro lbend
   pop bc
   pop de
   pop HL
-  jp c,lbend
+  jp c,&lbend
   add HL,bc
   jr lb
   s:
- endp
+#endlocal
 endm
 
 repti macro n,lbend
- proc
-  local s,lb, lbend2
+#local
   push bc
-  ld b,n
+  ld b,&n
   lb:
   push bc
   call s
@@ -520,35 +521,37 @@ repti macro n,lbend
   djnz lb
   lbend2:
   pop bc
-  jp lbend 
+  jp &lbend
   s:
- endp
+#endlocal
 endm
 
 
 reptb macro lbend
-  local s,lb
+#local
  inc b
  djnz lb
- jp lbend
+ jp &lbend
  lb:
   push bc
   call s
   pop bc
-  jp c,lbend
+  jp c,&lbend
  djnz lb
- jp lbend 
+ jp &lbend
  s:
+#endlocal
 endm
 
 
 
 callsva macro pp
- local sva
+#local
  ld (sva-1),a
- call pp
+ call &pp
  ld a,0
  sva:
+#endlocal
 endm
 bcis0:
  callsva bcis0.a
@@ -562,39 +565,40 @@ bcis0.a:
  ret
 
 reptbc macro lbend
- local s,lb
+#local
  call bcis0
- jp z,lbend 
+ jp z,&lbend
  lb:
   push bc
   call s
   pop bc
-  jp c,lbend
+  jp c,&lbend
   dec bc
   call bcis0
  jr nz, lb
- jp lbend 
+ jp &lbend
  s:
+#endlocal
 endm
 
 
-iff.NZ equ 0
-iff.Z  equ 1
-iff.NC equ 2
-iff.C  equ 3
+iff.nz equ 0
+iff.z  equ 1
+iff.nc equ 2
+iff.c  equ 3
 
 iff macro cnd,to
- if iff.##cnd eq iff.NZ
-  jr z,to
+ if iff.&cnd eq iff.nz
+  jr z,&to
  endif
- if iff.##cnd eq iff.Z
-  jr nz,to
+ if iff.&cnd eq iff.z
+  jr nz,&to
  endif
- if iff.##cnd eq iff.NC
-  jr c,to
+ if iff.&cnd eq iff.nc
+  jr c,&to
  endif
- if iff.##cnd eq iff.C
-  jr nc,to
+ if iff.&cnd eq iff.c
+  jr nc,&to
  endif
  ;jr cnd, skip
  ;jr to
@@ -606,10 +610,11 @@ break macro
  ret
 endm
 break.if macro cnd
- local jj
- iff cnd ,jj
+#local
+ iff &cnd ,jj
   break
  jj:
+#endlocal
 endm
 
 continue macro
@@ -617,30 +622,32 @@ continue macro
  ret
 endm
 continue.if macro cnd
- local jj
- iff cnd,jj
+#local
+ iff &cnd,jj
   continue
  jj:
+#endlocal
 endm
 
 
 djnzr macro reg,j
- dec reg
- jr NZ,j
+ dec &reg
+ jr nz,&j
 endm
 
-callhl macro 
- local LCD
+callhl macro
+#local
  ld (LCD-2),HL
  call LCD
  LCD:
+#endlocal
 endm
 
 stride macro lim,to
- if low($)<lim
+ if lo($)<&lim
   exitm
  endif
- ds 256+to-low($),0cdh
+ ds 256+&to-lo($),0cdh
 endm
 
 
@@ -649,23 +656,23 @@ unreach macro mesg
  call h.unreach
 endm
 head macro lb
- unreach lb
- marker.b lb
- lb:
+ unreach &lb
+ marker.b &lb
+ &lb:
 endm
 
 defsub macro n
- head n
+ head &n
 endm
 endsub macro n
  ret
- marker.e n
+ marker.e &n
 endm
 defwork macro n
- head n
+ head &n
 endm
 endwork macro n
- marker.e n
+ marker.e &n
 endm
 
 defsub h.unreach
@@ -674,12 +681,12 @@ defsub h.unreach
  call 4dh
  dw 0x18,0xfe
 endsub h.unreach`,
-    'th':`include ctrl
-include sp
-include vdp
-include mem
-include math
-include debug
+    'z_th':`include z_ctrl
+include z_sp
+include z_vdp
+include z_mem
+include z_math
+include z_debug
 
 th.ofs.stp equ 256-4
 th.ofs.sp equ th.ofs.stp+1
@@ -695,11 +702,11 @@ th.st.active equ 31h
 ; for lb
 ;endm
 th.for.a macro nx,st,en
- local do, loop
- ld a,st+(high(th.start))
+#local
+ ld a,&st+(hi(th.start))
  loop:
-  cp en+(high(th.start))
-  jp nc, nx
+  cp &en+(hi(th.start))
+  jp nc, &nx
   push af
   ld h,a
   ld l,0
@@ -707,16 +714,17 @@ th.for.a macro nx,st,en
   popa 0
   ld h,a
   ld l,0
-  jp c, nx
+  jp c, &nx
   inc a
  jr loop
  do:
+#endlocal
 endm
 
 th.new.range macro st,en
- ld bc,st
+ ld bc,&st
  ld(th.new.start),bc
- ld bc,en
+ ld bc,&en
  ld(th.new.end),bc
 endm
 
@@ -734,12 +742,11 @@ endsub th.isblank.a
  defwork th.new.end
  dw th.end
  endwork th.new.end
- 
+
 
 defsub th.new
 ; nc for alloc fail
-proc 
- local lbend
+#local
  ld hl,(th.new.start)
  ld de,(th.new.end)
  ld bc,th.size
@@ -763,12 +770,11 @@ proc
  ld l,th.bottom
  scf
  ret
-endp
+#endlocal
 endsub th.new
 
 defsub th.init
-proc
- local lbend
+#local
  th.for.a lbend, 0, th.count
   ; TODO th.ofs.stp
   ld L, th.ofs.stp
@@ -780,7 +786,7 @@ proc
  ld (hl),0c9h
  call susint
  ret
-endp
+#endlocal
 endsub th.init
 
 defsub th.stepall
@@ -808,8 +814,7 @@ endsub th.stepall
 defsub th.kill.a
 ; th.term = self kill
 ; th.kill = kill from either external or internal
-proc
- local reserve
+#local
  ; h: th
  ld a,(th.cur+1)
  cp h
@@ -819,7 +824,7 @@ proc
   ret
  reserve:
   ld (th.kill.reserve),a
-endp
+#endlocal
 endsub th.kill.a
 
 defwork th.kill.reserve
@@ -852,17 +857,18 @@ defsub th.term
 endsub th.term
 
 th.with.do macro to
- local pr
+#local
  th.with pr
- jr to
+ jr &to
  pr:
+#endlocal
 endm
 
 th.with.setdst macro reg
- ld (th.jpdest-2),reg
+ ld (th.jpdest-2),&reg
 endm
 th.with macro pr
- movw (th.jpdest-2), pr
+ movw (th.jpdest-2), &pr
  call th.with.s
 endm
 th.with.ret macro n
@@ -882,10 +888,10 @@ th.ewith:
  ld sp,0
  th.wrssp:
 endsub th.with.s
- 
 
- 
- 
+
+
+
 defsub th.push
  ;push bc to thread hl
  th.with tpsbc
@@ -932,29 +938,29 @@ endsub th.loop
 
 
 th.pushi macro val
- ld bc,val
+ ld bc,&val
  call th.push
 endm
 
 `,
-    'sub':``,
-    'debug':`include math
-include ctrl
+    'z_sub':``,
+    'z_debug':`include z_math
+include z_ctrl
 
 ;debug
 show macro reg
- ld (hexval),reg
+ ld (hexval),&reg
  call showhex
 endm
 showm macro ad
  push hl
- ld HL,(ad)
+ ld HL,(&ad)
  show HL
  pop HL
 endm
 showlb macro lb
  push hl
- ld hl,lb
+ ld hl,&lb
  ld (hexval),hl
  call showhex
  pop hl
@@ -962,7 +968,7 @@ endm
 
 trace macro v
  push af
- ld a,v
+ ld a,&v
  ld (trad),a
  pop af
  call trace.s
@@ -973,8 +979,7 @@ defwork hexval
 endwork hexval
 
 defsub showhex
-proc
- local loop
+#local
  push af
  push bc
  push HL
@@ -985,7 +990,7 @@ proc
   rept 4
    slhl 0
    rla
-  endm
+endm
   call showhex1
  djnz loop
  ld a,32
@@ -994,12 +999,11 @@ proc
  pop bc
  pop af
  ret
-endp
+#endlocal
 endsub showhex
 
 defsub showhex1
-proc
- local els
+#local
  cp 10
  jp nc, els
  add a,48
@@ -1007,7 +1011,7 @@ proc
  els:
  add a,65-10
  jp wrt
-endp
+#endlocal
 endsub showhex1
 
 
@@ -1026,7 +1030,7 @@ defsub trace.s
  inc a
  ld (trad),a
  ld a,32
- call wrt 
+ call wrt
  pop hl
  pop af
 endsub trace.s
@@ -1040,13 +1044,13 @@ defsub showz
  ld a,'N'
  call wrt
  showz.s:
- ld a,'Z'
+ ld a,'z'
  call wrt
  ld a,32
  call wrt
  pop af
 endsub showz
- 
+
 
 defsub showc
  push af
@@ -1054,20 +1058,19 @@ defsub showc
  ld a,'N'
  call wrt
  showc.s:
- ld a,'C'
+ ld a,'c'
  call wrt
  ld a,32
  call wrt
  pop af
 endsub showc
- 
+
 defwork cursor
  dw 1800h
 endwork cursor
 
 defsub wrt
-proc
- local sk
+#local
  push hl
  push af
  ld hl,(cursor)
@@ -1082,7 +1085,7 @@ proc
  pop af
  pop hl
  ret
-endp
+#endlocal
 endsub wrt
 
 defsub print.a
@@ -1104,43 +1107,45 @@ defsub unreach.new
  db "unreach"
  db 0
 endsub unreach.new
-unreach.new.init macro xx 
+unreach.new.init macro xx
 ld hl,h.unreach
 ld (hl),0c3h
 ld hl,unreach.new
 ld (h.unreach+1),hl
 endm`,
-    'sp':`include mem
-include debug
-sp.get macro 
+    'z_sp':`include z_mem
+include z_debug
+sp.get macro
  ld HL,0
  ADD hl, sp
 endm
-sp.set macro 
+sp.set macro
  ld sp,hl
 endm
 mem2sp macro
  ;(hl)->sp
- local rs
+#local
  ld (rs-2),hl
  ld sp,(0)
  rs:
+#endlocal
 endm
 sp2mem macro
  ;sp->(hl)
- local spad
+#local
  ld (spad-2),hl
  ld (0),sp
  spad:
+#endlocal
 endm
 
-showsp macro 
+showsp macro
  ld (sptmp),sp
  showm sptmp
 endm
 sptmp:
 dw 0
-showstk macro 
+showstk macro
  showsp
  ld (sva),a
  ld a,":"
@@ -1151,32 +1156,32 @@ showstk macro
  ex (sp),hl
 endm
 sva: db 0`,
-    'oop':`include mem
-include th
-include assert
+    'z_oop':`include z_mem
+include z_th
+include z_assert
 
 ;a2 a1  oldpc oldix lcl1 lcl2
 argidx equ 2
 getarg macro n
- ld l,(ix+argidx+n*2)
- ld h,(ix+argidx+n*2+1)
+ ld l,(ix+argidx+&n*2)
+ ld h,(ix+argidx+&n*2+1)
 endm
 setarg macro n
- ld (ix+argidx+n*2),l
- ld (ix+argidx+n*2+1),h
+ ld (ix+argidx+&n*2),l
+ ld (ix+argidx+&n*2+1),h
 endm
 
 setlcl macro n
- ld (IX-(n*2-1)),h
- ld (ix-n*2),l
+ ld (ix-(&n*2-1)),h
+ ld (ix-&n*2),l
 endm
 
 getlcl macro n
- ld h,(IX-(n*2-1))
- ld l,(ix-n*2)
+ ld h,(ix-(&n*2-1))
+ ld l,(ix-&n*2)
 endm
 
-addarg macro 
+addarg macro
  push hl
 ; hl=arg  stktp=af
 ;ex (sp),hl
@@ -1187,75 +1192,77 @@ endm
 
 
 pusharg macro n
- getarg n
+ getarg &n
  push HL
 endm
 
 pushlcl macro n
- getlcl n
+ getlcl &n
  push HL
 endm
 
 
 pops macro n
- rept n*2
+ rept &n*2
   inc sp
- endm
+endm
 endm
 
 
 
-pushthis macro xx 
- getthis xx
+pushthis macro xx
+ getthis &xx
  push af
 endm
 popthis macro xx
- popa xx
+ popa &xx
  ld (this),a
 endm
 
 
 invoketg.a macro fld
 ; pushthis before arg push
-; hl=target 
+; hl=target
  ld a,h
  ld (this),a
- getfld fld
+ getfld &fld
  callhl
 ; pops args
-; popthis after 
+; popthis after
 endm
 
 invoke macro fld
- getfld fld
+ getfld &fld
  callhl
 ; pops args
  getthis 0
 endm
 
 getfld macro n
- local ad
+#local
  ld (ad-1),a
- ld hl,(n)
+ ld hl,(&n)
  ad:
+#endlocal
 endm
 
 setfld macro n
- local ad
+#local
  ld (ad-1),a
- ld (n),hl
+ ld (&n),hl
  ad:
+#endlocal
 endm
 
 getfldtg macro n
 ;hl=tg
- ld l,n
+ ld l,&n
  peekw hl,hl
 endm
 
 setfldtg macro n
 ; stk=val hl=tg
- ld l,n
+ ld l,&n
  pop de
  pokew hl,de
 endm
@@ -1263,41 +1270,40 @@ endm
 getfldtg_botu macro n
 ; hl=target
  ld d,h
- ld e,n
+ ld e,&n
  peekw HL,de
 endm
 
 tgconst macro n
- ld (n-1),a
+ ld (&n-1),a
 endm
 tgconst.g macro r16,n,fld
- ld r16,(fld)
- n:
+ ld &r16,(&fld)
+ &n:
 endm
 tgconst.s macro n,fld,r16
- ld (fld),r16
- n:
+ ld (&fld),&r16
+ &n:
 endm
 
 
-curth2this macro 
+curth2this macro
  ld a,(th.cur+1)
  ld (this),a
 endm
-getthis macro xx 
+getthis macro xx
  ld a,(this)
 endm
 
 new macro Class,flds,st,en
- th.new.range th.start+st*th.size, th.start+en*th.size
- pushi flds, bc
- pushi Class, bc
+ th.new.range th.start+&st*th.size, th.start+&en*th.size
+ pushi &flds, bc
+ pushi &Class, bc
  call o.new
 endm
 
 defsub o.new
-proc
- local retad,svthis,svsp,loop,lpend, w,allocfail,finally,lp2,lp2end
+#local
  ; {val .f} n &initbl retad
  pop hl;retad
  ld (retad-2),hl
@@ -1333,7 +1339,7 @@ proc
   ;restore a before call o.new
   ld a,0
   svthis:
-  ;return 
+  ;return
   jp 0
   retad:
  allocfail:
@@ -1350,72 +1356,73 @@ proc
   lp2end:
   ld hl,null;  todo null
   jr finally
-endp
+#endlocal
 endsub o.new
 
 new.arg.i macro n,v
- ld hl,v
- new.arg n
+ ld hl,&v
+ new.arg &n
 endm
 new.arg macro n
  push hl
- pushi n,bc
+ pushi &n,bc
 endm
- 
+
 o.assert.eq macro fld,v
- local aa
+#local
  assert.do aa
-  getfld fld
-  assert.eq v
+  getfld &fld
+  assert.eq &v
   ret
  aa:
+#endlocal
 endm
 
 this:
 db 0
 
 fld.def macro n
- n equ fldidx
+ &n equ fldidx
  fldidx:defl fldidx-2
 endm
 class macro Class,super
  unreach "c"
  marker.b 0
- dw super
+ dw &super
  fldidx:defl fld.top
- Class:
-  fld .class,Class
+ &Class:
+  fld .class,&Class
 endm
 fld.bottom macro Class
- if defined bottomOf##Class 
-  if bottomOf##Class ne fldidx
+ if 0
+  if bottomOf&Class ne fldidx
    .error bottom ne fldidx
   endif
  else
- bottomOf##Class:defl fldidx
+ bottomOf&Class:defl fldidx
  endif
-endm 
+endm
 fld macro n,v
- if defined n
-  if n ne fldidx
-   .error n ne fldidx
-  else 
+ if 0
+  if &n ne fldidx
+   .error &n ne fldidx
+  else
    fldidx:defl fldidx-2
   endif
  else
-  fld.def n
+  fld.def &n
  endif
- pushi v,bc
+ pushi &v,bc
 endm
-unuse macro 
+unuse macro
  fldidx:defl fldidx-2
  pushi 0,bc
 endm
 meth macro Class,n
- fld .##n, Class##.##n
+ fld .&n, &Class.&n
 endm
 met2 macro Class,n
- fld n, Class##n
+ fld &n, &Class&n
 endm
 
 class Object,null
@@ -1430,7 +1437,7 @@ defsub o.boot
 endsub o.boot
 
 
-yield macro 
+yield macro
  pushthis 0
  push ix
  call th.yield
@@ -1440,21 +1447,21 @@ endm
 
 def.noent: defl 0
 def macro n,args,lcls
-head n
- def.args:defl args
- def.locals:defl lcls
+head &n
+ def.args:defl &args
+ def.locals:defl &lcls
  if def.noent eq 0
-  enter lcls
+  enter &lcls
  endif
 endm
 enter macro locals
- ;  arg2 arg1 retad oldix lcl1 lcl2 
+ ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
  ld ix,0
  add ix,sp
- rept locals
+ rept &locals
   push HL
- endm
+endm
 endm
 enddef macro n
  if def.noent eq 0
@@ -1462,15 +1469,15 @@ enddef macro n
  else
   ret
  endif
- marker.e n
+ marker.e &n
 endm
 exit macro n
  ld sp,ix
  pop ix
- if n!=0
+ if &n!=0
   exx
   pop bc
-  pops n
+  pops &n
   push bc
   exx
  endif
@@ -1482,9 +1489,9 @@ defsub isobj.a
  ;hl=obj?
  ;cy=true
  ld a,h
- cp high(th.start)
+ cp hi(th.start)
  jr c,notobj
- cp high(th.end)
+ cp hi(th.end)
  jr nc,notobj
  scf
  ret
@@ -1507,8 +1514,7 @@ defsub get.superclass
 endsub get.superclass
 
 defsub is.subclass.a
-proc 
- local top
+#local
  ; hl=Subclass
  ; de=Superclass
  ; z:true
@@ -1522,14 +1528,14 @@ proc
  pop de
  jr nz,top
  cpde.a 0
-endp
+#endlocal
 endsub is.subclass.a
- `,
-    'spr':`include const
-include th
-include mem
-include oop
-include sub
+`,
+    'z_spr':`include z_const
+include z_th
+include z_mem
+include z_oop
+include z_sub
 
 class Sprite,Object
  fld .main, 0
@@ -1540,8 +1546,8 @@ class Sprite,Object
  fld .c, 2
  fld.bottom Sprite
  marker.e Sprite
- 
-outwrt macro n 
+
+outwrt macro n
   out (98h),a
 endm
 
@@ -1550,13 +1556,12 @@ spr.unscale macro n
  ; HL -> A
  rept spr.scale
   srlhl 0
- endm
+endm
  LD A,L
 endm
 
 defsub spr.puts_old
-proc
- local t1,t2,t3,t4
+#local
  ld hl, 1b00h
  call SETWRT
  th.for.a sprl, 0, th.count
@@ -1566,31 +1571,30 @@ proc
   tgconst t3
   tgconst t4
 
-  tgconst.g hl,t1,.y 
+  tgconst.g hl,t1,.y
   spr.unscale 0
   sub 8
   outwrt 0
-  
-  tgconst.g hl,t2,.x 
+
+  tgconst.g hl,t2,.x
   spr.unscale 0
   sub 8
   outwrt 0
-  
-  tgconst.g a,t3,.p 
+
+  tgconst.g a,t3,.p
   sla a
   sla a
   outwrt 0
-  
-  tgconst.g a,t4,.c 
+
+  tgconst.g a,t4,.c
   outwrt 0
   continue
  sprl:
-endp
+#endlocal
 endsub spr.puts
 
 defsub spr.puts
-proc
- local rsta, rdir
+#local
  call spr.putslp
  ld a,(spr.puts.s)
  cp 1
@@ -1604,16 +1608,16 @@ proc
 
  ld a,(spr.puts.b)
  inc a
- cp high(th.end)
+ cp hi(th.end)
  jr c,rsta
   sub th.count
  rsta:
  ld (spr.puts.b),a
-endp
+#endlocal
 endsub spr.puts_new
 
 defwork spr.puts.b
- db high(th.start)
+ db hi(th.start)
 endwork spr.puts.b
 
 defwork spr.puts.s
@@ -1621,8 +1625,7 @@ defwork spr.puts.s
 endwork spr.puts.s
 
 defsub spr.putslp
-proc
- local sprl, nrst
+#local
  ld hl, 1b00h
  call SETWRT
  ld a, (spr.puts.b)
@@ -1632,23 +1635,22 @@ proc
   ld c,a
   ld a,(spr.puts.s)
   add a,c
-  cp high(th.end)
+  cp hi(th.end)
   jr c,nrst
    sub th.count
   nrst:
  djnz sprl
  ld a,208
  outwrt 0
-endp
+#endlocal
 endsub spr.putslp
 
- 
+
 defsub spr.put1
-proc
 ; a: th.id
-  local t1,t2,t3,t4,nothave
+#local
   push af
-  
+
   tgconst t1
   tgconst t2
   tgconst t3
@@ -1657,30 +1659,30 @@ proc
   call th.isblank.a
   jr z,nothave
 
-  tgconst.g hl,t1,.y 
+  tgconst.g hl,t1,.y
   spr.unscale 0
   sub 8
   outwrt 0
-  
-  tgconst.g hl,t2,.x 
+
+  tgconst.g hl,t2,.x
   spr.unscale 0
   sub 8
   outwrt 0
-  
-  tgconst.g a,t3,.p 
+
+  tgconst.g a,t3,.p
   sla a
   sla a
   outwrt 0
-  
-  tgconst.g a,t4,.c 
+
+  tgconst.g a,t4,.c
   outwrt 0
   nothave:
   pop af
-endp
+#endlocal
 endsub spr.put1
- 
- `,
-    'sprpat':`include const
+
+`,
+    'z_sprpat':`include z_const
 
 ;aaa
 spr.inipat:
@@ -1697,21 +1699,21 @@ DB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B
 DB $0C,$3F,$7F,$7F,$6F,$0F,$06,$0C
 DB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C
 DB $98,$FC,$FE,$FE,$F6,$F0,$60,$70
-; 
+;
 ; --- Slot 1 cat fwalk1
 ; color 9
 DB $0C,$0E,$0F,$4F,$3D,$1D,$7F,$1B
 DB $0C,$3F,$7F,$7F,$EF,$EF,$06,$06
 DB $18,$38,$F8,$F9,$DE,$DC,$7F,$6C
 DB $98,$FC,$FE,$FE,$D4,$78,$F0,$00
-; 
+;
 ; --- Slot 2 cat fwalk2
 ; color 9
 DB $18,$1C,$1F,$9F,$7B,$3B,$FE,$36
 DB $19,$3F,$7F,$7F,$2B,$1E,$0F,$00
 DB $30,$70,$F0,$F2,$BC,$B8,$FE,$D8
 DB $30,$FC,$FE,$FE,$F7,$F7,$60,$60
-; 
+;
 ; --- Slot 3 cat omg
 ; color 9
 DB $2C,$8E,$0F,$4B,$3D,$11,$7F,$1D
@@ -1721,10 +1723,10 @@ DB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00
 
 ds 60*32
 `,
-    'tnu':`
-include spr
-include bool
-include key
+    'z_tnu':`
+include z_spr
+include z_bool
+include z_key
 
 ;.onUpdate equ .c-2
 ;.update equ .onUpdate-2
@@ -1735,12 +1737,12 @@ include key
 end.const macro n
  pushi RActor.wait,bc
  pushi o.boot,bc
- th.with.ret 0 
- marker.e n
+ th.with.ret 0
+ marker.e &n
 endm
 
 RActor.noovr macro Class
- meth Class,main
+ meth &Class,main
  fld.bottom Object
  fld .x, 0
  fld .y, -1024
@@ -1749,7 +1751,7 @@ RActor.noovr macro Class
  fld.bottom Sprite
  meth RActor,onUpdate
  meth RActor,update
- meth RActor,screenOut 
+ meth RActor,screenOut
  meth RActor,die
  meth RActor,updateEx
  meth RActor,crashTo
@@ -1765,12 +1767,11 @@ RActor.main:
 RActor.update:
  invoke .onUpdate
  yield
- ret 
+ ret
 RActor.onUpdate:
  ret
 RActor.screenOut:
-proc
- local true
+#local
  getfld .x
  bit 1,h
  jr nz, true
@@ -1786,14 +1787,13 @@ proc
  ld hl,1
  scf
  ret
-endp
+#endlocal
 RActor.wait:
-proc
- local lbl
+#local
  lbl:
  invoke .update
  jr lbl
-endp
+#endlocal
 def RActor.die,0,0
  ld h,a
  push af
@@ -1802,8 +1802,7 @@ def RActor.die,0,0
 enddef RActor.die
 
 def RActor.updateEx,1,0
-proc 
- local n
+#local
 ; enter 0
  getarg 1
  ld b,h
@@ -1812,7 +1811,7 @@ proc
   invoke .update
   continue
  n:
-endp
+#endlocal
 enddef RActor.updateEx
 
 crashTo.size equ 8<<spr.scale
@@ -1827,27 +1826,26 @@ endsub crashTo.setXY
 
 
 def RActor.crashTo,1,0
-proc
- local cr1
+#local
  call crashTo.setXY
  getarg 1
  ;const cr.class,hl
  call isobj.a
  jr c, cr1
-  unreach "C"
+  unreach "c"
   ; "Cannot call target.crashTo(Class) "
  cr1:
   getthis 0
   call crashTo1
   flagtobool c
-endp
+#endlocal
 enddef RActor.crashTo
 
 crashToClass macro Class,st,en
- local nx,found
+#local
  ; a=this
  call crashTo.setXY
- foreach.a Class,st,en,nx
+ foreach.a &Class,&st,&en,nx
   call crashTo1
   break.if c
   continue
@@ -1856,15 +1854,16 @@ crashToClass macro Class,st,en
  jr c, found
   ld hl,null
  found:
+#endlocal
 endm
 
 foreach.a macro Class,st,en,nxt
- th.for.a nxt, st, en
-  all.skip Class
+ th.for.a &nxt, &st, &en
+  all.skip &Class
 endm
 
 
-all.skip.blank.self macro 
+all.skip.blank.self macro xx
  ; skip blank
   ; TODO th.ofs.stp
   call th.isblank.a
@@ -1878,7 +1877,7 @@ all.skip.isnot macro Class
   ; skip object not instance of *Class*
   push hl
   ld a,h
-  ld de,Class
+  ld de,&Class
   call instanceof
   getthis 0
   pop hl
@@ -1886,7 +1885,7 @@ all.skip.isnot macro Class
 endm
 all.skip macro Class
  all.skip.blank.self 0
- all.skip.isnot Class
+ all.skip.isnot &Class
 endm
 
 defsub crashTo1
@@ -1934,18 +1933,17 @@ tnu.run macro Main,st,en
  ld de,th.start+1
  ld bc,th.size*th.count-1
  ldir
- 
+
  call th.init
  ;call mus.ini
- new Main, 0,st ,en
+ new &Main, 0,&st ,&en
  movw (h.thlop),spr.puts
  movw (h.thent),keyall
  jp th.loop
 endm
 
 defsub all.die
-proc
- local nxt
+#local
  pushthis 0
  th.for.a nxt, 0, th.count
   call th.isblank.a
@@ -1954,22 +1952,21 @@ proc
   continue
  nxt:
  popthis 0
-endp
+#endlocal
 endsub all.die
 
 loadPage macro Class,args,st,en
 call clearInterval
 call all.die
-new Class,args,st,en
+new &Class,&args,&st,&en
 endm
 
 `,
-    'key':`include debug
+    'z_key':`include z_debug
 
 defsub keyall
-proc
 ;show hl
- local lp
+#local
  ld hl,keymat1
  ld de,keymat2
  ld bc,13
@@ -1993,11 +1990,10 @@ proc
  ld a,2
  call snstk.a
  ld (hl),d
-endp
+#endlocal
 endsub keyall
 defsub snstk.a
-proc
- local skp1,skp2
+#local
  push hl
   ld e,a
   push de
@@ -2025,9 +2021,9 @@ proc
   cp 0
   jr z,skp2
   set 1,d
-  skp2: 
+  skp2:
  pop hl
-endp 
+#endlocal
 endsub snstk.a
 
 defwork keymat1
@@ -2081,8 +2077,7 @@ pop af
 endsub getkey
 
 defsub stickX.a
-proc 
-local nx1,nx2,nx3,nx4
+#local
 ; a :stickid
 ; hl:  vec norm
  cp 0
@@ -2123,13 +2118,12 @@ local nx1,nx2,nx3,nx4
   bit 6,a
   jp nz,neghl
   ld hl,0
-endp
+#endlocal
 endsub stickX.a
 
 
 defsub stickY.a
-proc 
-local nx1,nx2,nx3,nx4
+#local
 ; a :stickid
 ; hl:  vec norm
  cp 0
@@ -2169,21 +2163,21 @@ local nx1,nx2,nx3,nx4
   bit 4,a ; w
   jp nz,neghl
   ld hl,0
-endp
+#endlocal
 endsub stickY.a
 
 
 `,
-    'map':`include sub
-include math
-include tnu
+    'z_map':`include z_sub
+include z_math
+include z_tnu
 
 defsub map.adr
  ; hl=chipx
  ; de=chipy
  rept 5
   slde 0
- endm
+endm
  add hl,de
  ld de,1800h
  add hl,de
@@ -2197,7 +2191,7 @@ endsub map.set.a
 
 defsub map.get.a
  call map.adr
- call 4ah 
+ call 4ah
 endsub map.get.a
 
 defsub map.adrat.a
@@ -2241,19 +2235,19 @@ defsub locate
  ld (cursor),hl
 endsub locate
 `,
-    'maze':``,
-    't1':`org 09000h
+    'z_maze':``,
+    'z_t1':`org 09000h
 jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include tnu
-include sp
+include z_const
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_tnu
+include z_sp
 
-;===your code 
+;===your code
 
 right:dw 0
 
@@ -2361,26 +2355,26 @@ def Target.push,0,0
  setfld .p
 enddef Target.push
 
-endusr: 
-include sprpat
+endusr:
+include z_sprpat
 
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't2':`org 8000h
-include debug
+    'z_t2':`org 8000h
+include z_debug
 main:
 unreach.new.init 0
 
 unreach 0
 end main`,
-    't3':`org 09000h
+    'z_t3':`org 09000h
 
-include tnu
-include mus
-include sprpat
+include z_tnu
+include z_mus
+include z_sprpat
 
-;===your code 
+;===your code
 
 main:
 ld sp,(8000h)
@@ -2419,7 +2413,7 @@ class Main, RActor
  fld.bottom Sprite
  meth RActor,onUpdate
  meth RActor,update
- meth RActor,screenOut 
+ meth RActor,screenOut
  meth RActor,die
  meth RActor,updateEx
  meth RActor,crashTo
@@ -2457,7 +2451,7 @@ Main.main:
   call SNSMAT.a
   and 1
   jr z,golf
-  
+
   getthis 0
   getfld .x
   inc hl
@@ -2483,7 +2477,7 @@ class Bullet,RActor
  fld.bottom Sprite
  meth RActor,onUpdate
  meth RActor,update
- meth RActor,screenOut 
+ meth RActor,screenOut
  meth RActor,die
  meth RActor,updateEx
  meth RActor,crashTo
@@ -2491,8 +2485,8 @@ class Bullet,RActor
  fld .vy, -10
  fld .vx, 0
  fld.bottom Bullet
- end.const 
- 
+ end.const
+
 Bullet.main:
  blp:
   getthis 0
@@ -2521,7 +2515,7 @@ Bullet.main:
   ld de,5
   cpde.a 0
   jr c,blp
- 
+
   call dstk
   getthis 0
   ld hl,3
@@ -2546,9 +2540,9 @@ Bullet.main:
   jr bleft
  bdie:
   invoke .die
-  ret 
+  ret
 
-  
+
 dstk:
  push af
  ld hl,th.start+256*3
@@ -2559,21 +2553,21 @@ dstk:
  call LDIRVM
  pop af
  ret
- 
+
 endusr:
 end main`,
-    't4':`org 09000h
+    'z_t4':`org 09000h
 jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include tnu
-include sp
+include z_const
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_tnu
+include z_sp
 
-;===your code 
+;===your code
 
 right:dw 0
 
@@ -2688,14 +2682,14 @@ def Target.push,0,0
  setfld .p
 enddef Target.push
 
-endusr: 
+endusr:
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    't5':`org 9000h
+    'z_t5':`org 9000h
 
 
-include key
+include z_key
 
 main:
 call keyall
@@ -2709,40 +2703,40 @@ show hl
 
 halt
 jp main`,
-    'gen':`org 09000h
-include tnu
-include bool
-include debug
-include spr
-include map
-include key
+    'z_gen':`org 09000h
+include z_tnu
+include z_bool
+include z_debug
+include z_spr
+include z_map
+include z_key
 
 main:
 mlp:
  ld hl,0
- 
+
  ld de,0
  call locate
  ld A,1
  call snstk.a
  show de
  jr mlp
- 
+
 endusr:
 spr.inipat:
 bg.inipat:
 ret
 
 end main`,
-    'dac':`org 09000h
+    'z_dac':`org 09000h
 ;jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include th
+include z_const
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_th
 
 
 DECSUB equ 268CH;DAC ← DAC-ARG
@@ -2792,10 +2786,9 @@ defsub int2dac
  ld (DAC+2),HL
  pop af
 endsub int2dac
-;===your code 
+;===your code
 
-proc
-local main,nxt,str
+#local
 main:
 ld hl,12345
 call int2dac
@@ -2813,10 +2806,10 @@ reptb nxt
 nxt:
 ret
 str:
-endp
+#endlocal
 
 defsub printi.a
- call int2dac 
+ call int2dac
  ld hl,strbuf.i
  ;ld a,128
  ;ld b,0
@@ -2827,17 +2820,17 @@ defwork strbuf.i
 ds 16
 endwork strbuf.i
 `,
-    'setvrm':`org 09000h
+    'z_setvrm':`org 09000h
 jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include th
+include z_const
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_th
 
-;===your code 
+;===your code
 
 main:
 ld hl,1800h
@@ -2849,9 +2842,9 @@ out (98h),a
 continue
 ed:
 ret`,
-    'assert':`include mem
-include math
-include debug
+    'z_assert':`include z_mem
+include z_math
+include z_debug
 
 a.reg.trc:
 dw 0
@@ -2865,23 +2858,24 @@ a.reg.max:
 dw 0
 a.regi macro n,v
  push hl
- ld hl,v
- ld (a.reg.##n),hl
+ ld hl,&v
+ ld (a.reg.&n),hl
  pop hl
 endm
 a.regr macro n,v
- ld (a.reg.##n),v
+ ld (a.reg.&n),&v
 endm
 
-a.dummy macro 
- local a.reg.,trc,adr,min,val,nax
+a.dummy macro
+#local
+#endlocal
 endm
- 
+
 
 assert.eq macro o
  storelastpc
- pushall 
- a.regi val, o
+ pushall
+ a.regi val, &o
  ld de,(a.reg.val)
  ld(a.reg.val),hl
  ld(a.reg.min),de
@@ -2896,11 +2890,11 @@ assert.do macro nx
  pushall
  call to
  popall
- jr nx
+ jr &nx
  to:
 endm
 
-storelastpc macro 
+storelastpc macro
  push hl
  call getpc
  ld (lastpc),hl
@@ -2908,7 +2902,7 @@ storelastpc macro
 endm
 lastpc:
  dw 0
- 
+
 getpc:
  pop hl
  push hl
@@ -2925,37 +2919,37 @@ assert.fail:
  showm lastpc
  call freeze
 assert.meqw macro ad,val
- a.regi adr,ad
+ a.regi adr,&ad
  push hl
- ld hl,(ad)
- assert.eq val
+ ld hl,(&ad)
+ assert.eq &val
  pop hl
 endm
- `,
-    'stksz':`org 09000h
+`,
+    'z_stksz':`org 09000h
 jp main
-include const
-include ctrl
-include math
-include debug
-include sub
-include mem
-include th
+include z_const
+include z_ctrl
+include z_math
+include z_debug
+include z_sub
+include z_mem
+include z_th
 
 
-;===your code 
+;===your code
 
 sz equ 256
-  
+
 main:
 ld hl,0fd9fh
 ld (hl),0c9h
  rept sz/2
   push hl
- endm
+endm
  rept sz/2
   pop hl
- endm
+endm
 
 loop:
  getsp
@@ -2967,17 +2961,17 @@ loop:
  ld hl,0
  halt
  jp loop
- 
- 
- `,
-    'vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
+
+
+`,
+    'z_vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
 ;st 0 bit 7
 ;read 1
 
 ;https://www.msx.org/wiki/VDP_Mode_Registers
 ;ctrl 1 bit 5 set 0
-include const
-include ctrl
+include z_const
+include z_ctrl
 ;include th
 
 defsub susint
@@ -3021,11 +3015,11 @@ endsub clearInterval
 defsub int.nop
 ret
 endsub int.nop
- 
+
 timecnt:
 db 0
-vdptest macro 
-local stk1,stk2,stk3,vl
+vdptest macro
+#local
 stk1:
  ds 256,35
 stk2:
@@ -3039,8 +3033,8 @@ vl:
  ld de,1800h
  ld bc,256
  call LDIRVM
- 
- 
+
+
  ld sp,stk3
  call doint
  ld hl,stk2
@@ -3048,8 +3042,9 @@ vl:
  ld bc,256
  call LDIRVM
  jp vl
+#endlocal
 endm
- 
+
 screen1:
  ld a,1
  call CHGMOD
@@ -3070,9 +3065,9 @@ defsub screen2
  ld c,1
  call WRTVDP
 endsub screen2
- `,
-    'mus':`include mem
-include debug
+`,
+    'z_mus':`include z_mem
+include z_debug
 mus.ini:
  di
  ld hl,0fd9fh
@@ -3081,21 +3076,20 @@ mus.ini:
  ei
  ret
 mus:
-proc
-local we
+#local
  push af
  push de
  ld a,(we-1)
  xor 15
- ld (we-1),a 
+ ld (we-1),a
  ld a,8
  ld e,15
  we:
  call WRTPSG
- pop af 
+ pop af
  pop de
  ret
-endp
+#endlocal
 
 defsub mus.scale.a
  ; a: 0,1,2 ch
@@ -3106,11 +3100,11 @@ defsub mus.scale.a
  ld bc,scltbl
  add hl,bc
  ld e,(hl)
- call WRTPSG 
+ call WRTPSG
  inc hl
  ld e,(hl)
  inc a
- call WRTPSG 
+ call WRTPSG
 endsub mus.scale.a
 
 defwork scltbl

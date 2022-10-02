@@ -1,6 +1,8 @@
 extends Visitor;
 includes Buf, Context;
 native Tonyu;
+native Worker;
+let worker=new Worker("https://edit.tonyu.jp/cgi-bin/main.js?a");
 initModule();
 x=256;y=20;fillStyle="black";
 let IDEPrj=$currentProject.compiler;
@@ -41,11 +43,11 @@ let opmap={
 };
 
 printf(`org 08000h
-include tnu
-include map
-include bool
-include dac
-include mus
+include z_tnu
+include z_map
+include z_bool
+include z_dac
+include z_mus
 
 
 `);
@@ -103,9 +105,9 @@ for (klass of mem.ks) {
         klass.shortName, mname, 
         method.params.length,
         Object.keys(locals).length);
-        printf("proc%nlocal %s%n",lbexit);
+        printf("#local%n");
         for(let s of method.stmts) visit(s);
-        printf("%s:%nendp%n",lbexit);
+        printf("%s:%n#endlocal%n",lbexit);
         printf("enddef %s.%s%n", klass.shortName, mname);
         printf("%}");
         update();
@@ -140,10 +142,10 @@ ${Object.keys(globalVars).map \(k){
     return globalLabel(k)+":dw 0";
 }.join("\n")}
 endusr:
-macro inivrm, n, dst
- ld de,dst
- ld hl,n
- ld bc,end.##n-n
+inivrm macro n, dst
+ ld de,&dst
+ ld hl,&n
+ ld bc,end.&n-&n
  call LDIRVM
 endm
 
@@ -188,7 +190,19 @@ let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
 
 
 //msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
-
+let cg=new Includer;
+let included=cg.gensrc(buf+"") ;
+let plain;
+if (getkey("p")) {
+    plain=included;
+} else {
+    worker.postMessage( included );
+    plain=runPromise \(s){
+        worker.addEventListener("message") \(r) {
+            s(r);
+        };
+    };
+}
 
 new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
 \toDB(bytes) {
@@ -252,7 +266,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         tx.setValue("val", buf+"");
     } else {
         let cg=new Includer;
-        tx.setValue("val", cg.gensrc(buf+""));
+        tx.setValue("val", plain);//cg.gensrc(buf+""));
     }
     tx.copyToClipboard("val");
 }

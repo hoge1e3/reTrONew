@@ -53,11 +53,11 @@ extends GenBase;
     visit(left);
     printf("pop bc%n");
     printf("ld b,c%n");
-    printf("proc%nlocal loop%{");
+    printf("#local%{");
     printf("loop:%n");
     printf("%s 0%n",ops[op.text]);
     printf("djnz loop%n");
-    printf("%}endp%n");
+    printf("%}#endlocal%n");
 }
 \andand(left: Expression, right:Expression) {
     let n=genSym();
@@ -127,7 +127,7 @@ extends GenBase;
             printf("push hl%n");
             visit(left);
             printf("pop de%n");
-            printf("slde%n");
+            printf("slde 0%n");
             printf("add hl,de%n");
             printf("peekw hl,hl%n");
             return;
@@ -151,7 +151,7 @@ extends GenBase;
                 visit(left);
                 printf("pop de%n");
             };
-            printf("slde%n");
+            printf("slde 0%n");
             printf("add hl,de%n");
             printf("pop de%n");
             printf("pokew hl,de%n");
@@ -187,14 +187,13 @@ extends GenBase;
 }
 \setLit(l){
     let s=lit2s(l);
-    printf("proc%n");
-    printf("local st,nx%n");
+    printf("#local%n");
     printf("ld hl,st%n");
     printf("jp nx%n");
     printf(`st: db "${s}"%n`);
     printf("db 0%n");
     printf("nx:%n");
-    printf("endp%n");
+    printf("#endlocal%n");
 }
 \cmp(n:Infix){
     let left:Expression=n.left;
@@ -220,13 +219,13 @@ extends GenBase;
 \arith2(left:Expression, opr:String, right:Expression) {
     switch(opr) {
         case "*":case "/":case "%":
-        printf("pushthis%n");
+        printf("pushthis 0%n");
         visit(left);
         printf("push hl%n");
         visit(right);
         printf("pop de%n");
         printf(opmap[opr]);
-        printf("popthis%n");
+        printf("popthis 0%n");
         break;
         case "+":case "-":
         visit(right);
