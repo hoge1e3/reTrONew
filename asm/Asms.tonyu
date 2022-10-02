@@ -584,7 +584,6 @@ iff.NC equ 2
 iff.C  equ 3
 
 iff macro cnd,to
- local iff.
  if iff.##cnd eq iff.NZ
   jr z,to
  endif
@@ -1105,7 +1104,7 @@ defsub unreach.new
  db "unreach"
  db 0
 endsub unreach.new
-unreach.new.init macro 
+unreach.new.init macro xx 
 ld hl,h.unreach
 ld (hl),0c3h
 ld hl,unreach.new
@@ -2259,7 +2258,7 @@ include sp
 right:dw 0
 
 main:
-tnu.run Main
+tnu.run Main,0,16
 def Main.main,0,0
 new.arg.i .vx,1
 new.arg.i .vy,0
@@ -2300,7 +2299,7 @@ class Target,RActor
  met2 Target,.push
  end.const Target
 def Target.main,0,0
-enddef
+enddef Target.main
 class Cat,RActor
  RActor.noovr Cat
  fld .vy, 0
@@ -2346,7 +2345,7 @@ def Cat.main,0,0
   cr:
   invoke .update
  jp blp
-enddef
+enddef Cat.main
 ; test t1
 def Target.push,0,0
  ld hl,3
@@ -2360,7 +2359,7 @@ def Target.push,0,0
  pse:
  ld hl,0
  setfld .p
-enddef
+enddef Target.push
 
 endusr: 
 include sprpat
@@ -2634,10 +2633,10 @@ class NTarget,Actor
  end.const 0
 def NTarget.main,0,0
  ret
-enddef
+enddef NTarget.main
 
 def Target.main,0,0
-enddef
+enddef Target.main
 class Cat,Actor
  Actor.noovr Cat
  fld .vy, 0
@@ -2674,7 +2673,7 @@ def Cat.main,0,0
   cr:
   invoke .update
  jp blp
-enddef
+enddef Cat.main
 def Target.push,0,0
  ld hl,3
  setfld .p
@@ -2687,7 +2686,7 @@ def Target.push,0,0
  pse:
  ld hl,0
  setfld .p
-enddef
+enddef Target.push
 
 endusr: 
 end main
