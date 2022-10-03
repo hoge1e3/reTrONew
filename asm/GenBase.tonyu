@@ -2,7 +2,7 @@ extends Visitor;
 includes Buf, Context;
 native Tonyu;
 native Worker;
-let worker=new Worker("https://edit.tonyu.jp/cgi-bin/main.js?a");
+let worker=new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
 initModule();
 x=256;y=20;fillStyle="black";
 let IDEPrj=$currentProject.compiler;
@@ -191,15 +191,15 @@ let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
 
 //msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
 let cg=new Includer;
-let included=cg.gensrc(buf+"") ;
+let included=cg.gensrc(buf+"").replace(/\r/g,"");
 let plain;
 if (getkey("p")) {
     plain=included;
 } else {
     worker.postMessage( included );
     plain=runPromise \(s){
-        worker.addEventListener("message") \(r) {
-            s(r);
+        worker.addEventListener("message") \(e) {
+            s(e.data);
         };
     };
 }

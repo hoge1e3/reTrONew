@@ -1721,7 +1721,7 @@ DB $CA,$FF,$7F,$3F,$15,$1F,$0E,$00
 DB $1C,$39,$F8,$E9,$DE,$C4,$7F,$5C
 DB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00
 
-ds 60*32
+ds 60*32, 0
 `,
     'z_tnu':`
 include z_spr
@@ -2027,10 +2027,10 @@ defsub snstk.a
 endsub snstk.a
 
 defwork keymat1
-ds 13
+ds 13, 0
 endwork keymat1
 defwork keymat2
-ds 13
+ds 13, 0
 endwork keymat2
 defwork trig2mat
 db 0
@@ -2817,7 +2817,7 @@ defsub printi.a
  call print.a
 endsub printi.a
 defwork strbuf.i
-ds 16
+ds 16, 0
 endwork strbuf.i
 `,
     'z_setvrm':`org 09000h
