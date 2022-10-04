@@ -1414,7 +1414,7 @@ fld macro n,v
  endif
  pushi &v,bc
 endm
-unuse macro
+unuse macro xx
  fldidx:defl fldidx-2
  pushi 0,bc
 endm
