@@ -2728,7 +2728,7 @@ bg.inipat:
 ret
 
 end main`,
-    'z_dac':`org 09000h
+    'z_dac':`
 ;jp main
 include z_const
 include z_ctrl

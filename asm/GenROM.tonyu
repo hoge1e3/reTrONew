@@ -1,0 +1,104 @@
+extends Actor;
+
+let romBoot=` org 04000h
+ db 41h, 42h
+ dw rom.init
+ ds 12,0
+rom.init:
+ call cpslt
+ jp main     
+
+
+rom.ENASLT EQU 0024H
+rom.RSLREG EQU 0138H
+rom.EXPTBL EQU 0FCC1H
+
+
+rom.rdslt:
+ ex de,hl
+;page*2
+  srl d;page*2
+  srl d;page*2
+  srl d;page*2
+  srl d;page*2
+  srl d;page*2
+ CALL rom.RSLREG
+ ld e,d
+rom.rdslt1:
+  RRCA
+  dec e
+  jp nz,rom.rdslt1
+ AND    00000011B
+ LD c,A;000000Pr
+ LD B,0
+ LD HL,rom.EXPTBL
+ ADD HL,BC
+ LD c,A;000000Pr
+ LD A,(HL)
+ AND 80H;expand flag
+ OR c
+ LD c,A;e00000Pr
+ INC HL
+ INC HL
+ INC HL
+ INC HL
+ LD A,(HL);exp reg
+ ld e,d
+rom.rdslt2:
+  srl a
+  dec e
+  jp nz,rom.rdslt2
+;000000Ex
+ sla a
+ sla a
+;0000Ex00
+ and  00001100b
+ OR c;e000ExPr
+ ret
+
+cpwork equ 0c000h
+cplen equ 01000h
+rom equ cpwork+cplen
+ram equ rom+1
+ramtop equ 8000h
+
+cpslt:
+ ld hl,4000h
+ call rom.rdslt
+ ld (rom),a
+ ld hl,cpwork
+ call rom.rdslt
+ ld (ram),a
+ ld hl,ramtop 
+cpslt.loop:
+  push hl
+  ld a,(rom)
+  ld hl,ramtop 
+  call rom.ENASLT
+  pop hl
+  push hl
+  ld bc,cplen
+  ld de,cpwork
+  ldir
+  ld a,(ram)
+  ld hl,ramtop 
+  call rom.ENASLT
+  ld hl,cpwork
+  pop de
+  ld bc,cplen
+  ldir
+  ex de,hl
+  ld a,h
+  cp 0c0h
+  jr c,cpslt.loop
+ ret
+
+; move after "endusr:" here
+ ds 8000h-$, 0
+; remove all "org"s below
+;main:
+; ld a,35
+; ld hl,1800h
+; call 4dh
+ 
+`;

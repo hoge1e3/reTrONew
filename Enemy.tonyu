@@ -19,7 +19,7 @@ function fire() {
     bvx=$player.x-x;
     bvy=$player.y-y;
     bdist=abs(bvx)+abs(bvy);
-    bdist/=8;
+    bdist=bdist >> 3;
     if (bdist>0) {
         bvx/=bdist;
         bvy/=bdist;
