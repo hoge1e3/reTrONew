@@ -3110,4 +3110,53 @@ endsub mus.scale.a
 defwork scltbl
 dw 0d5dh, 0c9ch, 0be7h, 0b3ch, 0a9bh, 0a02h, 0973h, 08ebh, 086bh, 07f2h, 0780h, 0714h, 06afh, 064eh, 05f4h, 059eh, 054eh, 0501h, 04bah, 0476h, 0436h, 03f9h, 03c0h, 038ah, 0357h, 0327h, 02fah, 02cfh, 02a7h, 0281h, 025dh, 023bh, 021bh, 01fdh, 01e0h, 01c5h, 01ach, 0194h, 017dh, 0168h, 0153h, 0140h, 012eh, 011dh, 010dh, 0feh, 0f0h, 0e3h, 0d6h, 0cah, 0beh, 0b4h, 0aah, 0a0h, 097h, 08fh, 087h, 07fh, 078h, 071h, 06bh, 065h, 05fh, 05ah, 055h, 050h, 04ch, 047h, 043h, 040h, 03ch, 039h, 035h, 032h, 030h, 02dh, 02ah, 028h, 026h, 024h, 022h, 020h, 01eh, 01ch, 01bh, 019h, 018h, 016h, 015h, 014h, 013h, 012h, 011h, 010h, 0fh, 0eh
 endwork scltbl`,
+    'z_cpslt':` org 04000h
+ db 41h, 42h
+ dw 04010h
+ ds 12,0
+ramtop equ 8000h
+init:
+ call cpslt
+ jp ramtop 
+include z_mem
+include z_ctrl
+
+cpwork equ 0c000h
+cplen equ 01000h
+rom equ cpwork+cplen
+ram equ rom+1
+defsub cpslt
+#local
+ ld hl,4000h
+ call rdslt
+ ld (rom),a
+ ld hl,cpwork
+ call rdslt
+ ld (ram),a
+ ld hl,ramtop 
+ loop:
+  push hl
+  ld a,(rom)
+  ld hl,ramtop 
+  call ENASLT
+  pop hl
+  push hl
+  ld bc,cplen
+  ld de,cpwork
+  ldir
+  ld a,(ram)
+  ld hl,ramtop 
+  call ENASLT
+  ld hl,cpwork
+  pop de
+  ld bc,cplen
+  ldir
+  ld a,h
+  cp 0c0h
+  jr c,loop
+ ret
+#endlocal 
+endsub 0
+
+`,
 };
