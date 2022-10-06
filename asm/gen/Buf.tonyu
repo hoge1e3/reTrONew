@@ -41,6 +41,7 @@ let visitor:Visitor;
         } else if (fstr=="d") {
             let n=shiftArg();
             if (typeof n!="number") throw new Error (n+" is not a number: fmt="+fmt);
+            if (n>=65536 || n<=-65536) n=n&65535;
             printraw(n);
             i++;
         } else if (fstr=="n") {

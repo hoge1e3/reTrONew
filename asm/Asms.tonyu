@@ -195,6 +195,128 @@ defsub clamp
 #endlocal
 endsub clamp
 
+defsub mul.a
+ ; hl*=de
+#local
+ ld b,h
+ ld c,l
+ 
+ ld hl,0
+loop:
+ srlbc 0
+ jr nc,notad
+ add hl,de
+notad:
+ slde 0
+ ld a,b
+ or c
+ jr nz,loop
+ 
+#endlocal
+endsub mul.a
+
+defsub log.a
+#local
+ push hl
+ ld a,16
+loop:
+ dec A
+ slhl 0
+ jr nc,loop
+ pop hl
+#endlocal
+endsub log.a
+
+neghl.sv macro xx
+ push de
+ call neghl
+ pop de
+endm
+negde.sv macro xx
+ ex de,hl
+ neghl.sv 0
+ ex de,hl
+endm
+defsub div.a
+; hl/=de with signed
+; de=remainder
+#local
+ ld a,0
+ ; hl=abs(hl), 
+ ; a++ if hl<0
+ bit 7,h
+ jr z, hposi
+ xor 3
+ neghl.sv 0
+hposi:
+ ; de=abs(de), 
+ ; a++ if de<0
+ bit 7,d
+ jr z, dposi
+ xor 1
+ negde.sv 0
+dposi:
+ push af
+ call udiv.a
+ ex de,hl; remainder
+ ld h,b
+ ld l,c
+ pop af
+ bit 0,a
+ jp z, nnq
+; negate quotient
+ neghl.sv 0
+nnq:
+ bit 1,a
+ jp z, nnr
+; negate remainder
+ negde.sv 0
+nnr:
+ 
+#endlocal
+endsub div.a
+
+defsub udiv.a
+ ; bc=hl/de
+#local
+ ld a,d
+ or e
+ ret z; /0 error
+ 
+ ld b,0
+bitc.lp:
+ slde 0
+ inc b
+ rst dcompr
+ jr nc, bitc.lp
+bitc.br:
+ srlde 0
+ ld a,b
+ ld bc,0
+ ;ld (hexval),de
+ ;call showhex
+put.lp:
+ subhl de
+ bit 7,h
+ jr z, put1
+put0:
+ add hl,de
+ and a
+ jr puten
+put1:
+ and a
+ scf  
+puten:
+ rl c
+ rl b
+ srlde 0
+ dec a
+ jr nz, put.lp 
+put.br:
+
+#endlocal
+endsub udiv.a
+
 `,
     'z_bool':`include z_math
 include z_ctrl
@@ -2704,22 +2826,39 @@ show hl
 halt
 jp main`,
     'z_gen':`org 09000h
-include z_tnu
-include z_bool
 include z_debug
-include z_spr
 include z_map
-include z_key
+include z_math
 
 main:
 mlp:
  ld hl,0
-
  ld de,0
  call locate
- ld A,1
- call snstk.a
+ ld hl,701
+ ld de,100
+ call div.a
+ show hl
  show de
+
+ ld hl,-701
+ ld de,100
+ call div.a
+ show hl
+ show de
+ 
+ ld hl,701
+ ld de,-100
+ call div.a
+ show hl
+ show de
+
+ ld hl,-701
+ ld de,-100
+ call div.a
+ show hl
+ show de
+ 
  jr mlp
 
 endusr:

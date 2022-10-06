@@ -39,9 +39,9 @@ let closestBrk;
 //let mainClass;
 //debug=true;
 let opmap={
-    "*":"call IMULT.a%n", 
-    "/":"call IDIV.a%n",
-    "%":"call IMOD.a%n",
+    "*":"call mul.a%n", 
+    "/":"call div.a%n",
+    "%":"call div.a%nex de,hl%n",
     "+":"add hl, de%n",
     "-":"subhl de%n",
 };
@@ -67,7 +67,7 @@ for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
     if (text===$mainClassName) {
-        printf("main:%ntnu.run %s,%d,%d%n",$mainClassName,r[0],r[1]);
+        printf("_main:%ntnu.run %s,%d,%d%n",$mainClassName,r[0],r[1]);
     }
     //print("KLS",klass);
     printf(";range %d-%d%n",r[0],r[1]);
@@ -123,11 +123,26 @@ let outp=new OutPat;
 let outbg=new OutBG;
 waitEvent(outbg,"complete");
 
+\dataSection(type, array) {
+    let perline=16;
+    for (let i=0;i<array.length;i++) {
+        if (i%perline==0) {
+            printf("%s ",type);
+        }
+        printf("%d",array[i]);
+        if ((i+1)%perline==0 || i==array.length-1) {
+            printf("%n");
+        } else {
+            printf(", ");
+        }
+    }
+    return "";
+}
+for (let k of Object.keys($MZO.arrays)) {
+    printf("%s: dw $+2%n",globalLabel(k));
+    dataSection("db", Array.from($MZO.arrays[k]));
+}
 printf(`
-${Object.keys($MZO.arrays).map \(k) {
-    return globalLabel(k)+":dw $+2\n"+
-    "db "+Array.from($MZO.arrays[k]).join(", ")+"\n";
-}.join("\n")}
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -183,7 +198,7 @@ bg.name:
  ds 256*3,32
 end.bg.name:
 
-end main`);
+end _main`);
 /*print(Object.keys(n.decls.fields));
 print(n.superclass.fullName);
 */
@@ -269,8 +284,8 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         left:10, top: 20, width:300,
         height:400,
     };
-    if (getkey("n")) {
-        tx.setValue("val", buf+"");
+    if (getkey("r")) {
+        tx.setValue("val", new GenROM().gen(plain));
     } else {
         let cg=new Includer;
         tx.setValue("val", plain);//cg.gensrc(buf+""));

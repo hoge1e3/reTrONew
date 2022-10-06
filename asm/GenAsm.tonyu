@@ -220,9 +220,9 @@ extends GenBase;
     switch(opr) {
         case "*":case "/":case "%":
         printf("pushthis 0%n");
-        visit(left);
-        printf("push hl%n");
         visit(right);
+        printf("push hl%n");
+        visit(left);
         printf("pop de%n");
         printf(opmap[opr]);
         printf("popthis 0%n");

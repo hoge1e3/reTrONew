@@ -1,4 +1,4 @@
-extends Actor;
+extends TObject;
 
 let romBoot=` org 04000h
  db 41h, 42h
@@ -6,7 +6,7 @@ let romBoot=` org 04000h
  ds 12,0
 rom.init:
  call cpslt
- jp main     
+ jp _main     
 
 
 rom.ENASLT EQU 0024H
@@ -102,3 +102,7 @@ cpslt.loop:
 ; call 4dh
  
 `;
+\gen(penAsm:String) {
+    penAsm=penAsm.replace(/\borg\b/g,";org");
+    return romBoot+penAsm;
+}
