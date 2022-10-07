@@ -145,20 +145,20 @@ defsub rnd
  push af
  call rnd.a
  pop af
- ret
 endsub rnd
 
 defsub rnd.a
- ld de,07fffh
- call IDIV.a
- push hl
+ ex de,hl
+ ld hl,07fffh
+ call udiv.a
+ inc bc
+ push bc
  call xrnd.a
  res 7,h
- ex de,hl
- pop hl
- inc hl
- call IDIV.a
- ret
+ pop de
+ call udiv.a
+ ld h,b
+ ld l,c
 endsub rnd.a
 
 defsub abs

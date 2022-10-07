@@ -4,9 +4,11 @@ native Tonyu;
 native Worker;
 native $;
 native asmWorker;
-waitFor($.getScript("https://hoge1e3.github.io/msx/asmWorker.js"));
+let worker;//=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
+$.getScript("https://hoge1e3.github.io/msx/asmWorker.js").then \(r) {
+    worker=asmWorker;
+};
 
-let worker=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
 initModule();
 x=256;y=20;fillStyle="black";
 let IDEPrj=$currentProject.compiler;
@@ -215,6 +217,7 @@ let plain;
 if (getkey("p")) {
     plain=included;
 } else {
+    while(!worker) update();
     worker.postMessage( included );
     plain=runPromise \(s,err){
         worker.addEventListener("message") \(e) {
