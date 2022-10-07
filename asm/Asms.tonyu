@@ -278,6 +278,7 @@ endsub div.a
 
 defsub udiv.a
  ; bc=hl/de
+ ; hl=hl%de
 #local
  ld a,d
  or e
@@ -2829,38 +2830,26 @@ jp main`,
 include z_debug
 include z_map
 include z_math
+include z_dac
 
 main:
-mlp:
- ld hl,0
- ld de,0
+ ld hl,10
+ ld de,10
  call locate
- ld hl,701
- ld de,100
- call div.a
- show hl
- show de
 
- ld hl,-701
- ld de,100
- call div.a
- show hl
- show de
+ ld a,35
+ ld (strbuf.i),a
+ ld a,0
+ ld (strbuf.i+1),a
+ ld hl,strbuf.i
+ call print.a
+  
+ ld hl,12345
+ call printi.a
+mlp:
+ jp mlp
  
- ld hl,701
- ld de,-100
- call div.a
- show hl
- show de
-
- ld hl,-701
- ld de,-100
- call div.a
- show hl
- show de
  
- jr mlp
-
 endusr:
 spr.inipat:
 bg.inipat:
@@ -2946,15 +2935,57 @@ nxt:
 ret
 str:
 #endlocal
+defsub myfout.a
+#local
+ xor a
+ ld (strbuf.i+1),a
+ bit 7,h
+ jr z, posi
+nega:
+ neghl.sv 0
+ ld a, '-'
+ ld (strbuf.i),a
+ jr loop
+posi:
+ ld a, ' '
+ ld (strbuf.i),a
+loop:
+ ld de,10
+ call udiv.a
+ ;show bc
+ ; bc=q hl=r
+ ld a,l
+ push bc
+ call unshift.sbuf
+ pop hl
+ add a,'0'
+ ld (strbuf.i+1),a
+ ld a,h
+ or l
+ jr nz, loop
+ 
+#endlocal
+endsub myfout.a
 
 defsub printi.a
- call int2dac
+ ;call int2dac
+ call myfout.a
  ld hl,strbuf.i
  ;ld a,128
  ;ld b,0
- call FOUT
+ ;call FOUT
  call print.a
 endsub printi.a
+; 0123456
+; s12345
+;       
+defsub unshift.sbuf
+ ld hl, strbuf.i+5
+ ld de, strbuf.i+6
+ ld bc, 5
+ lddr
+endsub unshift.sbuf
+
 defwork strbuf.i
 ds 16, 0
 endwork strbuf.i
