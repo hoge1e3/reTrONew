@@ -11,7 +11,7 @@ $score=0;
 //updateEx(60);
 //$sound.setBGMVolume(30);
 locate(10,10);
-print("rt=",$rtn_test);
+print("てすと=",$rtn_test);
 sound_vol(0,8);
 setInterval(inter);
 $psg=new PSGs;

@@ -195,12 +195,30 @@ extends GenBase;
     return s.substring(1,s.length-1);
     ;
 }
+\str2db(str) {
+    let tbl='○●をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
+    printf("db ");
+    for (let i=0;i<str.length;i++) {
+        let c=str.charCodeAt(i);
+        if (c<128) {
+            printf("%d",c);
+        } else {
+            c=tbl.indexOf(str[i]);
+            if (c>=0) printf("%d",c+128+4);
+            else printf("32");
+        }
+        if (i<str.length-1) printf(", ");
+    }
+    printf("%n");
+    
+}
 \setLit(l){
     let s=lit2s(l);
     printf("#local%n");
     printf("ld hl,st%n");
     printf("jp nx%n");
-    printf(`st: db "${s}"%n`);
+    printf("st: ");str2db(s);
+    //printf(`st: db "${s}"%n`);
     printf("db 0%n");
     printf("nx:%n");
     printf("#endlocal%n");
