@@ -411,6 +411,27 @@ oror macro tru
  jp nz,&tru
 endm
 
+bitand.a macro xx
+ ; hl&=de
+ ld a,h
+ and d
+ ld h,a
+ ld a,l
+ and e
+ ld l,a
+endm
+
+bitor.a macro xx
+ ; hl|=de
+ ld a,h
+ or d
+ ld h,a
+ ld a,l
+ or e
+ ld l,a
+endm
+
+
 flagtobool macro fl
 #local
  jr &fl, yes

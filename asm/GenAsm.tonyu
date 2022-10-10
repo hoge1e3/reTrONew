@@ -35,6 +35,7 @@ extends GenBase;
         case "*=":case "/=":case "%=":
         arithEq(n);
         break;
+        case "&":bitand(left,right);break;
         case "&&":andand(left,right);break;
         case "||":oror(left,right);break;
         case ">>":case "<<":case ">>>":
@@ -73,6 +74,15 @@ extends GenBase;
     visit(right);
     printf("%s:%n",n);
 }
+
+\bitand(left: Expression, right:Expression) {
+    visit(left);
+    printf("ex de,hl%n");
+    visit(right);
+    printf("bitand.a 0%n");
+    printf("getthis 0%n");
+}
+
 
 \isMemberRef(m:Expression) {
     if (m.type!=="postfix") return null;
