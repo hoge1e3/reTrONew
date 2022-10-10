@@ -99,4 +99,8 @@ native Tonyu;
     $sound.on("interval", \{$Boot.onInter();});
     new mainClass;
 }
+\loadPage(Class) {
+    $MLayer.all(RSprite).die();
+    new Class;
+}
 super.main();
