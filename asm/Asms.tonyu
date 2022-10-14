@@ -887,6 +887,22 @@ endsub th.isblank.a
  dw th.end
  endwork th.new.end
 
+defsub th.find.blank
+#local
+ ld a,(th.new.start+1)
+ ld h,a
+ ld l,th.ofs.stp
+loop:
+ ld a,(hl)
+ cp th.st.blank
+ ret z
+ ld a,(th.new.end+1)
+ inc h
+ cp h
+ jr nz,loop
+ inc a; reset z
+#endlocal
+endsub 0
 
 defsub th.new
 ; nc for alloc fail
