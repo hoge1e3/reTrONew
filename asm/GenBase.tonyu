@@ -5,7 +5,9 @@ native Worker;
 native $;
 native asmWorker;
 let worker;//=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
-$.getScript("https://hoge1e3.github.io/msx/asmWorker.js").then \(r) {
+let workerURL="https://hoge1e3.github.io/msx/asmWorker.js";
+//let workerURL="https://edit.tonyu.jp/cgi-bin/asmWorker.js?"+rnd();
+$.getScript(workerURL).then \(r) {
     worker=asmWorker;
 };
 
@@ -13,6 +15,7 @@ initModule();
 x=256;y=20;fillStyle="black";
 let IDEPrj=$currentProject.compiler;
 text="get Nodes...";
+size=20;
 let anodes=waitFor(IDEPrj.serializeAnnotatedNodes());
 //print(anodes);
 let mem=new MemberScan{genasm:this};
@@ -120,7 +123,7 @@ for (klass of mem.ks) {
     }
     update();
 }
-text="";
+text="Writing assets...";
 let outp=new OutPat;
 let outbg=new OutBG;
 waitEvent(outbg,"complete");
@@ -140,10 +143,12 @@ waitEvent(outbg,"complete");
     }
     return "";
 }
+printf(";!ROM%n");
 for (let k of Object.keys($MZO.arrays)) {
     printf("%s: dw $+2%n",globalLabel(k));
     dataSection("db", Array.from($MZO.arrays[k]));
 }
+printf(";!/ROM%n");
 printf(`
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
@@ -163,6 +168,7 @@ ${Object.keys(globalVars).map \(k){
     return globalLabel(k)+":dw 0";
 }.join("\n")}
 endusr:
+;!ROM
 inivrm macro n, dst
  ld de,&dst
  ld hl,&n
@@ -199,14 +205,32 @@ end.bg.col:
 bg.name:
  ds 256*3,32
 end.bg.name:
+;!/ROM
 
 end _main`);
 /*print(Object.keys(n.decls.fields));
 print(n.superclass.fullName);
 */
 //print("buf="+buf);
-let url="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
-
+let url_pen="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
+let url_ws="https://8bitworkshop.com/v3.10.0/?platform=msx";
+let export_platforms={
+    msxpen:["ul",
+    ["li",
+    "Open ",
+    ["a",{target:"pen",href:url_pen},
+    "this MSXpen page "],
+    "."],
+    ["li","Paste the copied code",
+    " to 'Asm' tab."]],
+    "8bitws":["ul",
+    ["li",
+    "Open ",
+    ["a",{target:"ws",href:url_ws},
+    "the 8bitworkshop ide"],
+    "."],
+    ["li","Paste the copied code"]],
+};
 //msxpen.com/codes/-N8kjRrkOlaH4vlLV7MY";
 
 
@@ -217,7 +241,9 @@ let plain;
 if (getkey("p")) {
     plain=included;
 } else {
+    text="Loading assembler...";
     while(!worker) update();
+    text="Assemble in progress...";
     worker.postMessage( included );
     plain=runPromise \(s,err){
         worker.addEventListener("message") \(e) {
@@ -226,10 +252,18 @@ if (getkey("p")) {
             else s(data.result);
         };
     };
+    text="";
     plain=plain.map\(e){return e.body;}.join("\n");
 }
 
-new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
+new Button{top:420,left:50, width:200,height:25,
+    text:"to MSXPen",platform:"msxpen",padding:1,
+onClick:showDiag,fillStyle:$RSprPat.palette[6]};
+new Button{top:420,left:300, width:200,height:25,
+    text:"to 8bitworkship",platform:"8bitws",padding:1,
+onClick:showDiag,fillStyle:$RSprPat.palette[9]};
+
+//new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
 \toDB(bytes) {
     let buf="",c=[];
     while(bytes.length) {
@@ -243,7 +277,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
     if (c.length) buf+="db "+c.join(", ")+"\n";
     return buf;
 }
-\showDiag() {
+\showDiag(b) {
     //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
     if (problems.length) {
         let tx=new HTMLUI{
@@ -272,14 +306,15 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         content:["div",
         {style:'background: #eee;'},
         ["h2","Code copied!"],
+        export_platforms[b.platform],/*
         ["ul",
         ["li",
         "Open ",
-        ["a",{target:"pen",href:url},
+        ["a",{target:"pen",href:url_pen},
         "this MSXpen page "],
         "."],
         ["li","Paste the copied code",
-        " to 'Asm' tab."]],
+        " to 'Asm' tab."]],*/
         ["textarea",{rows:"10", cols:"30",name:"val"},
         "test\ndesu"],
         ["button",{onclick:\{tx.die();}},"Close"]
@@ -287,7 +322,7 @@ new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[
         left:10, top: 20, width:300,
         height:400,
     };
-    if (getkey("r")) {
+    if (b.platform==="8bitws") {
         tx.setValue("val", new GenROM().gen(plain));
     } else {
         let cg=new Includer;

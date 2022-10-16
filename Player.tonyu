@@ -5,8 +5,8 @@ while(true) {
     //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
     /*if (getkey("left")||getkey("j1_left")) x-=3;
     if (getkey("right")||getkey("j1_right")) x+=3;*/
-    x+=stickX(0,3)+stickX(1,3)+stickX(2,3)+stickX(3,3);
-    y+=stickY(0,3)+stickY(1,3)+stickY(2,3)+stickY(3,3);
+    x+=stickX(0,3);//+stickX(1,3)+stickX(2,3)+stickX(3,3);
+    y+=stickY(0,3);//+stickY(1,3)+stickY(2,3)+stickY(3,3);
     //if (getkey("up")||getkey("j1_up")) y-=3;
     //if (getkey("down")||getkey("j1_down")) y+=3;
     /*if (getkey("left")) x-=3;
