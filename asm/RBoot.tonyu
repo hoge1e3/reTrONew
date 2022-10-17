@@ -87,7 +87,7 @@ native Tonyu;
     };
     if ($editButton) {
         new Button{top:480,text:"Edit Page",height:30, 
-            fillStyle:$RSprPat.palette[9],
+            fillStyle:$RSprPat.palette[8],
             onClick:\{$editButton.openEditor();}
         };
     }

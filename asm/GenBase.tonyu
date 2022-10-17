@@ -4,6 +4,7 @@ native Tonyu;
 native Worker;
 native $;
 native asmWorker;
+native Uint8Array;
 let worker;//=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
 let workerURL="https://hoge1e3.github.io/msx/asmWorker.js";
 //let workerURL="https://edit.tonyu.jp/cgi-bin/asmWorker.js?"+rnd();
@@ -246,11 +247,13 @@ if (getkey("p")) {
     text="Assemble in progress...";
     worker.postMessage( included );
     plain=runPromise \(s,err){
-        worker.addEventListener("message") \(e) {
+        \f(e) {
+            worker.removeEventListener("message",f); 
             let data=$JSON.parse(e.data);
             if (data.type==="error") err(new Error(data.message));
             else s(data.result);
-        };
+        }
+        worker.addEventListener("message",f);
     };
     text="";
     plain=plain.map\(e){return e.body;}.join("\n");
@@ -258,10 +261,14 @@ if (getkey("p")) {
 
 new Button{top:420,left:50, width:200,height:25,
     text:"to MSXPen",platform:"msxpen",padding:1,
-onClick:showDiag,fillStyle:$RSprPat.palette[6]};
+onClick:showDiag,fillStyle:$RSprPat.palette[4]};
 new Button{top:420,left:300, width:200,height:25,
     text:"to 8bitworkshop",platform:"8bitws",padding:1,
 onClick:showDiag,fillStyle:$RSprPat.palette[9]};
+
+new Button{top:445,left:50, width:200,height:25,
+    text:"Download ROM",padding:1,
+onClick:dlROM,fillStyle:$RSprPat.palette[13]};
 
 //new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
 \toDB(bytes) {
@@ -330,7 +337,25 @@ onClick:showDiag,fillStyle:$RSprPat.palette[9]};
     }
     tx.copyToClipboard("val");
 }
-
+\dlROM() {
+    let romAsm=new GenROM().gen(plain);
+    \f(e) {
+        worker.removeEventListener("message",f);
+        let data=$JSON.parse(e.data);
+        if (data.type==="error") {return print(data.message);}
+        let bins=[];
+        for (let line of data.result) {
+            for (let e of line.bin) bins.push(e);
+        }
+        while(bins.length<0x8000) bins.push(0);
+        print(bins);
+        let outrom=file("output.rom");
+        outrom.setBytes(new Uint8Array(bins));
+        outrom.download();
+    }
+    worker.addEventListener("message",f);
+    worker.postMessage( romAsm );
+}
 \def(n){
     if(!n){
         throw new Error("Visited undefined");
