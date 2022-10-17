@@ -196,17 +196,19 @@ extends GenBase;
     ;
 }
 \str2db(str) {
-    let tbl='○●をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
+    //let tbl='○●をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
     printf("db ");
+    str=$Boot.str2bin(str);
     for (let i=0;i<str.length;i++) {
-        let c=str.charCodeAt(i);
+        /*let c=str.charCodeAt(i);
         if (c<128) {
             printf("%d",c);
         } else {
             c=tbl.indexOf(str[i]);
             if (c>=0) printf("%d",c+128+4);
             else printf("32");
-        }
+        }*/
+        printf("%d",str [i]);
         if (i<str.length-1) printf(", ");
     }
     printf("%n");

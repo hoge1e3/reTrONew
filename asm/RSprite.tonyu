@@ -39,18 +39,13 @@ let dotAlign=1;
     $map.cury=y;
 }
 \print(){
-    let tbl='○●をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
-    
     let a=new ArgParser(arguments);
     let s=a.toArray().map\(e){
         return (typeof e=="number"&& e>=0 ? " "+e:e);
     }.join("");
+    s=$Boot.str2bin(s);
     for (let i=0;i<s.length;i++) {
-        let c=s.charCodeAt(i);
-        if (c>=128) {
-            c=tbl.indexOf(s[i]);
-            if (c>=0) c+=128+4;else c=32;
-        }
+        let c=s [i];
         map_set($map.curx, $map.cury, c);
         $map.curx++;
         if ($map.curx>=$map.col) {

@@ -22,6 +22,7 @@ native Tonyu;
         }
     };
 }
+let kanaTbl,dac10,dac5;
 \createMainObject() {
     //--config section---
     config();
@@ -32,6 +33,14 @@ native Tonyu;
     $config.intArrays=$config.intArrays||{};
     //--------
     getMainClass();
+    kanaTbl='○●'+
+    'をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?'+
+    '。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソ'+
+    'タチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン'+
+    '゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
+    dac10="がぎぐげござじずぜぞ"+
+    "だぢづでどばびぶべぼ";
+    dac5="ぱぴぷぺぽ";
     $excludeFromAll=$Screen.all();
     $Screen.resize(512,512);
     $MScreen=new Screen{x:256,y:224,width:256,height:192,scaleX:2};
@@ -102,5 +111,38 @@ native Tonyu;
 \loadPage(Class) {
     $MLayer.all(RSprite).die();
     new Class;
+}
+\openDac(s){
+    let res="";
+    for (let i=0;i<s.length;i++) {
+        let j=dac10.indexOf(s [i]);
+        if (j>=0){
+            res+=String.fromCharCode(
+            dac10.charCodeAt(j)-1)+"゛";
+            continue;
+        }
+        j=dac5.indexOf(s [i]);
+        if (j>=0){
+            res+=String.fromCharCode(
+            dac5.charCodeAt(j)-2)+"゜";
+            continue;
+        }
+        res+=s [i];continue;
+            
+    }
+    return res;
+}
+\str2bin(s){
+    let res=[ ];
+    s=openDac(s);
+    for (let i=0;i<s.length;i++) {
+        let c=s.charCodeAt(i);
+        if (c>=128) {
+            c=kanaTbl.indexOf(s[i]);
+            if (c>=0) c+=128+4;else c=32;
+        }
+        res.push(c);
+    }
+    return res;
 }
 super.main();
