@@ -260,7 +260,7 @@ new Button{top:420,left:50, width:200,height:25,
     text:"to MSXPen",platform:"msxpen",padding:1,
 onClick:showDiag,fillStyle:$RSprPat.palette[6]};
 new Button{top:420,left:300, width:200,height:25,
-    text:"to 8bitworkship",platform:"8bitws",padding:1,
+    text:"to 8bitworkshop",platform:"8bitws",padding:1,
 onClick:showDiag,fillStyle:$RSprPat.palette[9]};
 
 //new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
