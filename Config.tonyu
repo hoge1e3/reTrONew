@@ -24,6 +24,20 @@ extends RBoot;
         "consts":{
             "$rtn_test":10,
         },
+        "postprocess": {
+            // disable preview mode
+            //noPreview: true,   
+            
+            // auto select export target: "rom", "msxpen", "8bitws"
+            //target: "rom",
+            
+            // when target is "rom", specify rom file name (also valid wen target is not specifed) 
+            //romFileName: "sample.rom",
+            
+            // do something after export. e.romFile(File object)  or  e.asm(string) 
+            // e.romFile.dataURL()  <- get dataURL of rom File
+            //onExport: function (e) { print(e.romFile.dataURL()); }
+        },
         // unimplemented: global strings(char*). length cannot be changed.
         "chars": {
             "$mesg": "Hello, world", // char*

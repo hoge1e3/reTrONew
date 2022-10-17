@@ -31,6 +31,7 @@ let kanaTbl,dac10,dac5;
     }
     $config.consts=$config.consts||{};
     $config.intArrays=$config.intArrays||{};
+    $config.postprocess=$config.postprocess||{};
     //--------
     getMainClass();
     kanaTbl='○●'+
@@ -101,6 +102,7 @@ let kanaTbl,dac10,dac5;
         };
     }
     $mainClassName=mainClass.meta.shortName;
+    if ($config.postprocess.noPreview) return;
     $PSG=[
     new Beep,new Beep,new Beep
     ];
