@@ -23,3 +23,8 @@ with Web-based developing environment.
 
 - https://twitter.com/hoge1e3
   - Please ask in English or Japanese
+
+## LICENSE and depending projects
+
+- This software is lincesed under MIT License
+- Assembler part: (trs80)[https://github.com/lkesteloot/trs80]
