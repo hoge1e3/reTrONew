@@ -27,4 +27,4 @@ with Web-based developing environment.
 ## LICENSE and depending projects
 
 - This software is lincesed under MIT License
-- Assembler part: (trs80)[https://github.com/lkesteloot/trs80]
+- Assembler part: [trs80](https://github.com/lkesteloot/trs80)
