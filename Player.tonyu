@@ -1,7 +1,7 @@
 var e,d;
 while(true) {
     locate(0,1);print(getkey("space")," ");
-    map_setAt(x,y,$pat_font+1);
+    map_setAt(x,y,35);
     //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
     /*if (getkey("left")||getkey("j1_left")) x-=3;
     if (getkey("right")||getkey("j1_right")) x+=3;*/
