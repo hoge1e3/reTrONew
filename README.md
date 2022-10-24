@@ -28,3 +28,4 @@ with Web-based developing environment.
 
 - This software is lincesed under MIT License
 - Assembler part: [trs80](https://github.com/lkesteloot/trs80)
+- Font data: https://twitter.com/uniskie/status/1583265073908195328
