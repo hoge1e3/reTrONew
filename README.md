@@ -19,4 +19,13 @@ with Web-based developing environment.
 
 - https://run.tonyu.jp/?hoge_ship/blank
 
+## Support 
 
+- https://twitter.com/hoge1e3
+  - Please ask in English or Japanese
+
+## LICENSE and depending projects
+
+- This software is lincesed under MIT License
+- Assembler part: [trs80](https://github.com/lkesteloot/trs80)
+- Font data: https://twitter.com/uniskie/status/1583265073908195328
