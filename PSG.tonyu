@@ -2,25 +2,32 @@ var mpoint;
 var v;
 var chn;
 var mcount;
+var len;
+function init(){
+    len=44100>>2;
+    mcount=0;
+}
 \step() {
     if (!mpoint) return;
     //print(mpoint);
     //print("cmd", cmd);
     sound_vol(chn,v);
-    mcount--;
+    mcount-=400;
     if (v>0) v--;
     while(!(mcount>0)) {
+        //locate(0,5);print(mcount);
         var cmd=peek(mpoint);
         if (cmd>=0 && cmd<96) {
             sound_scale(chn,cmd);
             v=12;
-            mcount=7;
-            if (chn==2) mcount=1;
+            mcount+=len;
+            locate(0,3);
+            //if (chn==2) mcount=1;
             mpoint++;
             break;
         } else if (cmd==99) {
             v=0;
-            mcount=7;
+            mcount+=len;
             mpoint++;
             break;
         } else if (cmd==124) {//MIni
@@ -55,7 +62,12 @@ var mcount;
         } else if (cmd==120) {//MLabel
             mpoint+=2;
         } else if (cmd==122) {//MSetLen
-            mpoint+=3;
+            locate(0,3);
+            mpoint++;
+            len=read16();
+            
+            //print("len",len);
+            mpoint+=2;
         } else {
             print ("Inv" ,cmd);
             die();
