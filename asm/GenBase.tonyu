@@ -209,6 +209,30 @@ end.bg.name:
 ;!/ROM
 
 end _main`);
+
+if (problems.length) {
+    let tx=new HTMLUI{
+        content:["div",
+        {style:'background: #fee;'},
+        ["h2","Problem(s) found"],
+        ["ul"].concat(
+        problems.map\(p) {
+            return ["li",["a",{
+                href:"javascript:;",
+                onclick: \{
+                    ide.jump(p.file, p.row, p.col);  
+                }
+            },
+            p.file.name(),":",p.row,":",p.col," - ",p.mesg
+            ]];
+        }),
+        ["button",{onclick:\{tx.die();}},"Close"]
+        ],
+        left:10, top: 20, width:300,
+        height:400,
+    };
+    return;
+}
 /*print(Object.keys(n.decls.fields));
 print(n.superclass.fullName);
 */
@@ -293,29 +317,7 @@ switch ($config.postprocess.target) {
 }
 \showDiag(b) {
     //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
-    if (problems.length) {
-        let tx=new HTMLUI{
-            content:["div",
-            {style:'background: #fee;'},
-            ["h2","Problem(s) found"],
-            ["ul"].concat(
-            problems.map\(p) {
-                return ["li",["a",{
-                    href:"javascript:;",
-                    onclick: \{
-                        ide.jump(p.file, p.row, p.col);  
-                    }
-                },
-                p.file.name(),":",p.row,":",p.col," - ",p.mesg
-                ]];
-            }),
-            ["button",{onclick:\{tx.die();}},"Close"]
-            ],
-            left:10, top: 20, width:300,
-            height:400,
-        };
-        return;
-    }
+    
     let tx=new HTMLUI{
         content:["div",
         {style:'background: #eee;'},
