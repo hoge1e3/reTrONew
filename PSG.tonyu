@@ -3,6 +3,7 @@ var v;
 var chn;
 var mcount;
 var len;
+
 function init(){
     len=44100>>2;
     mcount=0;
@@ -14,21 +15,31 @@ function init(){
     sound_vol(chn,v);
     mcount-=400;
     if (v>0) v--;
-    while(!(mcount>0)) {
+    while(mcount>=-400 && mcount<=0) {
         //locate(0,5);print(mcount);
         var cmd=peek(mpoint);
         if (cmd>=0 && cmd<96) {
             sound_scale(chn,cmd);
             v=12;
-            mcount+=len;
-            locate(0,3);
-            //if (chn==2) mcount=1;
             mpoint++;
+            if (peek(mpoint)==123) {//MLenMark
+                mpoint++;
+                mcount+=read16();
+                mpoint+=2;
+            } else {
+                mcount+=len;
+            }
             break;
         } else if (cmd==99) {
             v=0;
-            mcount+=len;
             mpoint++;
+            if (peek(mpoint)==123) {//MLenMark
+                mpoint++;
+                mcount+=read16();
+                mpoint+=2;
+            } else {
+                mcount+=len;
+            }
             break;
         } else if (cmd==124) {//MIni
             v=0;

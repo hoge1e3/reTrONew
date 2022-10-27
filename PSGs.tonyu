@@ -31,6 +31,7 @@ var ch1,ch2,ch3;
     //print(mpoint);
     if (ch3) ch3.die();
     ch3=new PSG{chn:2, mpoint};
+    ch3.init();
 }
 \step() {
     //print("STEP");
