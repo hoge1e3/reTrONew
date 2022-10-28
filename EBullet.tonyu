@@ -6,7 +6,7 @@ while(true) {
     x+=vx;
     y+=vy;
     if (screenOut()) die();
-    if (map_getAt(x,y)==35) {
+    if (map_getAt(x,y)==$wall) {
         map_setAt(x,y,32);
         die();
     }

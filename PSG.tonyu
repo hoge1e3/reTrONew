@@ -3,23 +3,26 @@ var v;
 var chn;
 var mcount;
 var len;
-
+var tempoc;
+var mute;
 function init(){
-    len=44100>>2;
+    len=20160/2;// SPS/2
     mcount=0;
+    tempoc=336;// SPS96=64*9*5*7 / 60  
+    mute=0;
 }
 \step() {
     if (!mpoint) return;
     //print(mpoint);
     //print("cmd", cmd);
-    sound_vol(chn,v);
-    mcount-=400;
+    if (!mute) sound_vol(chn,v);
+    mcount-=tempoc;
     if (v>0) v--;
-    while(mcount>=-400 && mcount<=0) {
+    while(mcount>=-tempoc && mcount<=0) {
         //locate(0,5);print(mcount);
         var cmd=peek(mpoint);
         if (cmd>=0 && cmd<96) {
-            sound_scale(chn,cmd);
+            if (!mute) sound_scale(chn,cmd);
             v=12;
             mpoint++;
             if (peek(mpoint)==123) {//MLenMark
@@ -41,18 +44,19 @@ function init(){
                 mcount+=len;
             }
             break;
-        } else if (cmd==124) {//MIni
+        } else if (cmd==124) {//MIni   0x7c
             v=0;
             mpoint++;
-        } else if (cmd==104) {//Jump
+        } else if (cmd==104) {//Jump   0x68
             mpoint++;
             var ofs=read16();
             //print(ofs);
+            mpoint--;
             mpoint+=ofs-65536;
         } else if (cmd==255) {//MEnd
             mpoint=0;
             die();
-            sound_vol(chn,0);
+            if (!mute) sound_vol(chn,0);
             break;
         } else if (cmd==100) {//MVol
             mpoint+=2;
@@ -60,26 +64,27 @@ function init(){
             mpoint+=2;
         } else if (cmd==102) {//MSelWav
             mpoint+=2;
-        } else if (cmd==107) {//MSelEnv
+        } else if (cmd==107) {//MSelEnv  
             mpoint+=2;
-        } else if (cmd==110) {//MDet
+        } else if (cmd==110) {//MDet  0x6e
             mpoint+=2;
-        } else if (cmd==115) {//MLfo
+        } else if (cmd==115) {//MLfo   0x73
             mpoint+=4;
-        } else if (cmd==116) {//MSync
+        } else if (cmd==116) {//MSync   0x74
             mpoint+=2;
-        } else if (cmd==118) {//MLfoD
+        } else if (cmd==118) {//MLfoD  0x76
             mpoint+=2;
-        } else if (cmd==120) {//MLabel
+        } else if (cmd==120) {//MLabel 0x78
             mpoint+=2;
-        } else if (cmd==122) {//MSetLen
-            locate(0,3);
+        } else if (cmd==122) {//MSetLen 0x7a
+            //locate(0,3);
             mpoint++;
             len=read16();
             
             //print("len",len);
             mpoint+=2;
         } else {
+            locate(0,6);
             print ("Inv" ,cmd);
             die();
             mpoint=0;

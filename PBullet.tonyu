@@ -9,7 +9,7 @@ while (true) {
         die();
         $score+=10;
     }
-    if (map_getAt(x,y-16)==1){
+    if (map_getAt(x,y-16)==$wall){
         map_setAt(x,y-16,32);
         die();
     }

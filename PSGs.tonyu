@@ -1,43 +1,67 @@
 //var mpoint;
-var ch1,ch2,ch3;
+var ch1,ch2,ch3,chs;
 \initBGM(mpoint) {
     mpoint+=4; // version
-    //print(peek(mpoint));
     mpoint++; // chs
-    var size=read16(mpoint);
-    //print("size",size);
+    var size;
+    
+    size=read16(mpoint);
     mpoint+=4;
-    //print(mpoint);
     if (ch1) ch1.die();
     ch1=new PSG{chn:0, mpoint};
     ch1.init();
-    //return;
     mpoint+=size;
-    var size=read16(mpoint);
-    //print("size",size);
+    
+    size=read16(mpoint);
     mpoint+=4;
     if (ch2) ch1.die();
     ch2=new PSG{chn:1, mpoint};
     ch2.init();
     mpoint+=size;
-}
-\initSE(mpoint) {
-    mpoint+=4; // version
-    //print(peek(mpoint));
-    mpoint++; // chs
-    var size=read16(mpoint);
-    //print("size",size);
+
+    size=read16(mpoint);
     mpoint+=4;
-    //print(mpoint);
-    if (ch3) ch3.die();
+    if (ch3) ch1.die();
     ch3=new PSG{chn:2, mpoint};
     ch3.init();
+    mpoint+=size;
+    
 }
+\initSE(mpoint) {
+    if (chs && chs.mpoint && chs.mpoint<mpoint) return;
+
+    mpoint+=4; // version
+    mpoint++; // chs
+    var size=read16(mpoint);
+    mpoint+=4;
+    if (chs) {
+        chs.die();
+    }
+    chs=new PSG{chn:2, mpoint};
+    chs.init();
+}
+\stopBGM() {
+    if (ch1) ch1.die();
+    if (ch2) ch2.die();
+    if (ch3) ch3.die();
+    ch1=null;
+    ch2=null;
+    ch3=null;
+    sound_vol(0,0);
+    sound_vol(1,0);
+    sound_vol(2,0);
+}
+
 \step() {
+    if(chs) {
+        chs.step();
+        ch3.mute=chs.mpoint;
+    }
     //print("STEP");
     if(ch1) ch1.step();
     if(ch2) ch2.step();
     if(ch3) ch3.step();
+    //locate(0,5);print(ch1.len);
 }
 \read16(mpoint) {
     return peek(mpoint)+(peek(mpoint+1)<<8);
