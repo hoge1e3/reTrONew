@@ -1,6 +1,14 @@
 extends TObject;
+includes FileMod;
 let asms=new Asms;
 let incled;
+let staticRoot=file("../static/asm/");
+function outFile() {
+    for (let k,v of asms.data) {
+        staticRoot.rel(`${k}.asm`).text(v);
+    }
+}
+//outFile();
 function gensrc(src){
     incled={};
     return writeConfig(incl(src));
