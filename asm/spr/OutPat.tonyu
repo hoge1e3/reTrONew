@@ -1,10 +1,10 @@
-extends TObject;
+extends Actor;
 let pa=new Panel {
-    x:200,y:200,
+    x:50,y:20,
     width:16,height:16,
-    scaleX:10
+    scaleX:2
 };
-
+let complete;
 /*let ide=$Boot.getIDE();
 if (ide) ide.runDialog.resize {
     left:10,top:300,width:400,
@@ -29,10 +29,11 @@ i<$imageList.length;i++){
     8,0,8,16);
     d=d.data;
     out(d);
-    
+    update();
     //print(d.data.length);
 }
 pa.die();
+complete=true;
 \out(d){
     let c="0b";
     let db= [];

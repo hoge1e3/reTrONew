@@ -5,6 +5,7 @@ let pa=new Panel {
     width:8,height:8,
     scaleX:1
 };
+let complete;
 $RSprPat=$RSprPat||new RSprPat;
 let buf='',count=0;
 let patgen=[], coltbl=[];
@@ -28,6 +29,7 @@ i<$imageList.length;i++){
 }
 //print(patgen.map\(e){return e.toString(2);},coltbl.map\(e){return e.toString(16);});
 pa.die();
+complete=true;
 fireEvent("complete");
 \out(d){
     let pals:Color[]=$RSprPat.palette;

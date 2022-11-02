@@ -69,27 +69,25 @@ let anode;
     }
     return res;
 }
+let outp=new OutPat;
+let outbg=new OutBG;
+
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
     if (text===$mainClassName) {
         printf("_main:%ntnu.run %s,%d,%d%n",$mainClassName,r[0],r[1]);
     }
-    //print("KLS",klass);
+    printf("; class_def_start %s%n",klass.shortName);
     printf(";range %d-%d%n",r[0],r[1]);
     mem.header(klass);
     klassSrc=klass.src.tonyu.text();
-    //print(klass.src.tonyu);
     let methods=klass.decls.methods;
     anode=(klass.annotation);
-    //let fldc=(new FldCollect{anode});
-    //print("FLDC", fldc, fldc.visit);
     for (let mname, me of methods) {
         let method:FuncInfo=me;
         
         text=klass.shortName+"."+mname;
-        //print(text);
-        //fldc.visit(method.stmts);
         params={};
         let ln=1;
         for (let i,pa of method.params) {
@@ -99,18 +97,10 @@ for (klass of mem.ks) {
         locals={};
         ln=1;
         for (let k,v of method.locals.varDecls) {
-            /*if (!v.name) {
-                print("V.name", k,v,method.locals.varDecls);
-            }*/
             // v:VarDecl|Forin|Catch|Token (See definition of SemCtx)
             locals[k]=ln;
             ln++;
         }
-        //if (Object.keys(locals).length) print("LOCAL",locals);
-        /*if (method.params.length>0) {
-            unsup(method.params[0],"Parameters is not yet supported");
-        }*/
-        //print(method.locals.varDecls);
         printf("def %s.%s,%d,%d%{",
         klass.shortName, mname, 
         method.params.length,
@@ -122,12 +112,11 @@ for (klass of mem.ks) {
         printf("%}");
         update();
     }
+    printf("; class_def_end %s%n",klass.shortName);
     update();
 }
 text="Writing assets...";
-let outp=new OutPat;
-let outbg=new OutBG;
-waitEvent(outbg,"complete");
+while(!outp.complete || !outbg.complete) update();
 
 \dataSection(type, array) {
     let perline=16;
@@ -262,26 +251,24 @@ let export_platforms={
 //msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
 let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
-let plain;
-if (getkey("p")) {
-    plain=included;
-} else {
-    text="Loading assembler...";
-    while(!worker) update();
-    text="Assemble in progress...";
-    worker.postMessage( included );
-    plain=runPromise \(s,err){
-        \f(e) {
-            worker.removeEventListener("message",f); 
-            let data=$JSON.parse(e.data);
-            if (data.type==="error") err(new Error(data.message));
-            else s(data.result);
-        }
-        worker.addEventListener("message",f);
-    };
-    text="";
-    plain=plain.map\(e){return e.body;}.join("\n");
-}
+outAsm("macro.ram", included);
+text="Loading assembler...";
+while(!worker) update();
+text="Assemble in progress...";
+worker.postMessage( included );
+let plain=runPromise \(s,err){
+    \f(e) {
+        worker.removeEventListener("message",f); 
+        let data=$JSON.parse(e.data);
+        if (data.type==="error") err(new Error(data.message));
+        else s(data.result);
+    }
+    worker.addEventListener("message",f);
+};
+text="";
+plain=plain.map\(e){return e.body;}.join("\n");
+outAsm("plain.ram", plain);
+
 
 switch ($config.postprocess.target) {
     case "rom":
@@ -340,7 +327,7 @@ switch ($config.postprocess.target) {
     };
     let generatedAsm;
     if (b.platform==="8bitws") {
-        generatedAsm=new GenROM().gen(plain);
+        generatedAsm=new GenROM{base:this}.gen(plain);
     } else {
         let cg=new Includer;
         generatedAsm=plain;
@@ -352,7 +339,7 @@ switch ($config.postprocess.target) {
     }
 }
 \dlROM() {
-    let romAsm=new GenROM().gen(plain);
+    let romAsm=new GenROM{base:this}.gen(plain);
     \f(e) {
         worker.removeEventListener("message",f);
         let data=$JSON.parse(e.data);
@@ -396,4 +383,9 @@ switch ($config.postprocess.target) {
     problems.push(p);
     //ide.jump( file, rc.row, rc.col);
     print(p.file.name(),":",p.row,":",p.col," - ",p.mesg);
+}
+\outAsm(name, content) {
+    if ($Navigator.isNW()) {
+        file(`asm/${name}.asm`).text(content);
+    }
 }
