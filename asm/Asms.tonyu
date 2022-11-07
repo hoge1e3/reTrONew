@@ -107,37 +107,71 @@ cpde.a macro n
  rst dcompr
 endm
 
+defwork xrnd.seed
+ dw 1234
+ dw 5678
+endwork xrnd.seed
 
 defsub xrnd.a
-#local
+; h l d e
+ ld hl,(xrnd.seed+2)
+ ld de,(xrnd.seed)
  ; s[0] ^= s[0] << 13
- call rdhlde
- sldehl 13
- call wrtxor
+ push de
+ pop bc
+; h l d e
+; b c
+ ld a,l
+ rept 3
+  srl a
+  rr b
+  rr c
+ endm
+ ld a,h
+ xor b
+ ld h,a
+ ld a,l
+ xor c
+ ld l,a
  ; s[0] ^= s[0] >> 17
- call rdhlde
- srdehl 17
- call wrtxor
+ 
+ push hl
+ pop bc
+; h l d e
+;     b c
+ srl b
+ rr c
+ 
+ ld a,d
+ xor b
+ ld d,a
+ ld a,e
+ xor c
+ ld e,a
+
  ; s[0] ^= s[0] << 5;
- call rdhlde
- sldehl 5
- call wrtxor
+ ; h l d e
+ ;   b c
+ ld b,l
+ ld c,d
+ ld a,e
+ rept 3
+  srl a
+  rr b
+  rr c
+ endm
+
+ ld a,l
+ xor b
+ ld l,a
+ ld a,d
+ xor c
+ ld d,a
+ 
+ ld (xrnd.seed+2),hl
+ ld (xrnd.seed),de
+
  ret
-
- rdhlde:
-  ld hl,1234
- rhl:
-  ld de,5678
- rde:
-  ret
-
- wrtxor:
-  xorrm h,rhl-1
-  xorrm l,rhl-2
-  xorrm d,rde-1
-  xorrm e,rde-2
-  ret
-#endlocal
 endsub xrnd.a
 
 
@@ -895,6 +929,7 @@ endsub th.isblank.a
  endwork th.new.end
 
 defsub th.find.blank
+; h: result  nz: not found
 #local
  ld a,(th.new.start+1)
  ld h,a
