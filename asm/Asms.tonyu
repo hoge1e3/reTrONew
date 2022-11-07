@@ -68,35 +68,6 @@ srlbc macro xx
 endm
 
 
-; for xrnd
-sldehl macro n
-#local
-  ld b,&n
- loop:
-  sla d
-  rl e
-  rl h
-  rl l
-  djnz loop
-#endlocal
-endm
-srdehl macro n
-#local
- ld b,&n
- loop:
-  srl l
-  rr h
-  rr e
-  rr d
- djnz loop
-#endlocal
-endm
-
-xorrm macro re,me
-  ld A,(&me)
-  xor &re
-  ld (&me),a
-endm
 
 subhl macro rp
  and a
@@ -1073,6 +1044,10 @@ th.with.ret macro n
 endm
 
 defsub th.with.s
+; with(this) { init routine } 
+;  init routine should end with th.with.ret
+; h -> this
+; th.with.setdst <addr> -> init routine address
  ld (th.wrssp-2),sp
  ld l, th.ofs.sp
  ld (th.updsp-2),hl
