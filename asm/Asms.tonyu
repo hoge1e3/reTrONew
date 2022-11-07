@@ -931,6 +931,8 @@ endsub th.isblank.a
 defsub th.find.blank
 ; h: result  nz: not found
 #local
+ ld a,(th.new.end+1)
+ ld b,a
  ld a,(th.new.start+1)
  ld h,a
  ld l,th.ofs.stp
@@ -938,7 +940,7 @@ loop:
  ld a,(hl)
  cp th.st.blank
  ret z
- ld a,(th.new.end+1)
+ ld a,b
  inc h
  cp h
  jr nz,loop
@@ -962,7 +964,8 @@ defsub th.new
  inc HL
  ld (HL),0c9h
  ld l,th.bottom
- scf
+ ld a,l
+ cp l; set z
  ret
 #endlocal
 endsub th.new
