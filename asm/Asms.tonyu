@@ -947,18 +947,10 @@ loop:
 endsub 0
 
 defsub th.new
-; nc for alloc fail
+; nz for alloc fail
 #local
- ld hl,(th.new.start)
- ld de,(th.new.end)
- ld bc,th.size
- for lbend
-  ; TODO th.ofs.stp
-  call th.isblank.a
-  break.if z
-  continue
- lbend:
- ret nc
+ call th.find.blank
+ ret nz
  ; TODO th.ofs.stp
  ld L,th.ofs.stp
  ld (HL),31h
@@ -1516,7 +1508,7 @@ defsub o.new
  ld (svthis-1),a
  ; allocate thread
  call th.new
- jr nc, allocfail
+ jr nz, allocfail
  push hl; thread address
  call th.with.s; call &initbl
  pop hl; thread address
