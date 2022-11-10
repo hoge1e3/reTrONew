@@ -1,0 +1,250 @@
+extends Visitor;
+includes Context;
+
+let anode;
+
+\collect(klass, method) {
+    anode=(klass.annotation);
+    visit(method.stmts);
+}
+\annotation(n,val) {
+    let res=anode[n._id]=
+    anode[n._id]||{};
+    if (val) {
+        Object.assign(res,val);
+    }
+    return res;
+}
+function anonConst(n,val){
+    if(val==1234) print(n,val);
+    annotation(n,{constVal:val});
+}
+function isConst(n){
+    return annotation(n).constVal;
+}
+
+
+\v_parenExpr(n:ParenExpr) {
+    visit(n.expr);
+}
+\v_exprstmt(n:Exprstmt){
+    let expr:Expression=n.expr;
+    visit(expr);
+}
+\v_infix(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    switch(op.text){
+        case "=":
+        assign(n);
+        break;
+        case "+":case "-":
+        case "*":case "/":case "%":
+        arith(n);
+        break;
+        case "==":case "!=":
+        case "<=":case ">=":
+        case "<":case ">":
+        cmp(n);
+        break;
+        case "+=":case "-=":
+        case "*=":case "/=":case "%=":
+        arithEq(n);
+        break;
+        case "&":bitand(left,right);break;
+        case "&&":andand(left,right);break;
+        case "||":oror(left,right);break;
+        case ">>":case "<<":case ">>>":
+        shift(n);break;
+        default:
+        //unsup(n,`Unsupported infix operator '${op.text}'`);
+    }
+}
+\shift(n:Infix) {
+    
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    let ops={">>>":"srlhl",">>":"srahl","<<":"slhl"};
+    visit(right);
+    //printf("push hl%n");
+    visit(left);
+    /*printf("pop bc%n");
+    printf("ld b,c%n");
+    printf("#local%{");
+    printf("loop:%n");
+    printf("%s 0%n",ops[op.text]);
+    printf("djnz loop%n");
+    printf("%}#endlocal%n");
+    */
+}
+\andand(left: Expression, right:Expression) {
+    //let n=genSym();
+    visit(left);
+    //printf("andand %s%n",n);
+    visit(right);
+    //printf("%s:%n",n);
+}
+\oror(left: Expression, right:Expression) {
+    //let n=genSym();
+    visit(left);
+    //printf("oror %s%n",n);
+    visit(right);
+    //printf("%s:%n",n);
+}
+
+\bitand(left: Expression, right:Expression) {
+    visit(left);
+    //printf("ex de,hl%n");
+    visit(right);
+    //printf("bitand.a 0%n");
+    //printf("getthis 0%n");
+}
+
+\v_prefix(n:Prefix) {
+    let op:TNode=n.op;
+    let right:Expression=n.right;
+    visit(right);
+    if (op.text==="!") {
+        //printf("call nothl%n");
+    } else if (op.text==="-") {
+        //printf("call neghl%n");
+    } else {
+        //unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
+    }
+}
+\v_postfix(n:Postfix){
+    let left:Expression=n.left;
+    let op:TNode=n.op;
+    visit(left);
+}
+\cmp(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    let ops={
+        "==":"eq","!=":"ne",
+        "<=":"le",">=":"ge",
+        "<":"lt",">":"gt",
+    };
+    visit(right);
+    visit(left);
+}
+\arith(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    visit(left);
+    visit(right);
+    //print(n,op.text);
+    let cl=isConst(left);
+    let cr=isConst(right);
+    if(typeof cl!="number" ||
+    typeof cr!="number") 
+    return;
+
+    switch(op.text) {
+        case "*":
+        anonConst(n,cl*cr);
+        break;
+        case "/":
+        anonConst(n,floor(cl/cr));
+        break;
+        case "%":
+        anonConst(n,cl%cr);
+        break;
+
+        case "+":
+        anonConst(n,cl+cr);
+        break;
+        case "-":
+        anonConst(n,cl-cr);
+        break;
+        default:
+        //unsup(left, `Invalid op ${opr}`);
+    }
+}
+\arithEq(n:Infix) {
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    visit(right);
+    /*arith2(left, op.text.substring(0,op.text.length-1), right);
+    enter{lval:true} \{
+        visit(left);
+    };*/
+}
+\assign(n:Infix){
+    let left:Expression=n.left;
+    let op:Token=n.op;
+    let right:Expression=n.right;
+    visit(right);
+    /*enter{lval:true} \{
+        visit(left);
+    };*/
+}
+\v_reservedConst(n:Token) {
+    
+}
+\v_number(n:Token){
+    //print(n.text);
+    anonConst(n,n.text-0);
+}
+\v_varAccess(n:VarAccess){
+    let name:Token=n.name;
+    let a=annotation(n);
+    switch (a.scopeInfo.type) {
+        case "field":
+        break;
+        case "global":
+        let isc=$config.consts[name.text];
+        if (isc!=null){
+            anonConst(n,isc);
+        }
+        break;
+        case "local":
+        break;
+        case "param":
+        break;
+    }
+}
+
+\v_newExpr(n:NewExpr){
+    let klass:VarAccess=n.klass;
+    let params:Call?=n.params;
+    if (!params || (params.args.length==1 && params.args[0].type=="objlit")) {
+        let alen=0;
+        if (params) {
+            let objlit:Objlit=params.args[0];
+            let elems:JsonElem[]=objlit.elems;
+            for (let elem of elems) {
+                if (elem.value) {
+                    visit(elem.value);
+                } else {
+                    /*if (this.params[elem.key.text]) {
+                      //  printf ("getarg %d%n",this.params[elem.key.text]);
+                    } else if (locals[elem.key.text] ) {
+                       // printf ("getlcl %d%n",locals[elem.key.text]);
+                    } else {
+                       // printf("getfld .%s%n",elem.key);
+                    }*/
+                }
+                //printf("new.arg .%s%n",elem.key);
+            }
+            alen=elems.length;
+        }
+        return;
+    }
+}
+
+\def(n){
+    if (!n) return;
+    if (typeof n!=="object") return;
+  //  print("N",n.type);
+    for (let k of Object.keys(n)) {
+        visit(n[k]);
+    }
+}
+
+super.main();

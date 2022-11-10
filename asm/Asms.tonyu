@@ -1334,9 +1334,16 @@ include z_assert
 
 ;a2 a1  oldpc oldix lcl1 lcl2
 argidx equ 2
+getarg.hl macro n
+ getarg n
+endm
 getarg macro n
  ld l,(ix+argidx+&n*2)
  ld h,(ix+argidx+&n*2+1)
+endm
+getarg.de macro n
+ ld e,(ix+argidx+&n*2)
+ ld d,(ix+argidx+&n*2+1)
 endm
 setarg macro n
  ld (ix+argidx+&n*2),l
@@ -1348,9 +1355,16 @@ setlcl macro n
  ld (ix-&n*2),l
 endm
 
+getlcl.hl macro n
+ getlcl n
+endm
 getlcl macro n
  ld h,(ix-(&n*2-1))
  ld l,(ix-&n*2)
+endm
+getlcl.de macro n
+ ld d,(ix-(&n*2-1))
+ ld e,(ix-&n*2)
 endm
 
 addarg macro

@@ -44,13 +44,6 @@ let keynames={space: 0x0108,
 let closestBrk;
 //let mainClass;
 //debug=true;
-let opmap={
-    "*":"call mul.a%n", 
-    "/":"call div.a%n",
-    "%":"call div.a%nex de,hl%n",
-    "+":"add hl, de%n",
-    "-":"subhl de%n",
-};
 
 printf(`org 08000h
 include z_tnu
@@ -68,6 +61,9 @@ let anode;
         return {};
     }
     return res;
+}
+function isConst(n){
+    return annotation(n).constVal;
 }
 let outp=new OutPat;
 let outbg=new OutBG;
@@ -101,6 +97,9 @@ for (klass of mem.ks) {
             locals[k]=ln;
             ln++;
         }
+        new ConstVisitor().collect(
+        klass,method);
+        
         printf("def %s.%s,%d,%d%{",
         klass.shortName, mname, 
         method.params.length,

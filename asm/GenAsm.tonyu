@@ -1,5 +1,25 @@
 extends GenBase;
+let opmap={
+    "*":"call mul.a%ngetthis 0%n", 
+    "/":"call div.a%ngetthis 0%n",
+    "%":"call div.a%nex de,hl%ngetthis 0%n",
+    "+":"add hl, de%n",
+    "-":"subhl de%n",
+};
+let comm={"*":1,"+":1,"&":1,"|":1,
+    "^":1
+}; 
 
+function visit(n){
+    if (n is Expression&&!lval&&
+    isConst(n)){
+        printf("ld hl,%d%n",
+        isConst(n));
+        return;
+    }
+    
+    return super.visit(n);
+}
 \extractSrc(n:TNode) {
     return klassSrc.substring(n.pos, n.pos+n.len);
 }
@@ -196,18 +216,9 @@ extends GenBase;
     ;
 }
 \str2db(str) {
-    //let tbl='○●をぁぃぅぇぉゃゅょっ?あいうえおかきくけこさしすせそ?。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜たちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん';
     printf("db ");
     str=$Boot.str2bin(str);
     for (let i=0;i<str.length;i++) {
-        /*let c=str.charCodeAt(i);
-        if (c<128) {
-            printf("%d",c);
-        } else {
-            c=tbl.indexOf(str[i]);
-            if (c>=0) printf("%d",c+128+4);
-            else printf("32");
-        }*/
         printf("%d",str [i]);
         if (i<str.length-1) printf(", ");
     }
@@ -247,26 +258,14 @@ extends GenBase;
     arith2(left,op.text, right);
 }
 \arith2(left:Expression, opr:String, right:Expression) {
-    switch(opr) {
-        case "*":case "/":case "%":
-        printf("pushthis 0%n");
-        visit(right);
-        printf("push hl%n");
-        visit(left);
-        printf("pop de%n");
-        printf(opmap[opr]);
-        printf("popthis 0%n");
-        break;
-        case "+":case "-":
-        visit(right);
-        printf("push hl%n");
-        visit(left);
-        printf("pop de%n");
-        printf(opmap[opr]);
-        break;
-        default:
-        unsup(left, `Invalid op ${opr}`);
+    visit(right);
+    printf("push hl%n");
+    visit(left);
+    printf("pop de%n");
+    if(!opmap [opr]){
+        unsup(left,opr);
     }
+    printf(opmap[opr]);
 }
 \arithEq(n:Infix) {
     let left:Expression=n.left;

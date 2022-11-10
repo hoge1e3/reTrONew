@@ -4,9 +4,10 @@ https://github.com/hoge1e3/reTrONew
 */
 $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 $players[0];
-var i=0, tmps, coli=  0;
+var i=0, tmps, coli=1235-1;
 $sndc=0;$sndv=0;
 $score=0;
+coli=1233+1;
 //$sound.playBGM($se_mhmain);
 //updateEx(60);
 //$sound.setBGMVolume(30);
