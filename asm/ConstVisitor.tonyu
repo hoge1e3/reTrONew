@@ -2,21 +2,35 @@ extends Visitor;
 includes Context;
 
 let anode;
-
+let idSeq=1;
 \collect(klass, method) {
+    idSeq=1;
     anode=(klass.annotation);
     visit(method.stmts);
 }
 \annotation(n,val) {
-    let res=anode[n._id]=
-    anode[n._id]||{};
+    let res=n._id && anode[n._id];
     if (val) {
+        if (n._id==null) {
+            n._id="N"+idSeq;
+            idSeq++;
+            res={node:n};
+            anode[n._id]=res;
+        } else {
+            res=anode[n._id];
+            if (!res) {
+                res={node:n};
+                anode[n._id]=res;
+            }
+        }
         Object.assign(res,val);
+        return res;
+    } else {
+        return res||{};
     }
-    return res;
 }
 function anonConst(n,val){
-    if(val==1234) print(n,val);
+    //if(val==1) print(n,val);
     annotation(n,{constVal:val});
 }
 function isConst(n){

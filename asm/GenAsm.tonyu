@@ -11,10 +11,12 @@ let comm={"*":1,"+":1,"&":1,"|":1,
 }; 
 
 function visit(n){
-    if (n is Expression&&!lval&&
-    isConst(n)){
-        printf("ld hl,%d%n",
-        isConst(n));
+    let val=isConst(n);
+    /*if (val==1) {
+        print("CONST ",isConst(n),lval,n);
+    }*/
+    if (!lval && typeof val=="number"){
+        printf("ld hl,%d; const val%n",val);
         return;
     }
     
