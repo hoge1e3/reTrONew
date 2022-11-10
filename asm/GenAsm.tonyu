@@ -9,6 +9,7 @@ let opmap={
 let comm={"*":1,"+":1,"&":1,"|":1,
     "^":1
 }; 
+let destReg;
 
 function visit(n){
     let val=isConst(n);
@@ -16,7 +17,7 @@ function visit(n){
         print("CONST ",isConst(n),lval,n);
     }*/
     if (!lval && typeof val=="number"){
-        printf("ld hl,%d; const val%n",val);
+        printf("ld %s,%d; const val%n", destReg||"hl", val);
         return;
     }
     
@@ -260,10 +261,17 @@ function visit(n){
     arith2(left,op.text, right);
 }
 \arith2(left:Expression, opr:String, right:Expression) {
-    visit(right);
-    printf("push hl%n");
-    visit(left);
-    printf("pop de%n");
+    if (deable(right)) {
+        visit(left);
+        enter{destReg:"de"} \{
+            visit(right);
+        };
+    } else {
+        visit(right);
+        printf("push hl%n");
+        visit(left);
+        printf("pop de%n");
+    }
     if(!opmap [opr]){
         unsup(left,opr);
     }

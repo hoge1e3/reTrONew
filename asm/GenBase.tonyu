@@ -65,6 +65,9 @@ let anode;
 function isConst(n){
     return annotation(n).constVal;
 }
+function deable(n) {
+    return isConst(n);
+}
 let outp=new OutPat;
 let outbg=new OutBG;
 
