@@ -30,6 +30,7 @@ let builtins={getkey:"getkey",rnd:"rnd"};
 let globalVars={};
 let locals={};
 let params={};
+let members;
 let myMeth=new MyMeth{g:this};
 let lbexit="lbexit";
 let keynames={space: 0x0108, 
@@ -67,7 +68,8 @@ function isConst(n){
 }
 function deable(n) {
     //return false;
-    return isConst(n);
+    return isConst(n)||
+    n.type=="varAccess";
 }
 let outp=new OutPat;
 let outbg=new OutBG;
@@ -101,6 +103,7 @@ for (klass of mem.ks) {
             locals[k]=ln;
             ln++;
         }
+        members=mem.getMembers(klass);
         new ConstVisitor().collect(
         klass,method);
         

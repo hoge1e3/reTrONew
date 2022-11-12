@@ -211,6 +211,14 @@ let g:GenAsm;
             visit(a);
             printf("push hl%n");
         }
+        let m=g.members;
+        if(m [mname]&&
+        m [mname].type=="meth"){
+            printf("call %s.%s%n",
+            m [mname].declin.
+            shortName,mname);
+            printf("getthis 0%n");
+        }else
         printf("invoke .%s%n", mname);
     }
 }

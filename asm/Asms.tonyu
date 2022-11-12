@@ -1335,7 +1335,7 @@ include z_assert
 ;a2 a1  oldpc oldix lcl1 lcl2
 argidx equ 2
 getarg.hl macro n
- getarg n
+ getarg &n
 endm
 getarg macro n
  ld l,(ix+argidx+&n*2)
@@ -1356,7 +1356,7 @@ setlcl macro n
 endm
 
 getlcl.hl macro n
- getlcl n
+ getlcl &n
 endm
 getlcl macro n
  ld h,(ix-(&n*2-1))
@@ -1405,17 +1405,15 @@ popthis macro xx
  ld (this),a
 endm
 
-
-invoketg.a macro fld
 ; pushthis before arg push
 ; hl=target
+invoketg.a macro fld
  ld a,h
  ld (this),a
  getfld &fld
  callhl
-; pops args
-; popthis after
 endm
+; popthis after
 
 invoke macro fld
  getfld &fld
@@ -1424,20 +1422,22 @@ invoke macro fld
  getthis 0
 endm
 
+getfld.hl macro n
+ getfld &n
+endm
+getfld.de macro n
+ ld ($+6),a
+ ld de,(&n)
+endm
+
 getfld macro n
-#local
- ld (ad-1),a
+ ld ($+5),a
  ld hl,(&n)
- ad:
-#endlocal
 endm
 
 setfld macro n
-#local
- ld (ad-1),a
+ ld ($+5),a
  ld (&n),hl
- ad:
-#endlocal
 endm
 
 getfldtg macro n

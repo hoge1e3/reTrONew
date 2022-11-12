@@ -32,9 +32,16 @@ function visit(n){
 \v_parenExpr(n:ParenExpr) {
     visit(n.expr);
 }
+function cmtNode(n,head){
+    head=head?head+" ":"";
+    printf(";%s%s%n", 
+    head,
+    extractSrc(n).
+    replace(/[\r\n]/g,""));
+}
 \v_exprstmt(n:Exprstmt){
     let expr:Expression=n.expr;
-    printf(";%s%n", extractSrc(n).replace(/[\r\n]/g,""));
+    cmtNode(n);
     visit(expr);
 }
 \v_infix(n:Infix){
@@ -346,20 +353,23 @@ function visit(n){
 \v_varAccess(n:VarAccess){
     let name:Token=n.name;
     let a=annotation(n);
+    let rp=destReg ||"hl";
     switch (a.scopeInfo.type) {
         case "field":
         case "method":
         if (lval) {
             printf("setfld .%s%n",name);
         } else{
-            printf("getfld .%s%n",name);
+            printf("getfld.%s .%s%n",
+            rp,name);
         }
         break;
         case "class":
         if (lval) {
             unsup(n,`Cannot assign to class '${name}'.`);
         } else{
-            printf("ld hl,%s%n",name);
+            printf("ld %s,%s%n",
+            rp,name);
         }
         break;
         case "global":
@@ -372,9 +382,11 @@ function visit(n){
             printf("ld (%s),hl%n",globalLabel(name.text));
         } else {
             if (isc!=null){
-                printf("ld hl,%d%n",isc);
+                printf("ld %s,%d%n",
+                rp,isc);
             } else {
-                printf("ld hl,(%s)%n",globalLabel(name.text));
+                printf("ld %s,(%s)%n",
+                rp,globalLabel(name.text));
             }
         }
         break;
@@ -386,7 +398,8 @@ function visit(n){
         if (lval) {
             printf ("setlcl %d%n",locals[name.text]);
         } else {
-            printf ("getlcl %d%n",locals[name.text]);
+            printf ("getlcl.%s %d%n",
+            rp,locals[name.text]);
         }
         break;
         case "param":
@@ -396,7 +409,8 @@ function visit(n){
         if (lval) {
             printf ("setarg %d%n",params[name.text]);
         } else {
-            printf ("getarg %d%n",params[name.text]);
+            printf ("getarg.%s %d%n",
+            rp,params[name.text]);
         }
         break;
         default:
@@ -464,6 +478,7 @@ function visit(n){
     let sh=genSym();
     let se=genSym();
     printf("%s:%n",sh);
+    cmtNode(cond,"while");
     visit(cond);
     printf("jpf %s%n",se);
     enter{closestBrk:se} \{
@@ -473,6 +488,7 @@ function visit(n){
     printf("%s:%n",se);
 }
 \v_return(n:Return) {
+    cmtNode(n);
     if (n.value) {
         visit(n.value);
     }
@@ -498,13 +514,16 @@ function visit(n){
         let next:Expression?=h.next;
         let sh=genSym();
         let se=genSym();
+        cmtNode(init,"for");
         visit(init);
         printf("%s:%n",sh);
+        cmtNode(cond,"while");
         visit(cond);
         printf("jpf %s%n",se);
         enter{closestBrk: se} \{
             visit(loop);
         };
+        cmtNode(next,"next");
         visit(next);
         printf("jp %s%n",sh);
         printf("%s:%n",se);
@@ -519,6 +538,7 @@ function visit(n){
             unsup(set,"only 'for (e of all(Class))' is allowed ");
             return;
         }
+        cmtNode(h,"forin");
         //foreach.a, Class,st,en,nx
         let range=mem.objRange(klass);
         let nx=genSym();
@@ -559,6 +579,7 @@ function visit(n){
     let then:Stmt=n.then;
     let _else:Stmt?=n._else;
     let send=genSym();
+    cmtNode(cond);
     visit(cond);
     if (_else) {
         let sels=genSym();
@@ -581,6 +602,7 @@ function visit(n){
     let typeDecl:TypeDecl?=n.typeDecl;
     let value:Expression?=n.value;
     let a=annotation(n);
+    cmtNode(n,"var");
     /*if (!a.varInMain) {
         unsup(n,"Local Variables are not yet supported.");
         return;
