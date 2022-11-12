@@ -128,11 +128,11 @@ function isConst(n){
         //unsup(n,`Unsupported postfix operator '${op.text}' (${op.type})`);
     }
 }
-\v_postfix(n:Postfix){
+/*\v_postfix(n:Postfix){
     let left:Expression=n.left;
     let op:TNode=n.op;
     visit(left);
-}
+}*/
 \cmp(n:Infix){
     let left:Expression=n.left;
     let op:Token=n.op;
