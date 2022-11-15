@@ -26,6 +26,9 @@ let kanaTbl,dac10,dac5;
 \createMainObject() {
     //--config section---
     config();
+    let spad=($Navigator.isMobile());
+
+
     if(typeof $config.consts=="function"){
         $config.consts=$config.consts();
     }
@@ -46,7 +49,8 @@ let kanaTbl,dac10,dac5;
     $RSprPat=new RSprPat;
     if (!$config.postprocess.noPreview) {
         $excludeFromAll=$Screen.all();
-        $Screen.resize(512,512);
+        $Screen.resize(512,512+
+        (spad?200:0));
         $MScreen=new Screen{x:256,y:224,width:256,height:192,scaleX:2};
         $MLayer=$MScreen.addLayer();
     
@@ -98,8 +102,8 @@ let kanaTbl,dac10,dac5;
     $exporter=new GenAsm;
     let ide=$Boot.getIDE();
     if (ide && $Navigator.isMobile()) ide.runDialog.resize {
-        left:10,top:300,width:400,
-        height:400
+        left:10,top:100,width:400,
+        height:600
     };
     $mainClassName=mainClass.meta.shortName;
     if ($config.postprocess.noPreview) return;
@@ -108,6 +112,9 @@ let kanaTbl,dac10,dac5;
             fillStyle:$RSprPat.palette[8],
             onClick:\{$editButton.openEditor();}
         };
+    }
+    if(spad){
+        showPad();
     }
     $PSG=[
     new Beep,new Beep,new Beep
@@ -152,5 +159,10 @@ let kanaTbl,dac10,dac5;
         res.push(c);
     }
     return res;
+}
+\showPad(){
+    $pad=new Pad {
+        buttonCnt=2
+    };
 }
 super.main();

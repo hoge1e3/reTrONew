@@ -1,1 +1,37 @@
-{"images":[{"type":"wh","name":"$pat_spr","url":"ls:images/spr.png","pwidth":16,"pheight":16},{"type":"wh","name":"$pat_font","url":"ls:images/font.png","pwidth":8,"pheight":8}],"sounds":[{"name":"$se_mhmain","url":"ls:sounds/mhmain.mzo"},{"name":"$se_mhget","url":"ls:sounds/mhget.mzo"},{"name":"$se_Ribbon","url":"ls:sounds/Ribbon.mzo"},{"name":"$se_lp","url":"ls:sounds/lp.mzo"}]}
+
+{
+    "images": [
+        {
+            "type": "wh",
+            "name": "$pat_spr",
+            "url": "ls:images/spr.png",
+            "pwidth": 16,
+            "pheight": 16
+        },
+        {
+            "type": "wh",
+            "name": "$pat_font",
+            "url": "ls:images/font.png",
+            "pwidth": 8,
+            "pheight": 8
+        }
+    ],
+    "sounds": [
+        {
+            "name": "$se_mhmain",
+            "url": "ls:sounds/mhmain.mzo"
+        },
+        {
+            "name": "$se_mhget",
+            "url": "ls:sounds/mhget.mzo"
+        },
+        {
+            "name": "$se_Ribbon",
+            "url": "ls:sounds/Ribbon.mzo"
+        },
+        {
+            "name": "$se_lp",
+            "url": "ls:sounds/lp.mzo"
+        }
+    ]
+}

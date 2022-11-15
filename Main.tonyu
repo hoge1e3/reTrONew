@@ -8,6 +8,16 @@ var i=0, tmps, coli=1235-1;
 $sndc=0;$sndv=0;
 $score=0;
 coli=1233+1;
+locate(5,5);
+switch(coli){
+    case 1234:
+    print(123);
+    break;
+    case 1236:
+    print(126);
+    break;
+    
+}
 //$sound.playBGM($se_mhmain);
 //updateEx(60);
 //$sound.setBGMVolume(30);

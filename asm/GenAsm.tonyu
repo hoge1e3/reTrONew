@@ -488,7 +488,7 @@ function cmtNode(n,head){
     printf("%s:%n",se);
 }
 \v_return(n:Return) {
-    cmtNode(n);
+    cmtNode(n,"return");
     if (n.value) {
         visit(n.value);
     }
@@ -579,18 +579,18 @@ function cmtNode(n,head){
     let then:Stmt=n.then;
     let _else:Stmt?=n._else;
     let send=genSym();
-    cmtNode(cond);
+    cmtNode(cond,"if");
     visit(cond);
     if (_else) {
         let sels=genSym();
-        printf("jpf %s%n",sels);
+        printf("jpf %s;then%n",sels);
         visit(then);
         printf("jp %s%n",send);
-        printf("%s:%n",sels);
+        printf("%s:;else%n",sels);
         visit(_else);
         printf("%s:%n",send);
     } else {
-        printf("jpf %s%n",send);
+        printf("jpf %s;then%n",send);
         visit(then);
         printf("%s:%n",send);
     }
@@ -627,6 +627,55 @@ function cmtNode(n,head){
     for(let d of decls){
         visit(d);
     }
+}
+\v_switch(n:Switch){
+    let value:Expression=n.value;
+    let cases:Case[]=n.cases;
+    let defs:Default?=n.defs;
+    visit(value);
+    let s=genSym();
+    for(let i=0;i<cases.length;i++){
+        let c=cases [i];
+        if(deable(c.value)){
+            enter {destReg:"de"}\{
+                visit(c.value);
+            };
+        }else {
+            printf("push hl%n");
+            visit(c.value);
+            printf("ex de,hl%n");
+            printf("pop hl%n");
+        }
+        printf("rst dcompr%n");
+        printf("jp z,%s%n",s+i);
+        
+    }
+    printf("jp %s%n",s+"def");
+    enter{closestBrk:s+"brk"} \{
+        for(let i=0;
+        i<cases.length;i++){
+            printf("%s:%n",s+i);
+            visit(cases [i]);
+        }
+        printf("%s:%n",s+"def");
+        if(defs)visit(defs);
+    };
+    printf("%s:%n",s+"brk");
+}
+\v_case(n:Case){
+    let value:Expression;
+    let stmts:Stmt[]=n.stmts;
+    for (let s of stmts){
+        visit(s);
+    }
+    
+}
+\v_default(n:Default){
+    let stmts:Stmt[]=n.stmts;
+    for (let s of stmts){
+        visit(s);
+    }
+    
 }
 /*
 \rangeToAd(r) {

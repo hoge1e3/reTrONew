@@ -83,6 +83,25 @@ let dotAlign=1;
 \keycode(c) {
     return c;
 }
+\getkey(n){
+    let r=super.getkey(n);
+    if(!$pad)
+    return r;
+    switch(n){
+        case "space":
+            
+        return $pad.getButton(1);
+        case "left":
+        return $pad.getLeft();
+        case "right":
+        return $pad.getRight();
+        case "up":
+        return $pad.getUp();
+        case "down":
+        return $pad.getDown();
+    }
+    return r;
+}
 \stickX(n, v) {
     if (n==0) {
         return getkey("left")?-v:getkey("right")?v:0;
