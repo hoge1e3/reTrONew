@@ -311,7 +311,8 @@ switch ($config.postprocess.target) {
 \showDiag(b) {
     //msxpen.com/codes/-N8fnpcspSXEqEJ4lOeO";
     
-    let tx=new HTMLUI{
+    let tx;
+    if (!$config.postprocess.noDialog) tx=new HTMLUI{
         content:["div",
         {style:'background: #eee;'},
         ["h2","Code copied!"],
@@ -338,8 +339,10 @@ switch ($config.postprocess.target) {
         let cg=new Includer;
         generatedAsm=plain;
     }
-    tx.setValue("val", generatedAsm);
-    tx.copyToClipboard("val");
+    if (tx) {
+        tx.setValue("val", generatedAsm);
+        tx.copyToClipboard("val");
+    }
     if (typeof $config.postprocess.onExport==="function") {
         $config.postprocess.onExport{asm:generatedAsm};
     }
