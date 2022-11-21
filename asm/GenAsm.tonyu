@@ -10,6 +10,7 @@ let comm={"*":1,"+":1,"&":1,"|":1,
     "^":1
 }; 
 let destReg;
+let closestCnt;
 
 function visit(n){
     let val=isConst(n);
@@ -43,6 +44,24 @@ function cmtNode(n,head){
     let expr:Expression=n.expr;
     cmtNode(n);
     visit(expr);
+}
+\v_trifixr(n:Trifix){
+    let left:Expression=n.left;
+    let op1:Token=n.op1;
+    let mid:Expression=n.mid;
+    let op2:Token=n.op2;
+    let right:Expression=n.right;
+
+    let els=genSym();
+    let end=genSym();
+    visit(left);
+    printf("jpf %s%n",els);
+    visit(mid);
+    printf("jp %s%n",end);
+    printf("%s:%n",els);
+    visit(right);
+    printf("%s:%n",end);
+    
 }
 \v_infix(n:Infix){
     let left:Expression=n.left;
@@ -481,7 +500,9 @@ function cmtNode(n,head){
     cmtNode(cond,"while");
     visit(cond);
     printf("jpf %s%n",se);
-    enter{closestBrk:se} \{
+    enter{closestBrk:se,
+        closestCnt=sh,
+    } \{
         visit(loop);
     };
     printf("jp %s%n",sh);
@@ -504,6 +525,16 @@ function cmtNode(n,head){
         printf("jp %s%n",closestBrk);
     }
 }
+\v_continue(n) {
+    if (!closestCnt) {
+        unsup(n,"continue outside loop ")   ;
+    }
+    if (closestCnt==="CONTINUE") {
+        printf("continue%n");
+    } else {
+        printf("jp %s%n",closestCnt);
+    }
+}
 \v_for(n:For){
     let inFor:ForHead=n.inFor;
     let loop:Stmt=n.loop;
@@ -514,15 +545,19 @@ function cmtNode(n,head){
         let next:Expression?=h.next;
         let sh=genSym();
         let se=genSym();
+        let sn=genSym();
         cmtNode(init,"for");
         visit(init);
         printf("%s:%n",sh);
         cmtNode(cond,"while");
         visit(cond);
         printf("jpf %s%n",se);
-        enter{closestBrk: se} \{
+        enter{closestBrk: se,
+            closestCnt=sn,
+        } \{
             visit(loop);
         };
+        printf("%s:%n",sn);
         cmtNode(next,"next");
         visit(next);
         printf("jp %s%n",sh);
@@ -554,7 +589,10 @@ function cmtNode(n,head){
         } else {
             unsup(vars[0],"only field/local/global supports");
         }
-        enter{closestBrk:"BREAK"} \{
+        enter{
+            closestBrk:"BREAK",
+            closestCnt="CONTINUE",
+        } \{
             visit(loop);
         };
         printf("continue%n");
@@ -632,6 +670,7 @@ function cmtNode(n,head){
     let value:Expression=n.value;
     let cases:Case[]=n.cases;
     let defs:Default?=n.defs;
+    cmtNode(value,"switch");
     visit(value);
     let s=genSym();
     for(let i=0;i<cases.length;i++){
@@ -663,7 +702,9 @@ function cmtNode(n,head){
     printf("%s:%n",s+"brk");
 }
 \v_case(n:Case){
-    let value:Expression;
+    let value:Expression=n.value;
+    cmtNode(value,"case");
+            
     let stmts:Stmt[]=n.stmts;
     for (let s of stmts){
         visit(s);
