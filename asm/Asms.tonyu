@@ -1,5 +1,7 @@
 extends TObject;
-let data={'z_main':`org 09000h
+let data;
+nowait function init(){
+    data={'z_main':`org 09000h
 ; TODO
 ; frameCount
 ; strig
@@ -27,7 +29,7 @@ nx:
 
 ret
 end main`,
-    'z_math':`include z_ctrl
+        'z_math':`include z_ctrl
 
 ;16bit shifts
 slhl macro xx
@@ -324,7 +326,7 @@ put.br:
 endsub udiv.a
 
 `,
-    'z_bool':`include z_math
+        'z_bool':`include z_math
 include z_ctrl
 true equ -1
 false equ 0
@@ -458,7 +460,7 @@ defsub nothl
 #endlocal
 endsub nothl
 `,
-    'z_mem':`include z_const
+        'z_mem':`include z_const
 ;
 rdslt:
  ex de,hl
@@ -585,7 +587,7 @@ peekconst macro reg,n
  &n:
 endm
 `,
-    'z_const':`
+        'z_const':`
 ;wrt equ 0a2h
 dcompr equ 0020H
 
@@ -639,7 +641,7 @@ marker.e macro n
  ;len.##n: defl $-last.marker
 endm
 `,
-    'z_ctrl':`include z_const
+        'z_ctrl':`include z_const
 freeze:
 halt
 jr freeze
@@ -837,7 +839,7 @@ defsub h.unreach
  call 4dh
  dw 0x18,0xfe
 endsub h.unreach`,
-    'z_th':`include z_ctrl
+        'z_th':`include z_ctrl
 include z_sp
 include z_vdp
 include z_mem
@@ -1115,8 +1117,8 @@ th.pushi macro val
 endm
 
 `,
-    'z_sub':``,
-    'z_debug':`include z_math
+        'z_sub':``,
+        'z_debug':`include z_math
 include z_ctrl
 
 ;debug
@@ -1285,7 +1287,7 @@ ld (hl),0c3h
 ld hl,unreach.new
 ld (h.unreach+1),hl
 endm`,
-    'z_sp':`include z_mem
+        'z_sp':`include z_mem
 include z_debug
 sp.get macro
  ld HL,0
@@ -1328,7 +1330,7 @@ showstk macro
  ex (sp),hl
 endm
 sva: db 0`,
-    'z_oop':`include z_mem
+        'z_oop':`include z_mem
 include z_th
 include z_assert
 
@@ -1717,7 +1719,7 @@ defsub is.subclass.a
 #endlocal
 endsub is.subclass.a
 `,
-    'z_spr':`include z_const
+        'z_spr':`include z_const
 include z_th
 include z_mem
 include z_oop
@@ -1868,7 +1870,7 @@ defsub spr.put1
 endsub spr.put1
 
 `,
-    'z_sprpat':`include z_const
+        'z_sprpat':`include z_const
 
 ;aaa
 spr.inipat:
@@ -1909,7 +1911,7 @@ DB $AB,$FF,$FF,$FE,$AC,$F8,$70,$00
 
 ds 60*32, 0
 `,
-    'z_tnu':`
+        'z_tnu':`
 include z_spr
 include z_bool
 include z_key
@@ -2148,7 +2150,7 @@ new &Class,&args,&st,&en
 endm
 
 `,
-    'z_key':`include z_debug
+        'z_key':`include z_debug
 
 defsub keyall
 ;show hl
@@ -2354,7 +2356,7 @@ endsub stickY.a
 
 
 `,
-    'z_map':`include z_sub
+        'z_map':`include z_sub
 include z_math
 include z_tnu
 
@@ -2421,8 +2423,8 @@ defsub locate
  ld (cursor),hl
 endsub locate
 `,
-    'z_maze':``,
-    'z_t1':`org 09000h
+        'z_maze':``,
+        'z_t1':`org 09000h
 jp main
 include z_const
 include z_ctrl
@@ -2547,14 +2549,14 @@ include z_sprpat
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    'z_t2':`org 8000h
+        'z_t2':`org 8000h
 include z_debug
 main:
 unreach.new.init 0
 
 unreach 0
 end main`,
-    'z_t3':`org 09000h
+        'z_t3':`org 09000h
 
 include z_tnu
 include z_mus
@@ -2742,7 +2744,7 @@ dstk:
 
 endusr:
 end main`,
-    'z_t4':`org 09000h
+        'z_t4':`org 09000h
 jp main
 include z_const
 include z_ctrl
@@ -2872,7 +2874,7 @@ endusr:
 end main
 https://msxpen.com/codes/-N6DDfMvZq9aUeJ9JLpN
 https://msxpen.com/codes/-N6QGYk-rr5iDuTtHpF7`,
-    'z_t5':`org 9000h
+        'z_t5':`org 9000h
 
 
 include z_key
@@ -2889,7 +2891,7 @@ show hl
 
 halt
 jp main`,
-    'z_gen':`org 09000h
+        'z_gen':`org 09000h
 include z_debug
 include z_map
 include z_math
@@ -2919,7 +2921,7 @@ bg.inipat:
 ret
 
 end main`,
-    'z_dac':`
+        'z_dac':`
 ;jp main
 include z_const
 include z_ctrl
@@ -3053,7 +3055,7 @@ defwork strbuf.i
 ds 16, 0
 endwork strbuf.i
 `,
-    'z_setvrm':`org 09000h
+        'z_setvrm':`org 09000h
 jp main
 include z_const
 include z_ctrl
@@ -3075,7 +3077,7 @@ out (98h),a
 continue
 ed:
 ret`,
-    'z_assert':`include z_mem
+        'z_assert':`include z_mem
 include z_math
 include z_debug
 
@@ -3159,7 +3161,7 @@ assert.meqw macro ad,val
  pop hl
 endm
 `,
-    'z_stksz':`org 09000h
+        'z_stksz':`org 09000h
 jp main
 include z_const
 include z_ctrl
@@ -3197,7 +3199,7 @@ loop:
 
 
 `,
-    'z_vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
+        'z_vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
 ;st 0 bit 7
 ;read 1
 
@@ -3299,7 +3301,7 @@ defsub screen2
  call WRTVDP
 endsub screen2
 `,
-    'z_mus':`include z_mem
+        'z_mus':`include z_mem
 include z_debug
 mus.ini:
  di
@@ -3343,7 +3345,7 @@ endsub mus.scale.a
 defwork scltbl
 dw 0d5dh, 0c9ch, 0be7h, 0b3ch, 0a9bh, 0a02h, 0973h, 08ebh, 086bh, 07f2h, 0780h, 0714h, 06afh, 064eh, 05f4h, 059eh, 054eh, 0501h, 04bah, 0476h, 0436h, 03f9h, 03c0h, 038ah, 0357h, 0327h, 02fah, 02cfh, 02a7h, 0281h, 025dh, 023bh, 021bh, 01fdh, 01e0h, 01c5h, 01ach, 0194h, 017dh, 0168h, 0153h, 0140h, 012eh, 011dh, 010dh, 0feh, 0f0h, 0e3h, 0d6h, 0cah, 0beh, 0b4h, 0aah, 0a0h, 097h, 08fh, 087h, 07fh, 078h, 071h, 06bh, 065h, 05fh, 05ah, 055h, 050h, 04ch, 047h, 043h, 040h, 03ch, 039h, 035h, 032h, 030h, 02dh, 02ah, 028h, 026h, 024h, 022h, 020h, 01eh, 01ch, 01bh, 019h, 018h, 016h, 015h, 014h, 013h, 012h, 011h, 010h, 0fh, 0eh
 endwork scltbl`,
-    psgdrv: `
+        psgdrv: `
 psg.psgs equ th.start
 psg.ch1 equ psg.psgs+256
 psg.ch2 equ psg.ch1+256
@@ -3390,7 +3392,7 @@ defsub mus.step
  popthis 0 
 endsub
 `,
-    'z_cpslt':` org 04000h
+        'z_cpslt':` org 04000h
  db 41h, 42h
  dw 04010h
  ds 12,0
@@ -3439,4 +3441,6 @@ defsub cpslt
 endsub 0
 
 `,
-};
+    };
+}
+init();
