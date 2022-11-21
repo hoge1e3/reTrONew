@@ -74,10 +74,12 @@ function deable(n) {
 let outp=new OutPat;
 let outbg=new OutBG;
 
+let hasMain;
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
     if (text===$mainClassName) {
+        hasMain=true;
         printf("_main:%ntnu.run %s,%d,%d%n",$mainClassName,r[0],r[1]);
     }
     printf("; class_def_start %s%n",klass.shortName);
@@ -121,6 +123,7 @@ for (klass of mem.ks) {
     printf("; class_def_end %s%n",klass.shortName);
     update();
 }
+if (!hasMain) throw new Error(`Main class ${$mainClassName} is not subclass of RActor`);
 text="Writing assets...";
 while(!outp.complete || !outbg.complete) update();
 
