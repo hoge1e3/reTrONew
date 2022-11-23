@@ -66,10 +66,12 @@ let dotAlign=1;
 
 \sound_cmd(cmd,param){}
 \sound_playBGM(b) {
+    //$sound.setBGMVolume(32);
     let r=$MZO.adr2se[b];
     $sound.playBGM(r);
 }
 \sound_playSE(b) {
+    //$sound.setSEMasterVolume(32);
     let r=$MZO.adr2se[b];
     $sound.playSE(r);
 }

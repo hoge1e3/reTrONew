@@ -708,38 +708,6 @@ L87.lb1614:
  ld hl,0; const val
  pop de
  call locate
-;printf("len %x %x ",len, mpoint);
- ld hl,L91.st
- jp L91.nx
-L91.st: db 108, 101, 110, 32
- db 0
-L91.nx:
- call print.a
- ld a,(this)
- ld ($+5),a
- ld hl,(MZO_FLD.len)
- ld (hexval),hl
- call showhex
- ld a,(this)
- ld hl,L92.st
- jp L92.nx
-L92.st: db 32
- db 0
-L92.nx:
- call print.a
- ld a,(this)
- ld ($+5),a
- ld hl,(MZO_FLD.mpoint)
- ld (hexval),hl
- call showhex
- ld a,(this)
- ld hl,L93.st
- jp L93.nx
-L93.st: db 32
- db 0
-L93.nx:
- call print.a
- ld a,(this)
 ;mpoint+=2;
  ld ($+5),a
  ld hl,(MZO_FLD.mpoint)
@@ -756,22 +724,22 @@ L87.lb16def:
  pop de
  call locate
 ;printf ("Inv %d %x" ,cmd, mpoint);
- ld hl,L94.st
- jp L94.nx
-L94.st: db 73, 110, 118, 32
+ ld hl,L91.st
+ jp L91.nx
+L91.st: db 73, 110, 118, 32
  db 0
-L94.nx:
+L91.nx:
  call print.a
  ld a,(this)
  ld ($+5),a
  ld hl,(MZO_FLD.cmd)
  call printi.a
  ld a,(this)
- ld hl,L95.st
- jp L95.nx
-L95.st: db 32
+ ld hl,L92.st
+ jp L92.nx
+L92.st: db 32
  db 0
-L95.nx:
+L92.nx:
  call print.a
  ld a,(this)
  ld ($+5),a
@@ -810,27 +778,27 @@ PSG.read16:
  ld hl,(MZO_FLD.mpoint)
  ld de,1; const val
  add hl, de
-  ld (L97.w-2),hl
+  ld (L94.w-2),hl
   ld hl,(0)
-L97.w:
+L94.w:
  ld h,0
  pop bc
  ld b,c
-L98.loop:
+L95.loop:
  sla l
  rl h
-  djnz L98.loop
+  djnz L95.loop
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.mpoint)
-  ld (L99.w-2),hl
+  ld (L96.w-2),hl
   ld hl,(0)
-L99.w:
+L96.w:
  ld h,0
  pop de
  add hl, de
- jp L96.lbexit
-L96.lbexit:
+ jp L93.lbexit
+L93.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -926,7 +894,7 @@ PSGs.main:
 ;var ch2
 ;var ch3
 ;var chs
-L100.lbexit:
+L97.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -942,7 +910,7 @@ PSGs.init:
 ;ch1=$ch1 || new PSG{chn:0};
  ld hl,(MZO_FLD.gbl_ch1)
  call ziffalse
- jp nz,L101.lb19
+ jp nz,L98.lb19
  ld hl,0; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -956,7 +924,7 @@ PSGs.init:
  ld bc,PSG
  push bc
  call o.new
-L101.lb19:
+L98.lb19:
  ld ($+5),a
  ld (MZO_FLD.ch1),hl
 ;ch1.init(0);
@@ -986,13 +954,13 @@ L101.lb19:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L102.w-2),hl
+  ld (L99.w-2),hl
   ld (0),de
-L102.w:
+L99.w:
 ;ch2=$ch2 || new PSG{chn:1};
  ld hl,(MZO_FLD.gbl_ch2)
  call ziffalse
- jp nz,L101.lb20
+ jp nz,L98.lb20
  ld hl,1; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -1006,7 +974,7 @@ L102.w:
  ld bc,PSG
  push bc
  call o.new
-L101.lb20:
+L98.lb20:
  ld ($+5),a
  ld (MZO_FLD.ch2),hl
 ;ch2.init(0);
@@ -1036,13 +1004,13 @@ L101.lb20:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L103.w-2),hl
+  ld (L100.w-2),hl
   ld (0),de
-L103.w:
+L100.w:
 ;ch3=$ch3 || new PSG{chn:2};
  ld hl,(MZO_FLD.gbl_ch3)
  call ziffalse
- jp nz,L101.lb21
+ jp nz,L98.lb21
  ld hl,2; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -1056,7 +1024,7 @@ L103.w:
  ld bc,PSG
  push bc
  call o.new
-L101.lb21:
+L98.lb21:
  ld ($+5),a
  ld (MZO_FLD.ch3),hl
 ;ch3.init(0);
@@ -1086,13 +1054,13 @@ L101.lb21:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L104.w-2),hl
+  ld (L101.w-2),hl
   ld (0),de
-L104.w:
+L101.w:
 ;chs=$chs || new PSG{chn:2};
  ld hl,(MZO_FLD.gbl_chs)
  call ziffalse
- jp nz,L101.lb22
+ jp nz,L98.lb22
  ld hl,2; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -1106,7 +1074,7 @@ L104.w:
  ld bc,PSG
  push bc
  call o.new
-L101.lb22:
+L98.lb22:
  ld ($+5),a
  ld (MZO_FLD.chs),hl
 ;chs.init(0);
@@ -1136,14 +1104,14 @@ L101.lb22:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L105.w-2),hl
+  ld (L102.w-2),hl
   ld (0),de
-L105.w:
+L102.w:
 ;setInterval(_step);
  ld ($+5),a
  ld hl,(MZO_FLD._step)
  call setInterval
-L101.lbexit:
+L98.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1300,7 +1268,7 @@ PSGs.initBGM:
  add hl, de
  ld (ix+argidx+1*2),l
  ld (ix+argidx+1*2+1),h
-L106.lbexit:
+L103.lbexit:
  ld sp,ix
  pop ix
   exx
@@ -1325,11 +1293,11 @@ PSGs.initSE:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L108.w-2),hl
+  ld (L105.w-2),hl
   ld hl,(0)
-L108.w:
+L105.w:
  call ziffalse
- jp z,L107.lb24
+ jp z,L104.lb24
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
  push hl
@@ -1337,18 +1305,18 @@ L108.w:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L109.w-2),hl
+  ld (L106.w-2),hl
   ld hl,(0)
-L109.w:
+L106.w:
  pop de
  call hlltde
-L107.lb24:
+L104.lb24:
 ;then
  call ziffalse
- jp z,L107.lb23
+ jp z,L104.lb23
 ;return return;
- jp L107.lbexit
-L107.lb23:
+ jp L104.lbexit
+L104.lb23:
 ;mpoint+=4;
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
@@ -1397,7 +1365,7 @@ L107.lb23:
   ld a,h
   pop HL
  ld (this),a
-L107.lbexit:
+L104.lbexit:
  ld sp,ix
  pop ix
   exx
@@ -1467,7 +1435,7 @@ PSGs.stopBGM:
   ld a,h
   pop HL
  ld (this),a
-L110.lbexit:
+L107.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1488,7 +1456,7 @@ PSGs._step:
  pop hl
  call MZOCmd
  ld a,(this)
-L111.lbexit:
+L108.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1523,18 +1491,18 @@ PSGs.step:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L113.w-2),hl
+  ld (L110.w-2),hl
   ld hl,(0)
-L113.w:
+L110.w:
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.ch3)
 ; stk=val hl=tg
  ld l,MZO_FLD.mute
  pop de
-  ld (L114.w-2),hl
+  ld (L111.w-2),hl
   ld (0),de
-L114.w:
+L111.w:
 ;ch1.step();
  ld a,(this)
  push af
@@ -1586,7 +1554,7 @@ L114.w:
   ld a,h
   pop HL
  ld (this),a
-L112.lbexit:
+L109.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1606,27 +1574,27 @@ PSGs.read16:
  ld h,(ix+argidx+1*2+1)
  ld de,1; const val
  add hl, de
-  ld (L116.w-2),hl
+  ld (L113.w-2),hl
   ld hl,(0)
-L116.w:
+L113.w:
  ld h,0
  pop bc
  ld b,c
-L117.loop:
+L114.loop:
  sla l
  rl h
-  djnz L117.loop
+  djnz L114.loop
  push hl
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
-  ld (L118.w-2),hl
+  ld (L115.w-2),hl
   ld hl,(0)
-L118.w:
+L115.w:
  ld h,0
  pop de
  add hl, de
- jp L115.lbexit
-L115.lbexit:
+ jp L112.lbexit
+L112.lbexit:
  ld sp,ix
  pop ix
   exx
