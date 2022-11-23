@@ -52,6 +52,7 @@ include z_map
 include z_bool
 include z_dac
 include z_mus
+;include z_mzo
 
 
 `);

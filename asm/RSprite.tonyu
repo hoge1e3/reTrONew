@@ -120,7 +120,7 @@ let dotAlign=1;
     }
     return 0;
 }
-
+\sound_cmd(cmd,param){}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;
@@ -140,4 +140,21 @@ let dotAlign=1;
 }
 \defaultLayer{
     return $MLayer;
+}
+\printf(fmt, ...args ){
+    $Boot.parsePrintf(fmt, args) {
+        str: \(str) {
+            print(str);
+        },
+        value: \(p, ex) {
+            if (p=="%d") {
+                print(ex);
+            } else {
+                print(ex.toString(16));
+            }
+        },
+        unsup: \(r) {
+            throw new Error(r);
+        },
+    };
 }

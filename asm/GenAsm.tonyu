@@ -240,6 +240,7 @@ function cmtNode(n,head){
    popthis 0*/
 }
 \lit2s(l){
+    if (typeof l==="string") return l;
     let s=l.text;
     return s.substring(1,s.length-1);
     ;
@@ -689,11 +690,13 @@ function cmtNode(n,head){
         printf("jp z,%s%n",s+i);
         
     }
+    printf("getthis 0%n");
     printf("jp %s%n",s+"def");
     enter{closestBrk:s+"brk"} \{
         for(let i=0;
         i<cases.length;i++){
             printf("%s:%n",s+i);
+            printf("getthis 0%n");
             visit(cases [i]);
         }
         printf("%s:%n",s+"def");

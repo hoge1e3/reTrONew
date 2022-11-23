@@ -604,6 +604,12 @@ th.end      equ th.end.h*256
 th.start.h  equ th.end.h-th.count*th.size.h
 th.start    equ th.start.h*256
 
+MZO.PSGs    equ th.start
+MZO.ch1     equ MZO.PSGs+256
+MZO.ch2     equ MZO.ch1+256
+MZO.ch3     equ MZO.ch2+256
+MZO.chs     equ MZO.ch3+256
+
 
 th.bottom equ 0
 
@@ -794,11 +800,10 @@ djnzr macro reg,j
 endm
 
 callhl macro
-#local
- ld (LCD-2),HL
- call LCD
- LCD:
-#endlocal
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
 endm
 
 stride macro lim,to
@@ -1915,6 +1920,7 @@ ds 60*32, 0
 include z_spr
 include z_bool
 include z_key
+include z_mzo
 
 ;.onUpdate equ .c-2
 ;.update equ .onUpdate-2
@@ -2123,6 +2129,9 @@ tnu.run macro Main,st,en
  ldir
 
  call th.init
+ ld a,0
+ call MZOCmd
+ 
  ;call mus.ini
  new &Main, 0,&st ,&en
  movw (h.thlop),spr.puts

@@ -1,0 +1,1752 @@
+extends TObject;
+let data;
+nowait function init(){
+    data={'z_mzo':`MZO_FLD.gbl_ch1:
+dw MZO.ch1
+MZO_FLD.gbl_ch2:
+dw MZO.ch2
+MZO_FLD.gbl_ch3:
+dw MZO.ch3
+MZO_FLD.gbl_chs:
+dw MZO.chs
+MZO_FLD.gbl_PSGs:
+dw MZO.PSGs
+MZOCmd:
+#local
+cp 0
+jp z,initMZOs
+cp 1
+jp z,playBGM
+cp 2
+jp z,playSE
+cp 3
+jp z,stopBGM
+cp 4
+jp step
+;range 0-20
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+ dw RActor
+PSG:
+; MZO_FLD.class equ 250
+ ld bc,PSG
+ push bc
+; MZO_FLD.main equ 248
+ ld bc,PSG.main
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+; MZO_FLD.onUpdate equ 238
+ ld bc,RActor.onUpdate
+ push bc
+; MZO_FLD.update equ 236
+ ld bc,RActor.update
+ push bc
+; MZO_FLD.screenOut equ 234
+ ld bc,RActor.screenOut
+ push bc
+; MZO_FLD.die equ 232
+ ld bc,RActor.die
+ push bc
+; MZO_FLD.updateEx equ 230
+ ld bc,RActor.updateEx
+ push bc
+; MZO_FLD.crashTo equ 228
+ ld bc,RActor.crashTo
+ push bc
+MZO_FLD.mpoint equ 22
+ ld bc,0
+ push bc
+MZO_FLD.v equ 20
+ ld bc,0
+ push bc
+MZO_FLD.chn equ 18
+ ld bc,0
+ push bc
+MZO_FLD.mcount equ 16
+ ld bc,0
+ push bc
+MZO_FLD.len equ 14
+ ld bc,0
+ push bc
+MZO_FLD.tempoc equ 12
+ ld bc,0
+ push bc
+MZO_FLD.mute equ 10
+ ld bc,0
+ push bc
+MZO_FLD.cmd equ 8
+ ld bc,0
+ push bc
+MZO_FLD.init equ 6
+ ld bc,PSG.init
+ push bc
+MZO_FLD.stop equ 4
+ ld bc,PSG.stop
+ push bc
+MZO_FLD.step equ 2
+ ld bc,PSG.step
+ push bc
+MZO_FLD.read16 equ 0
+ ld bc,PSG.read16
+ push bc
+ ld bc,RActor.wait
+ push bc
+ ld bc,o.boot
+ push bc
+ jp th.ewith
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSG.main:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;var mpoint
+;var v
+;var chn
+;var mcount
+;var len
+;var tempoc
+;var mute
+;var cmd
+L84.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSG.init:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;len=20160/2;
+ ld hl,10080; const val
+ ld ($+5),a
+ ld (MZO_FLD.len),hl
+;mcount=0;
+ ld hl,0; const val
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+;tempoc=336;
+ ld hl,336; const val
+ ld ($+5),a
+ ld (MZO_FLD.tempoc),hl
+;mute=0;
+ ld hl,0; const val
+ ld ($+5),a
+ ld (MZO_FLD.mute),hl
+;mpoint=mp;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+L85.lbexit:
+ ld sp,ix
+ pop ix
+  exx
+  pop bc
+  inc sp
+  inc sp
+  push bc
+  exx
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSG.stop:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;mpoint=0;
+ ld hl,0; const val
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;if !mute
+ ld ($+5),a
+ ld hl,(MZO_FLD.mute)
+ call nothl
+;then
+ call ziffalse
+ jp z,L86.lb4
+;sound_vol(chn,0);
+ ld hl,0; const val
+ ld e,l
+ push de
+ ld ($+5),a
+ ld hl,(MZO_FLD.chn)
+ ld a,l
+ pop de
+ add a,8
+ call WRTPSG
+ ld a,(this)
+L86.lb4:
+L86.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSG.step:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+  push HL
+;if !mpoint
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ call nothl
+;then
+ call ziffalse
+ jp z,L87.lb5
+;return return;
+ jp L87.lbexit
+L87.lb5:
+;if !mute
+ ld ($+5),a
+ ld hl,(MZO_FLD.mute)
+ call nothl
+;then
+ call ziffalse
+ jp z,L87.lb6
+;sound_vol(chn,v);
+ ld ($+5),a
+ ld hl,(MZO_FLD.v)
+ ld e,l
+ push de
+ ld ($+5),a
+ ld hl,(MZO_FLD.chn)
+ ld a,l
+ pop de
+ add a,8
+ call WRTPSG
+ ld a,(this)
+L87.lb6:
+;mcount-=tempoc;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ ld ($+6),a
+ ld de,(MZO_FLD.tempoc)
+ and a
+ sbc hl,de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+;if v>0
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.v)
+ pop de
+ call hlgtde
+;then
+ call ziffalse
+ jp z,L87.lb7
+;v--;
+ ld ($+5),a
+ ld hl,(MZO_FLD.v)
+ dec hl
+ ld ($+5),a
+ ld (MZO_FLD.v),hl
+L87.lb7:
+L87.lb8:
+;while mcount>=-tempoc && mcount<=0
+ ld ($+5),a
+ ld hl,(MZO_FLD.tempoc)
+ call neghl
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ pop de
+ call hlgede
+ call ziffalse
+ jp z,L87.lb10
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ pop de
+ call hllede
+L87.lb10:
+ call ziffalse
+ jp z,L87.lb9
+;cmd=peek(mpoint);
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+  ld (L88.w-2),hl
+  ld hl,(0)
+L88.w:
+ ld h,0
+ ld ($+5),a
+ ld (MZO_FLD.cmd),hl
+;if cmd>=0 && cmd<96
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ pop de
+ call hlgede
+ call ziffalse
+ jp z,L87.lb12
+ ld hl,96; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ pop de
+ call hlltde
+L87.lb12:
+;then
+ call ziffalse
+ jp z,L87.lb11
+;if !mute
+ ld ($+5),a
+ ld hl,(MZO_FLD.mute)
+ call nothl
+;then
+ call ziffalse
+ jp z,L87.lb13
+;sound_scale(chn,cmd);
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.chn)
+ ld a,l
+ pop hl
+ call mus.scale.a
+ ld a,(this)
+L87.lb13:
+;v=12;
+ ld hl,12; const val
+ ld ($+5),a
+ ld (MZO_FLD.v),hl
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;if peek(mpoint)==123
+ ld hl,123; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+  ld (L89.w-2),hl
+  ld hl,(0)
+L89.w:
+ ld h,0
+ pop de
+ call hleqde
+;then
+ call ziffalse
+ jp z,L87.lb15
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;mcount+=read16();
+ call PSG.read16
+ ld a,(this)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ pop de
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb14
+L87.lb15:;else
+;mcount+=len;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ ld ($+6),a
+ ld de,(MZO_FLD.len)
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+L87.lb14:
+ jp L87.lb9
+L87.lb11:
+;switch cmd
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ ld de,99; const val
+ rst dcompr
+ jp z,L87.lb160
+ ld de,124; const val
+ rst dcompr
+ jp z,L87.lb161
+ ld de,104; const val
+ rst dcompr
+ jp z,L87.lb162
+ ld de,255; const val
+ rst dcompr
+ jp z,L87.lb163
+ ld de,100; const val
+ rst dcompr
+ jp z,L87.lb164
+ ld de,101; const val
+ rst dcompr
+ jp z,L87.lb165
+ ld de,102; const val
+ rst dcompr
+ jp z,L87.lb166
+ ld de,103; const val
+ rst dcompr
+ jp z,L87.lb167
+ ld de,107; const val
+ rst dcompr
+ jp z,L87.lb168
+ ld de,110; const val
+ rst dcompr
+ jp z,L87.lb169
+ ld de,115; const val
+ rst dcompr
+ jp z,L87.lb1610
+ ld de,116; const val
+ rst dcompr
+ jp z,L87.lb1611
+ ld de,118; const val
+ rst dcompr
+ jp z,L87.lb1612
+ ld de,120; const val
+ rst dcompr
+ jp z,L87.lb1613
+ ld de,122; const val
+ rst dcompr
+ jp z,L87.lb1614
+ ld a,(this)
+ jp L87.lb16def
+L87.lb160:
+ ld a,(this)
+;case 99
+;v=0;
+ ld hl,0; const val
+ ld ($+5),a
+ ld (MZO_FLD.v),hl
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;if peek(mpoint)==123
+ ld hl,123; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+  ld (L90.w-2),hl
+  ld hl,(0)
+L90.w:
+ ld h,0
+ pop de
+ call hleqde
+;then
+ call ziffalse
+ jp z,L87.lb18
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;mcount+=read16();
+ call PSG.read16
+ ld a,(this)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ pop de
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb17
+L87.lb18:;else
+;mcount+=len;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ ld ($+6),a
+ ld de,(MZO_FLD.len)
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+L87.lb17:
+ jp L87.lb16brk
+L87.lb161:
+ ld a,(this)
+;case 124
+;v=0;
+ ld hl,0; const val
+ ld ($+5),a
+ ld (MZO_FLD.v),hl
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb162:
+ ld a,(this)
+;case 104
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;var ofs=read16()
+ call PSG.read16
+ ld a,(this)
+ ld (ix-(1*2-1)),h
+ ld (ix-1*2),l
+;mpoint--;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ dec hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;mpoint+=ofs-65536;
+ ld h,(ix-(1*2-1))
+ ld l,(ix-1*2)
+ ld de,0; const val
+ and a
+ sbc hl,de
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ pop de
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb163:
+ ld a,(this)
+;case 255
+;stop();
+ call PSG.stop
+ ld a,(this)
+;mcount=1;
+ ld hl,1; const val
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+ jp L87.lb16brk
+L87.lb164:
+ ld a,(this)
+;case 100
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb165:
+ ld a,(this)
+;case 101
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+ jp L87.lb16brk
+L87.lb166:
+ ld a,(this)
+;case 102
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb167:
+ ld a,(this)
+;case 103
+;tempoc=read16()*168/60;
+ call PSG.read16
+ ld a,(this)
+ ld de,168; const val
+ call mul.a
+ ld a,(this)
+ ld de,60; const val
+ call div.a
+ ld a,(this)
+ ld ($+5),a
+ ld (MZO_FLD.tempoc),hl
+;mpoint+=3;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,3; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb168:
+ ld a,(this)
+;case 107
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb169:
+ ld a,(this)
+;case 110
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb1610:
+ ld a,(this)
+;case 115
+;mpoint+=4;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,4; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb1611:
+ ld a,(this)
+;case 116
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb1612:
+ ld a,(this)
+;case 118
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb1613:
+ ld a,(this)
+;case 120
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb1614:
+ ld a,(this)
+;case 122
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;len=read16();
+ call PSG.read16
+ ld a,(this)
+ ld ($+5),a
+ ld (MZO_FLD.len),hl
+;locate(0,3+chn);
+ ld hl,3; const val
+ ld ($+6),a
+ ld de,(MZO_FLD.chn)
+ add hl, de
+ push hl
+ ld hl,0; const val
+ pop de
+ call locate
+;printf("len %x %x ",len, mpoint);
+ ld hl,L91.st
+ jp L91.nx
+L91.st: db 108, 101, 110, 32
+ db 0
+L91.nx:
+ call print.a
+ ld a,(this)
+ ld ($+5),a
+ ld hl,(MZO_FLD.len)
+ ld (hexval),hl
+ call showhex
+ ld a,(this)
+ ld hl,L92.st
+ jp L92.nx
+L92.st: db 32
+ db 0
+L92.nx:
+ call print.a
+ ld a,(this)
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld (hexval),hl
+ call showhex
+ ld a,(this)
+ ld hl,L93.st
+ jp L93.nx
+L93.st: db 32
+ db 0
+L93.nx:
+ call print.a
+ ld a,(this)
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L87.lb16brk
+L87.lb16def:
+;locate(0,6);
+ ld hl,6; const val
+ push hl
+ ld hl,0; const val
+ pop de
+ call locate
+;printf ("Inv %d %x" ,cmd, mpoint);
+ ld hl,L94.st
+ jp L94.nx
+L94.st: db 73, 110, 118, 32
+ db 0
+L94.nx:
+ call print.a
+ ld a,(this)
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ call printi.a
+ ld a,(this)
+ ld hl,L95.st
+ jp L95.nx
+L95.st: db 32
+ db 0
+L95.nx:
+ call print.a
+ ld a,(this)
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld (hexval),hl
+ call showhex
+ ld a,(this)
+;stop();
+ call PSG.stop
+ ld a,(this)
+;mcount=1;
+ ld hl,1; const val
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+ jp L87.lb16brk
+L87.lb16brk:
+ jp L87.lb8
+L87.lb9:
+L87.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSG.read16:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;return return peek(mpoint)+(peek(mpoint+1)<<8);
+ ld hl,8; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,1; const val
+ add hl, de
+  ld (L97.w-2),hl
+  ld hl,(0)
+L97.w:
+ ld h,0
+ pop bc
+ ld b,c
+L98.loop:
+ sla l
+ rl h
+  djnz L98.loop
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+  ld (L99.w-2),hl
+  ld hl,(0)
+L99.w:
+ ld h,0
+ pop de
+ add hl, de
+ jp L96.lbexit
+L96.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;range 0-20
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+ dw RActor
+PSGs:
+; MZO_FLD.class equ 250
+ ld bc,PSGs
+ push bc
+; MZO_FLD.main equ 248
+ ld bc,PSGs.main
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+ ld bc,0
+ push bc
+; MZO_FLD.onUpdate equ 238
+ ld bc,RActor.onUpdate
+ push bc
+; MZO_FLD.update equ 236
+ ld bc,RActor.update
+ push bc
+; MZO_FLD.screenOut equ 234
+ ld bc,RActor.screenOut
+ push bc
+; MZO_FLD.die equ 232
+ ld bc,RActor.die
+ push bc
+; MZO_FLD.updateEx equ 230
+ ld bc,RActor.updateEx
+ push bc
+; MZO_FLD.crashTo equ 228
+ ld bc,RActor.crashTo
+ push bc
+MZO_FLD.ch1 equ 22
+ ld bc,0
+ push bc
+MZO_FLD.ch2 equ 20
+ ld bc,0
+ push bc
+MZO_FLD.ch3 equ 18
+ ld bc,0
+ push bc
+MZO_FLD.chs equ 16
+ ld bc,0
+ push bc
+MZO_FLD.initBGM equ 14
+ ld bc,PSGs.initBGM
+ push bc
+MZO_FLD.initSE equ 12
+ ld bc,PSGs.initSE
+ push bc
+MZO_FLD.stopBGM equ 10
+ ld bc,PSGs.stopBGM
+ push bc
+MZO_FLD._step equ 8
+ ld bc,PSGs._step
+ push bc
+; MZO_FLD.init equ 210
+ ld bc,PSGs.init
+ push bc
+ ld bc,0
+ push bc
+; MZO_FLD.step equ 206
+ ld bc,PSGs.step
+ push bc
+; MZO_FLD.read16 equ 204
+ ld bc,PSGs.read16
+ push bc
+ ld bc,RActor.wait
+ push bc
+ ld bc,o.boot
+ push bc
+ jp th.ewith
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.main:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;var ch1
+;var ch2
+;var ch3
+;var chs
+L100.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.init:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;ch1=$ch1 || new PSG{chn:0};
+ ld hl,(MZO_FLD.gbl_ch1)
+ call ziffalse
+ jp nz,L101.lb19
+ ld hl,0; const val
+ push hl
+ ld bc,MZO_FLD.chn
+ push bc
+ ld bc,th.start+0*th.size
+ ld(th.new.start),bc
+ ld bc,th.start+20*th.size
+ ld(th.new.end),bc
+ ld bc,1
+ push bc
+ ld bc,PSG
+ push bc
+ call o.new
+L101.lb19:
+ ld ($+5),a
+ ld (MZO_FLD.ch1),hl
+;ch1.init(0);
+ ld a,(this)
+ push af
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch1)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch1.chn=0;
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch1)
+; stk=val hl=tg
+ ld l,MZO_FLD.chn
+ pop de
+  ld (L102.w-2),hl
+  ld (0),de
+L102.w:
+;ch2=$ch2 || new PSG{chn:1};
+ ld hl,(MZO_FLD.gbl_ch2)
+ call ziffalse
+ jp nz,L101.lb20
+ ld hl,1; const val
+ push hl
+ ld bc,MZO_FLD.chn
+ push bc
+ ld bc,th.start+0*th.size
+ ld(th.new.start),bc
+ ld bc,th.start+20*th.size
+ ld(th.new.end),bc
+ ld bc,1
+ push bc
+ ld bc,PSG
+ push bc
+ call o.new
+L101.lb20:
+ ld ($+5),a
+ ld (MZO_FLD.ch2),hl
+;ch2.init(0);
+ ld a,(this)
+ push af
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch2)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch2.chn=1;
+ ld hl,1; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch2)
+; stk=val hl=tg
+ ld l,MZO_FLD.chn
+ pop de
+  ld (L103.w-2),hl
+  ld (0),de
+L103.w:
+;ch3=$ch3 || new PSG{chn:2};
+ ld hl,(MZO_FLD.gbl_ch3)
+ call ziffalse
+ jp nz,L101.lb21
+ ld hl,2; const val
+ push hl
+ ld bc,MZO_FLD.chn
+ push bc
+ ld bc,th.start+0*th.size
+ ld(th.new.start),bc
+ ld bc,th.start+20*th.size
+ ld(th.new.end),bc
+ ld bc,1
+ push bc
+ ld bc,PSG
+ push bc
+ call o.new
+L101.lb21:
+ ld ($+5),a
+ ld (MZO_FLD.ch3),hl
+;ch3.init(0);
+ ld a,(this)
+ push af
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch3.chn=2;
+ ld hl,2; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+; stk=val hl=tg
+ ld l,MZO_FLD.chn
+ pop de
+  ld (L104.w-2),hl
+  ld (0),de
+L104.w:
+;chs=$chs || new PSG{chn:2};
+ ld hl,(MZO_FLD.gbl_chs)
+ call ziffalse
+ jp nz,L101.lb22
+ ld hl,2; const val
+ push hl
+ ld bc,MZO_FLD.chn
+ push bc
+ ld bc,th.start+0*th.size
+ ld(th.new.start),bc
+ ld bc,th.start+20*th.size
+ ld(th.new.end),bc
+ ld bc,1
+ push bc
+ ld bc,PSG
+ push bc
+ call o.new
+L101.lb22:
+ ld ($+5),a
+ ld (MZO_FLD.chs),hl
+;chs.init(0);
+ ld a,(this)
+ push af
+ ld hl,0; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;chs.chn=2;
+ ld hl,2; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+; stk=val hl=tg
+ ld l,MZO_FLD.chn
+ pop de
+  ld (L105.w-2),hl
+  ld (0),de
+L105.w:
+;setInterval(_step);
+ ld ($+5),a
+ ld hl,(MZO_FLD._step)
+ call setInterval
+L101.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.initBGM:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+  push HL
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;mpoint++;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ inc hl
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;var size
+;size=read16(mpoint);
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ call PSGs.read16
+ ld a,(this)
+ ld (ix-(1*2-1)),h
+ ld (ix-1*2),l
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;ch1.init(mpoint);
+ ld a,(this)
+ push af
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch1)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;mpoint+=size;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld d,(ix-(1*2-1))
+ ld e,(ix-1*2)
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;size=read16(mpoint);
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ call PSGs.read16
+ ld a,(this)
+ ld (ix-(1*2-1)),h
+ ld (ix-1*2),l
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;ch2.init(mpoint);
+ ld a,(this)
+ push af
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch2)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;mpoint+=size;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld d,(ix-(1*2-1))
+ ld e,(ix-1*2)
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;size=read16(mpoint);
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ call PSGs.read16
+ ld a,(this)
+ ld (ix-(1*2-1)),h
+ ld (ix-1*2),l
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;ch3.init(mpoint);
+ ld a,(this)
+ push af
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;mpoint+=size;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld d,(ix-(1*2-1))
+ ld e,(ix-1*2)
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+L106.lbexit:
+ ld sp,ix
+ pop ix
+  exx
+  pop bc
+  inc sp
+  inc sp
+  push bc
+  exx
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.initSE:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+  push HL
+;if chs.mpoint && chs.mpoint<mpoint
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+;hl=tg
+ ld l,MZO_FLD.mpoint
+  ld (L108.w-2),hl
+  ld hl,(0)
+L108.w:
+ call ziffalse
+ jp z,L107.lb24
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+;hl=tg
+ ld l,MZO_FLD.mpoint
+  ld (L109.w-2),hl
+  ld hl,(0)
+L109.w:
+ pop de
+ call hlltde
+L107.lb24:
+;then
+ call ziffalse
+ jp z,L107.lb23
+;return return;
+ jp L107.lbexit
+L107.lb23:
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;mpoint++;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ inc hl
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;var size=read16(mpoint)
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ call PSGs.read16
+ ld a,(this)
+ ld (ix-(1*2-1)),h
+ ld (ix-1*2),l
+;mpoint+=4;
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,4; const val
+ add hl, de
+ ld (ix+argidx+1*2),l
+ ld (ix+argidx+1*2+1),h
+;chs.init(mpoint);
+ ld a,(this)
+ push af
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.init)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+L107.lbexit:
+ ld sp,ix
+ pop ix
+  exx
+  pop bc
+  inc sp
+  inc sp
+  push bc
+  exx
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.stopBGM:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;ch1.stop();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch1)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.stop)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch2.stop();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch2)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.stop)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch3.stop();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.stop)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+L110.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs._step:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;sound_cmd(4,0);
+ ld hl,0; const val
+ push hl
+ ld hl,4; const val
+ ld a,l
+ pop hl
+ call MZOCmd
+ ld a,(this)
+L111.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.step:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;chs.step();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.step)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch3.mute=chs.mpoint;
+ ld ($+5),a
+ ld hl,(MZO_FLD.chs)
+;hl=tg
+ ld l,MZO_FLD.mpoint
+  ld (L113.w-2),hl
+  ld hl,(0)
+L113.w:
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+; stk=val hl=tg
+ ld l,MZO_FLD.mute
+ pop de
+  ld (L114.w-2),hl
+  ld (0),de
+L114.w:
+;ch1.step();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch1)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.step)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch2.step();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch2)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.step)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+;ch3.step();
+ ld a,(this)
+ push af
+ ld ($+5),a
+ ld hl,(MZO_FLD.ch3)
+ ld a,h
+ ld (this),a
+ ld ($+5),a
+ ld hl,(MZO_FLD.step)
+ push hl
+ ld hl,$+5
+ ex (sp),hl
+ jp (hl); call hl
+  ex (sp),hl
+  ld a,h
+  pop HL
+ ld (this),a
+L112.lbexit:
+ ld sp,ix
+ pop ix
+ ret
+;len.##n: defl $-last.marker
+;trace mesg
+ call h.unreach
+;last.marker: defl $
+PSGs.read16:
+;  arg2 arg1 retad oldix lcl1 lcl2
+ push ix
+ ld ix,0
+ add ix,sp
+;return return peek(mpoint)+(peek(mpoint+1)<<8);
+ ld hl,8; const val
+ push hl
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+ ld de,1; const val
+ add hl, de
+  ld (L116.w-2),hl
+  ld hl,(0)
+L116.w:
+ ld h,0
+ pop bc
+ ld b,c
+L117.loop:
+ sla l
+ rl h
+  djnz L117.loop
+ push hl
+ ld l,(ix+argidx+1*2)
+ ld h,(ix+argidx+1*2+1)
+  ld (L118.w-2),hl
+  ld hl,(0)
+L118.w:
+ ld h,0
+ pop de
+ add hl, de
+ jp L115.lbexit
+L115.lbexit:
+ ld sp,ix
+ pop ix
+  exx
+  pop bc
+  inc sp
+  inc sp
+  push bc
+  exx
+ ret
+;len.##n: defl $-last.marker
+initMZOs:
+ld hl, (MZO_FLD.gbl_PSGs)
+ld a, h
+ld hl, PSGs.init
+ld ($+5),a
+ld (MZO_FLD.init), hl
+ld hl, PSGs.initBGM
+ld ($+5),a
+ld (MZO_FLD.initBGM), hl
+ld hl, PSGs.initSE
+ld ($+5),a
+ld (MZO_FLD.initSE), hl
+ld hl, PSGs.stopBGM
+ld ($+5),a
+ld (MZO_FLD.stopBGM), hl
+ld hl, PSGs._step
+ld ($+5),a
+ld (MZO_FLD._step), hl
+ld hl, PSGs.step
+ld ($+5),a
+ld (MZO_FLD.step), hl
+ld hl, PSGs.read16
+ld ($+5),a
+ld (MZO_FLD.read16), hl
+ld hl, (MZO_FLD.gbl_ch1)
+ld a, h
+ld hl, PSG.init
+ld ($+5),a
+ld (MZO_FLD.init), hl
+ld hl, PSG.stop
+ld ($+5),a
+ld (MZO_FLD.stop), hl
+ld hl, PSG.step
+ld ($+5),a
+ld (MZO_FLD.step), hl
+ld hl, PSG.read16
+ld ($+5),a
+ld (MZO_FLD.read16), hl
+ld hl, (MZO_FLD.gbl_ch2)
+ld a, h
+ld hl, PSG.init
+ld ($+5),a
+ld (MZO_FLD.init), hl
+ld hl, PSG.stop
+ld ($+5),a
+ld (MZO_FLD.stop), hl
+ld hl, PSG.step
+ld ($+5),a
+ld (MZO_FLD.step), hl
+ld hl, PSG.read16
+ld ($+5),a
+ld (MZO_FLD.read16), hl
+ld hl, (MZO_FLD.gbl_ch3)
+ld a, h
+ld hl, PSG.init
+ld ($+5),a
+ld (MZO_FLD.init), hl
+ld hl, PSG.stop
+ld ($+5),a
+ld (MZO_FLD.stop), hl
+ld hl, PSG.step
+ld ($+5),a
+ld (MZO_FLD.step), hl
+ld hl, PSG.read16
+ld ($+5),a
+ld (MZO_FLD.read16), hl
+ld hl, (MZO_FLD.gbl_chs)
+ld a, h
+ld hl, PSG.init
+ld ($+5),a
+ld (MZO_FLD.init), hl
+ld hl, PSG.stop
+ld ($+5),a
+ld (MZO_FLD.stop), hl
+ld hl, PSG.step
+ld ($+5),a
+ld (MZO_FLD.step), hl
+ld hl, PSG.read16
+ld ($+5),a
+ld (MZO_FLD.read16), hl
+ld hl, (MZO_FLD.gbl_PSGs)
+invoketg.a MZO_FLD.init
+ret
+playBGM:
+pushthis 0
+push hl
+ld hl, (MZO_FLD.gbl_PSGs)
+invoketg.a MZO_FLD.initBGM
+popthis 0
+ret
+playSE:
+pushthis 0
+push hl
+ld hl, (MZO_FLD.gbl_PSGs)
+invoketg.a MZO_FLD.initSE
+popthis 0
+ret
+stopBGM:
+pushthis 0
+ld hl, (MZO_FLD.gbl_PSGs)
+invoketg.a MZO_FLD.stopBGM
+popthis 0
+ret
+step:
+pushthis 0
+ld hl, (MZO_FLD.gbl_PSGs)
+invoketg.a MZO_FLD.step
+popthis 0
+ret
+#endlocal
+` };
+}
+init();

@@ -160,6 +160,28 @@ let kanaTbl,dac10,dac5;
     }
     return res;
 }
+\parsePrintf(str:String, a, callbacks) {
+    a=a.slice();
+    let per=/%(d|x)/;
+    while(str) {
+        //print("pprf2",str);
+        let m=per.exec(str);
+        if (!m) {
+            callbacks.str(str);
+            break;
+        } else {
+            //print("pprf",m[0], a);
+            if (m.index) callbacks.str(str.substring(0,m.index));
+            let len=m.index+m[0].length;
+            str=str.substring(len);
+            if (!a.length) {
+                return callbacks.unsup(`'printf': not enough arguments.`);
+            }
+            let ex=a.shift();
+            callbacks.value(m[0],ex);
+        }
+    }
+}
 \showPad(){
     $pad=new Pad {
         buttonCnt=2

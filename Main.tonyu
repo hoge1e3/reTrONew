@@ -2,6 +2,13 @@
 For details:
 https://github.com/hoge1e3/reTrONew
 */
+//setInterval(inter);
+printf("%d, %x",100,100);
+sound_cmd(1, $se_Ribbon);
+/*while(true){
+    sound_cmd(4,0);
+    update();
+}*/
 $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 $players[0];
 var i=0, tmps, coli=1235-1;
@@ -24,9 +31,10 @@ switch(coli){
 locate(10,10);
 print("てすとです=",$rtn_test);
 sound_vol(0,8);
-setInterval(inter);
+/*setInterval(inter);
 $psg=new PSGs;
-$psg.initBGM($se_Ribbon);
+$psg.initBGM($se_Ribbon);*/
+
 print(keycode("j1_up"));
 //print(123+ (255 << 8) );
 //print($se_mhmain, $se_mhget);
@@ -41,7 +49,8 @@ while(true) {
 }
 
 function inter() {
-    $psg.step();
+    //$psg.step();
+    sound_cmd(4,0);
 }
 function showScore() {
     locate(0,0);

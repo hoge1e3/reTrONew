@@ -1,6 +1,6 @@
 var e,d;
 while(true) {
-    locate(0,1);print(getkey("space")," ");
+    locate(0,1);print(this,getkey("space")," ");
     map_setAt(x,y,$wall);
     //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
     /*if (getkey("left")||getkey("j1_left")) x-=3;
@@ -25,7 +25,8 @@ while(true) {
     if (getkey("space")==1 || getkey("j1_trig1")==1) {
         new PBullet{x,y};
         $colors[3]=15;
-        $psg.initSE($se_mhget);
+        sound_cmd(2,$se_mhget);
+        //$psg.initSE($se_mhget);
         /*var e;
         var r=rnd(10)+1;
         for (e of all(Enemy)) {
@@ -33,7 +34,9 @@ while(true) {
         }*/
         e=getNearEnemy();
         if (e) e.c=rnd(10)+5;
+        
     }
+
     update();
     
 }
