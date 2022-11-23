@@ -4,7 +4,8 @@ https://github.com/hoge1e3/reTrONew
 */
 //setInterval(inter);
 printf("%d, %x",100,100);
-sound_cmd(1, $se_Ribbon);
+sound_playBGM($se_Ribbon);
+//$sound.playBGM($se_Ribbon);
 /*while(true){
     sound_cmd(4,0);
     update();
@@ -30,7 +31,7 @@ switch(coli){
 //$sound.setBGMVolume(30);
 locate(10,10);
 print("てすとです=",$rtn_test);
-sound_vol(0,8);
+//sound_vol(0,8);
 /*setInterval(inter);
 $psg=new PSGs;
 $psg.initBGM($se_Ribbon);*/

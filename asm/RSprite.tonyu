@@ -63,6 +63,19 @@ let dotAlign=1;
 \sound_scale(ch, scale) {
     $PSG[ch].set{scale};   
 }
+
+\sound_cmd(cmd,param){}
+\sound_playBGM(b) {
+    let r=$MZO.adr2se[b];
+    $sound.playBGM(r);
+}
+\sound_playSE(b) {
+    let r=$MZO.adr2se[b];
+    $sound.playSE(r);
+}
+\sound_stopBGM() {
+    $sound.stopBGM();
+}
 \setInterval(f){
     $Boot.onInter=f;
 }
@@ -120,7 +133,6 @@ let dotAlign=1;
     }
     return 0;
 }
-\sound_cmd(cmd,param){}
 \draw(ctx){
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;

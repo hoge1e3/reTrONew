@@ -25,7 +25,7 @@ while(true) {
     if (getkey("space")==1 || getkey("j1_trig1")==1) {
         new PBullet{x,y};
         $colors[3]=15;
-        sound_cmd(2,$se_mhget);
+        sound_playSE($se_mhget);
         //$psg.initSE($se_mhget);
         /*var e;
         var r=rnd(10)+1;

@@ -2,11 +2,12 @@ extends TObject;
 
 includes FileMod;
 native Uint8Array;
+native Tonyu;
 let mapper:Mapper;//=new Mapper;
 if (!mapper) throw new Error("Mapper is not set");
 let r=$currentProject.getResource();
 //print(r.sounds);
-let adrs={}, arrays={};
+let adrs={}, arrays={}, adr2se={};
 for (let e of r.sounds) {
     //print(e.name);
     let path=e.url.replace(/^ls:/,"");
@@ -15,8 +16,10 @@ for (let e of r.sounds) {
     if (!mzof.exists()) continue;
     //print(mzof.bytes());
     let b=new Uint8Array(mzof.bytes());
+    
     adrs[e.name]=mapper.assignAry8(b);
     arrays[e.name]=b;
+    adr2se[adrs[e.name]]=Tonyu.getGlobal(e.name);
 }/*
 print(adrs);
 

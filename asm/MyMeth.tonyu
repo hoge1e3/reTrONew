@@ -204,6 +204,39 @@ let g:GenAsm;
         printf("pop hl%n");
         printf("call mus.scale.a%n");
         printf("getthis 0%n");
+    } else if (mname==="sound_cmd") {
+        /*
+        cp 0
+        jp z,initMZOs
+        cp 1
+        jp z,playBGM
+        cp 2
+        jp z,playSE
+        cp 3
+        jp z,stopBGM
+        cp 4
+        jp step*/
+        visit(args[1]);
+        printf("push hl%n");
+        visit(args[0]);
+        printf("ld a,l%n");
+        printf("pop hl%n");
+        printf("call MZOCmd%n");
+        printf("getthis 0%n");
+    } else if (mname==="sound_playBGM") {
+        visit(args[0]);
+        printf("ld a,1%n");
+        printf("call MZOCmd%n");
+        printf("getthis 0%n");
+    } else if (mname==="sound_playSE") {
+        visit(args[0]);
+        printf("ld a,2%n");
+        printf("call MZOCmd%n");
+        printf("getthis 0%n");
+    } else if (mname==="sound_stopBGM") {
+        printf("ld a,3%n");
+        printf("call MZOCmd%n");
+        printf("getthis 0%n");
     } else if (mname==="setInterval") {
         visit(args[0]);
         printf("call setInterval%n");
@@ -231,14 +264,7 @@ let g:GenAsm;
         range[0], range[1]);
     } else if (mname==="asm_label") {
         printf("ld hl, %s%n", g.lit2s(args[0]));
-    } else if (mname.match(/^sound_/)) {
-        visit(args[1]);
-        printf("push hl%n");
-        visit(args[0]);
-        printf("ld a,l%n");
-        printf("pop hl%n");
-        printf("call MZOCmd%n");
-        printf("getthis 0%n");
+    
     } else {
         for(let a of args.reverse()) {
             visit(a);
