@@ -119,6 +119,8 @@ let kanaTbl,dac10,dac5;
     $PSG=[
     new Beep,new Beep,new Beep
     ];
+    $sound.setBGMMasterVolume(32);
+    $sound.setSEMasterVolume(32);
     $Boot.onInter=\{};
     $sound.on("interval", \{$Boot.onInter();});
     new mainClass;
