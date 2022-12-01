@@ -259,6 +259,7 @@ let export_platforms={
 
 
 //msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
+let expButtons=[];
 let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
 outAsm("macro.ram", included);
@@ -288,15 +289,40 @@ switch ($config.postprocess.target) {
     showDiag{platform:$config.postprocess.target};
     break;
     default:
-    new Button{top:420,left:50, width:200,height:25,
+    showExportButtons();
+}
+\showExportButtons(layout) {
+    layout=layout||{};
+    let top=layout.top, height=layout.height;
+    if (typeof top!=="number") top=420;
+    if (typeof height!=="number") height=25;
+    expButtons=[];
+    let sideMargin=24;
+    let width=$screenWidth/2-sideMargin;
+    let b;
+    b=new Button{top,left:sideMargin, width,height,
         text:"to MSXPen",platform:"msxpen",padding:1,
-    onClick:showDiag,fillStyle:$RSprPat.palette[4]};
-    new Button{top:420,left:300, width:200,height:25,
+        onClick:showDiag,fillStyle:$RSprPat.palette[4]
+    };
+    expButtons.push(b);
+    b=new Button{top,left:$screenWidth/2, width,height,
         text:"to 8bitworkshop",platform:"8bitws",padding:1,
-    onClick:showDiag,fillStyle:$RSprPat.palette[9]};
-    new Button{top:445,left:50, width:200,height:25,
+        onClick:showDiag,fillStyle:$RSprPat.palette[9]
+    };
+    expButtons.push(b);
+    b=new Button{top:top+height,left:sideMargin, width,height,
         text:"Download ROM",padding:1,
-    onClick:dlROM,fillStyle:$RSprPat.palette[13]};
+        onClick:dlROM,fillStyle:$RSprPat.palette[13]
+    };
+    expButtons.push(b);
+}
+\hideExportButtons() {
+    for (let b of expButtons) b.die();
+    expButtons=[];
+}
+\toggleExportButtons(layout) {
+    if (expButtons.length) hideExportButtons();
+    else showExportButtons(layout);
 }
 //new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
 \toDB(bytes) {
@@ -348,7 +374,7 @@ switch ($config.postprocess.target) {
         tx.copyToClipboard("val");
     }
     if (typeof $config.postprocess.onExport==="function") {
-        $config.postprocess.onExport{asm:generatedAsm};
+        $config.postprocess.onExport{genAsm:this, asm:generatedAsm};
     }
 }
 \dlROM() {
@@ -357,8 +383,11 @@ switch ($config.postprocess.target) {
         worker.removeEventListener("message",f);
         let data=$JSON.parse(e.data);
         if (data.type==="error") {return print(data.message);}
-        let bins=[];
+        let bins=[], labels={};
         for (let line of data.result) {
+            if (line.label) {
+                labels[line.label]=line.address;
+            }
             for (let e of line.bin) bins.push(e);
         }
         while(bins.length<0x8000) bins.push(0);
@@ -366,7 +395,7 @@ switch ($config.postprocess.target) {
         let romFile=file($config.postprocess.romFileName || "output.rom");
         romFile.setBytes(new Uint8Array(bins));
         if (typeof $config.postprocess.onExport==="function") {
-            $config.postprocess.onExport{romFile};
+            $config.postprocess.onExport{genAsm:this, romFile, labels};
         } else {
             romFile.download();
         }
