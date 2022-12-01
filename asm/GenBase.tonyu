@@ -1,5 +1,5 @@
 extends Visitor;
-includes Buf, Context;
+includes Buf, Context, GenROM;
 native Tonyu;
 native Worker;
 native $;
@@ -46,7 +46,7 @@ let closestBrk;
 //let mainClass;
 //debug=true;
 
-printf(`org 08000h
+printf(`include z_romboot
 include z_tnu
 include z_map
 include z_bool
@@ -154,7 +154,7 @@ ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
         return globalLabel(k)+":dw $+2\n"+
-        "ds "+(i*2);
+        "ds "+(i*2)+", 0";
     } else {
         // 1-d array only currently
         return globalLabel(k)+":dw $+2\n"+
@@ -236,7 +236,7 @@ if (problems.length) {
 print(n.superclass.fullName);
 */
 //print("buf="+buf);
-let url_pen="https://msxpen.com/codes/-N8klu22ZKY0trVaYX66";
+let url_pen="https://msxpen.com/codes/-NIBmB3q7dQjeZO_9koJ";
 let url_ws="https://8bitworkshop.com/v3.10.0/?platform=msx";
 let export_platforms={
     msxpen:["ul",
@@ -262,12 +262,14 @@ let export_platforms={
 let expButtons=[];
 let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
+included=genROM(included);
 outAsm("macro.ram", included);
 text="Loading assembler...";
 while(!worker) update();
 text="Assemble in progress...";
+
 worker.postMessage( included );
-let plain=runPromise \(s,err){
+let plines=runPromise \(s,err){
     \f(e) {
         worker.removeEventListener("message",f); 
         let data=$JSON.parse(e.data);
@@ -277,7 +279,7 @@ let plain=runPromise \(s,err){
     worker.addEventListener("message",f);
 };
 text="";
-plain=plain.map\(e){return e.body;}.join("\n");
+let plain=plines.map\(e){return e.body;}.join("\n");
 outAsm("plain.ram", plain);
 
 
@@ -362,13 +364,13 @@ switch ($config.postprocess.target) {
         left:10, top: 20, width:300,
         height:400,
     };
-    let generatedAsm;
-    if (b.platform==="8bitws") {
+    let generatedAsm=plain;
+    /*if (b.platform==="8bitws") {
         generatedAsm=new GenROM{base:this}.gen(plain);
     } else {
-        let cg=new Includer;
+        //let cg=new Includer;
         generatedAsm=plain;
-    }
+    }*/
     if (tx) {
         tx.setValue("val", generatedAsm);
         tx.copyToClipboard("val");
@@ -378,30 +380,23 @@ switch ($config.postprocess.target) {
     }
 }
 \dlROM() {
-    let romAsm=new GenROM{base:this}.gen(plain);
-    \f(e) {
-        worker.removeEventListener("message",f);
-        let data=$JSON.parse(e.data);
-        if (data.type==="error") {return print(data.message);}
-        let bins=[], labels={};
-        for (let line of data.result) {
-            if (line.label) {
-                labels[line.label]=line.address;
-            }
-            for (let e of line.bin) bins.push(e);
+    //let romAsm=new GenROM{base:this}.gen(plain);
+    let bins=[], labels={};
+    for (let line of plines) {
+        if (line.label) {
+            labels[line.label]=line.address;
         }
-        while(bins.length<0x8000) bins.push(0);
-        //print(bins);
-        let romFile=file($config.postprocess.romFileName || "output.rom");
-        romFile.setBytes(new Uint8Array(bins));
-        if (typeof $config.postprocess.onExport==="function") {
-            $config.postprocess.onExport{genAsm:this, romFile, labels};
-        } else {
-            romFile.download();
-        }
+        for (let e of line.bin) bins.push(e);
     }
-    worker.addEventListener("message",f);
-    worker.postMessage( romAsm );
+    while(bins.length<0x8000) bins.push(0);
+        //print(bins);
+    let romFile=file($config.postprocess.romFileName || "output.rom");
+    romFile.setBytes(new Uint8Array(bins));
+    if (typeof $config.postprocess.onExport==="function") {
+        $config.postprocess.onExport{genAsm:this, romFile, labels};
+    } else {
+        romFile.download();
+    }
 }
 \def(n){
     if(!n){
