@@ -9,20 +9,19 @@ rom.init:
  call cpslt
  jp _main     
 
+;include z_ctrl
 
 rom.ENASLT EQU 0024H
 rom.RSLREG EQU 0138H
 rom.EXPTBL EQU 0FCC1H
 
 
-rom.rdslt:
+rdslt:
  ex de,hl
  ;DE=PGxx xxxx xxxx xxxx
+ rept 5
   srl d;page*2
-  srl d;page*2
-  srl d;page*2
-  srl d;page*2
-  srl d;page*2
+ endm
  ;DE=xxxx xPGx xxxx xxxx
  CALL rom.RSLREG
  ;A = PRIMARY_SLOT
@@ -41,11 +40,12 @@ rom.rdslt1:
  LD A,(HL)
  AND 80H;expand flag
  OR c
+ bit 7,a
+ ret z
  LD c,A;e00000Pr
- INC HL
- INC HL
- INC HL
- INC HL
+ rept 4
+  INC HL
+ endm
  LD A,(HL);exp reg
  ld e,d
 rom.rdslt2:
@@ -68,11 +68,14 @@ ramtop equ 8000h
 
 cpslt:
  ld hl,4000h
- call rom.rdslt
+ call rdslt
  ld (rom),a
  ld hl,cpwork
- call rom.rdslt
+ call rdslt
  ld (ram),a
+ ld hl,rom
+ cp (hl)
+ ret z
  ld hl,ramtop 
 cpslt.loop:
   push hl
@@ -100,7 +103,7 @@ cpslt.loop:
 ;!INCLUDE_ROM
 ; move after "endusr:" here
  ds 8000h-$, 0
-; remove all "org"s below
+;!INCLUDE_RAM
 `,
         'z_math':`include z_ctrl
 
@@ -307,6 +310,8 @@ loop:
 #endlocal
 endsub log.a
 
+
+
 neghl.sv macro xx
  push de
  call neghl
@@ -317,6 +322,8 @@ negde.sv macro xx
  neghl.sv 0
  ex de,hl
 endm
+
+
 defsub div.a
 ; hl/=de with signed
 ; de=remainder
@@ -515,10 +522,10 @@ endm
 flagtobool macro fl
 #local
  jr &fl, yes
- ld hl,false
- jr skp
+  ld hl,false
+  jr skp
  yes:
- ld hl,true
+  ld hl,true
  skp:
 #endlocal
 endm
@@ -526,82 +533,16 @@ endm
 defsub nothl
 #local
  jpf fls
- ld hl, false
- ret
+  ld hl, false
+  ret
  fls:
- ld hl, true
+  ld hl, true
 #endlocal
 endsub nothl
 `,
         'z_mem':`include z_const
-;
-rdslt:
- ex de,hl
- rept 5
- srl d;page*2
-endm
- CALL RSLREG
- ld e,d
- rdslt1:
-  RRCA
-  dec e
-  jp nz,rdslt1
- AND    00000011B
- LD c,A;000000Pr
- LD B,0
- LD HL,EXPTBL
- ADD HL,BC
- LD c,A;000000Pr
- LD A,(HL)
- AND 80H;expand flag
- OR c
- LD c,A;e00000Pr
- rept 4;const
- INC HL
-endm
- LD A,(HL);exp reg
- ld e,d
- rdslt2:
-  srl a
-  dec e
-  jp nz,rdslt2
-;000000Ex
- sla a
- sla a
- ;    0000Ex00
- and  00001100b
- OR c;e000ExPr
- ret
-memini:
- CALL RSLREG
- rept 4
-  RRCA
-endm
- AND    00000011B
- LD c,A;000000Pr
- LD B,0
- LD HL,EXPTBL
- ADD HL,BC
- LD c,A;000000Pr
- LD A,(HL)
- AND 80H;expand flag
- OR c
- LD c,A;e00000Pr
- rept 4;const
- INC HL
-endm
- LD A,(HL);exp reg
- rept 4; page*2
- srl a
-endm;000000Ex
- sla a
- sla a
- ;    0000Ex00
- and  00001100b
- OR c;e000ExPr
- LD Hl,04000H
- jp ENASLT
 
+;!RAM
 peekw macro regv,regm
 #local
   ld (w-2),&regm
@@ -617,6 +558,8 @@ pokew macro regm,regv
   w:
 #endlocal
 endm
+;!/RAM
+
 movw macro dst,src
  push hl
  ld hl,&src
@@ -729,8 +672,8 @@ for macro lbend
  ; uses a
  ; c: breaked
 #local
-  lb:
-  call dcompr; uses a
+ lb:
+  rst dcompr; uses a
   jp nc,&lbend
   push HL
   push de
@@ -742,7 +685,7 @@ for macro lbend
   jp c,&lbend
   add HL,bc
   jr lb
-  s:
+ s:
 #endlocal
 endm
 
@@ -750,7 +693,7 @@ repti macro n,lbend
 #local
   push bc
   ld b,&n
-  lb:
+ lb:
   push bc
   call s
   pop bc
@@ -759,7 +702,7 @@ repti macro n,lbend
   lbend2:
   pop bc
   jp &lbend
-  s:
+ s:
 #endlocal
 endm
 
@@ -780,43 +723,6 @@ reptb macro lbend
 #endlocal
 endm
 
-
-
-callsva macro pp
-#local
- ld (sva-1),a
- call &pp
- ld a,0
- sva:
-#endlocal
-endm
-bcis0:
- callsva bcis0.a
- ret
-bcis0.a:
- ld a,b
- and a
- ret nz
- ld a,c
- and a
- ret
-
-reptbc macro lbend
-#local
- call bcis0
- jp z,&lbend
- lb:
-  push bc
-  call s
-  pop bc
-  jp c,&lbend
-  dec bc
-  call bcis0
- jr nz, lb
- jp &lbend
- s:
-#endlocal
-endm
 
 
 iff.nz equ 0
@@ -931,12 +837,6 @@ fld.top equ th.ofs.spini-2
 th.st.blank equ 0c9h
 th.st.active equ 31h
 
-;macro th.for,lb
-; ld HL,th.start
-; ld de,th.end
-; ld bc,th.size
-; for lb
-;endm
 th.for.a macro nx,st,en
 #local
  ld a,&st+(th.start.h)
@@ -972,12 +872,12 @@ defsub th.isblank.a
  cp th.st.blank
 endsub th.isblank.a
 
- defwork th.new.start
+defwork th.new.start
  dw th.start
- endwork th.new.start
- defwork th.new.end
+endwork th.new.start
+defwork th.new.end
  dw th.end
- endwork th.new.end
+endwork th.new.end
 
 defsub th.find.blank
 ; h: result  nz: not found
@@ -1087,14 +987,16 @@ defsub th.step
  jp (hl)
 endsub th.step
 
+;!RAM
 defsub th.yield
  ld hl,(th.cur)
  ld l,th.ofs.sp
- sp2mem
+ sp2mem 0
  adrssp:
  ld sp,0
  jp doint
 endsub th.yield
+;!/RAM
 
 defsub th.term
  ld hl,(th.cur)
@@ -1123,6 +1025,7 @@ th.with.ret macro n
  jp th.ewith
 endm
 
+;!RAM
 defsub th.with.s
 ; with(this) { init routine } 
 ;  init routine should end with th.with.ret
@@ -1131,7 +1034,7 @@ defsub th.with.s
  ld (th.wrssp-2),sp
  ld l, th.ofs.sp
  ld (th.updsp-2),hl
- mem2sp
+ mem2sp 0
  jp 0
  th.jpdest:
 th.ewith:
@@ -1140,6 +1043,7 @@ th.ewith:
  ld sp,0
  th.wrssp:
 endsub th.with.s
+;!/RAM
 
 
 
@@ -1374,7 +1278,9 @@ endm
 sp.set macro
  ld sp,hl
 endm
-mem2sp macro
+
+;!RAM
+mem2sp macro &n
  ;(hl)->sp
 #local
  ld (rs-2),hl
@@ -1382,7 +1288,8 @@ mem2sp macro
  rs:
 #endlocal
 endm
-sp2mem macro
+
+sp2mem macro &n
  ;sp->(hl)
 #local
  ld (spad-2),hl
@@ -1390,13 +1297,17 @@ sp2mem macro
  spad:
 #endlocal
 endm
+;!/RAM
 
 showsp macro
  ld (sptmp),sp
  showm sptmp
 endm
-sptmp:
-dw 0
+
+defwork sptmp
+ dw 0
+endwork sptmp
+
 showstk macro
  showsp
  ld (sva),a
@@ -1407,7 +1318,12 @@ showstk macro
  show hl
  ex (sp),hl
 endm
-sva: db 0`,
+
+defwork sva
+ db 0
+endwork sva
+
+`,
         'z_oop':`include z_mem
 include z_th
 include z_assert
@@ -1485,6 +1401,8 @@ popthis macro xx
  ld (this),a
 endm
 
+;!RAM
+
 ; pushthis before arg push
 ; hl=target
 invoketg.a macro fld
@@ -1533,13 +1451,6 @@ setfldtg macro n
  pokew hl,de
 endm
 
-getfldtg_botu macro n
-; hl=target
- ld d,h
- ld e,&n
- peekw HL,de
-endm
-
 tgconst macro n
  ld (&n-1),a
 endm
@@ -1551,6 +1462,8 @@ tgconst.s macro n,fld,r16
  ld (&fld),&r16
  &n:
 endm
+
+;!/RAM
 
 
 curth2this macro
@@ -1765,6 +1678,7 @@ defsub isobj.a
  and a
 endsub isobj.a
 
+;!RAM
 defsub instanceof
  ; a=this de=Class
  ; z: true
@@ -1778,6 +1692,7 @@ defsub get.superclass
  dec hl
  peekw hl,hl
 endsub get.superclass
+;!/RAM
 
 defsub is.subclass.a
 #local
@@ -2072,12 +1987,16 @@ def RActor.updateEx,1,0
 #local
 ; enter 0
  getarg 1
- ld b,h
- ld c,l
- reptbc n
-  invoke .update
-  continue
  n:
+  getthis 0
+  push hl
+  invoke .update
+  pop hl
+  dec hl
+  ld a,h
+  or l
+ jr nz,n
+ getthis 0
 #endlocal
 enddef RActor.updateEx
 
@@ -2241,6 +2160,9 @@ defsub keyall
  ld de,keymat2
  ld bc,13
  ldir
+ ld a,(keyuse)
+ and a
+ ret z
  ld a,0
  ld hl,keymat1
  lp:
@@ -2296,6 +2218,9 @@ defsub snstk.a
 #endlocal
 endsub snstk.a
 
+defwork keyuse
+db 1
+endwork keyuse
 defwork keymat1
 ds 13, 0
 endwork keymat1
