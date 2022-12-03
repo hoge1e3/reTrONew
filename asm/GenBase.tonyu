@@ -236,7 +236,7 @@ if (problems.length) {
 print(n.superclass.fullName);
 */
 //print("buf="+buf);
-let url_pen="https://msxpen.com/codes/-NIBmB3q7dQjeZO_9koJ";
+let url_pen="https://msxpen.com/codes/-NIC-SEGqU36eQRu6p-E";
 let url_ws="https://8bitworkshop.com/v3.10.0/?platform=msx";
 let export_platforms={
     msxpen:["ul",
