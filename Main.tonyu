@@ -12,10 +12,10 @@ sound_playBGM($se_Ribbon);
 }*/
 $player=new Player{x:256, y: 300, p:$pat_spr+4, c:15};
 $players[0];
-var i=0, tmps, coli=1235-1;
+var i=0, tmps, coli=0;//1235-1;
 $sndc=0;$sndv=0;
 $score=0;
-coli=1233+1;
+//coli=1233+1;
 locate(5,5);
 switch(coli){
     case 1234:

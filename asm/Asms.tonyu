@@ -865,11 +865,11 @@ th.for.a macro nx,st,en
 #endlocal
 endm
 
-th.new.range macro st,en
- ld bc,&st
- ld(th.new.start),bc
- ld bc,&en
- ld(th.new.end),bc
+th.new.range.a macro st,en
+ ld a,&st+th.start.h
+ ld(th.new.start),a
+ ld a,&en+th.start.h
+ ld(th.new.end),a
 endm
 
 defsub th.isblank.a
@@ -881,18 +881,18 @@ defsub th.isblank.a
 endsub th.isblank.a
 
 defwork th.new.start
- dw th.start
+ db th.start.h
 endwork th.new.start
 defwork th.new.end
- dw th.end
+ db th.end.h
 endwork th.new.end
 
 defsub th.find.blank
 ; h: result  nz: not found
 #local
- ld a,(th.new.end+1)
+ ld a,(th.new.end)
  ld b,a
- ld a,(th.new.start+1)
+ ld a,(th.new.start)
  ld h,a
  ld l,th.ofs.stp
 loop:
@@ -1484,7 +1484,8 @@ getthis macro xx
 endm
 
 new macro Class,flds,st,en
- th.new.range th.start+&st*th.size, th.start+&en*th.size
+ th.new.range.a &st, &en
+ getthis 0
  pushi &flds, bc
  pushi &Class, bc
  call o.new
