@@ -796,8 +796,10 @@ unreach macro mesg
  ;trace mesg
  call h.unreach
 endm
+
+
+; unreach &lb
 head macro lb
- unreach &lb
  marker.b &lb
  &lb:
 endm
