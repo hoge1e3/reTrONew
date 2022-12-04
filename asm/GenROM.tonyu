@@ -7,15 +7,30 @@ extends TObject;
     let lines=asm.split("\n");
     let romEnd;
     let romIncl=[];
+    let ramEnd;
+    let ramIncl=[];
     for (let i=lines.length-1;i>=0;i--) {
+        //print(i, romEnd, ramEnd, lines[i]);
         if (lines[i].match(/^;!\/ROM/)) {
+            if (ramEnd||romEnd) throw new Error("Include ROM Error at "+i);
             romEnd=i+1;
         }
         if (typeof romEnd==="number" && lines[i].match(/;!ROM/)) {
             romIncl=[...lines.splice(i, romEnd-i), ...romIncl];
             romEnd=null;
         }
+
+        /*if (lines[i].match(/^;!\/RAM/)) {
+            if (romEnd||ramEnd) throw new Error("Include RAM Error at "+i);
+            ramEnd=i+1;
+        }
+        if (typeof ramEnd==="number" && lines[i].match(/;!RAM/)) {
+            ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];
+            ramEnd=null;
+        }*/
     }
-    let res=lines.join("\n").replace(/;!INCLUDE_ROM/, romIncl.join("\n"));
+    let res=lines.join("\n")
+    .replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
+    .replace(/;!INCLUDE_RAM/, ramIncl.join("\n"));
     return res;
 }

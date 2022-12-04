@@ -76,6 +76,7 @@ let outp=new OutPat;
 let outbg=new OutBG;
 
 let hasMain;
+printf(";!RAM%n");
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
@@ -124,6 +125,8 @@ for (klass of mem.ks) {
     printf("; class_def_end %s%n",klass.shortName);
     update();
 }
+printf(";!/RAM%n");
+
 if (!hasMain) throw new Error(`Main class ${$mainClassName} is not subclass of RActor`);
 text="Writing assets...";
 while(!outp.complete || !outbg.complete) update();
@@ -150,6 +153,7 @@ for (let k of Object.keys($MZO.arrays)) {
 }
 printf(";!/ROM%n");
 printf(`
+;!RAM
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -167,6 +171,7 @@ ${Object.keys(globalVars).map \(k){
     if ($config.intArrays[k]) return "";
     return globalLabel(k)+":dw 0";
 }.join("\n")}
+;!/RAM
 endusr:
 ;!ROM
 inivrm macro n, dst
