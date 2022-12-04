@@ -19,16 +19,19 @@ extends TObject;
             romIncl=[...lines.splice(i, romEnd-i), ...romIncl];
             romEnd=null;
         }
-
-        /*if (lines[i].match(/^;!\/RAM/)) {
+        /*
+        if (lines[i].match(/^;!\/RAM/) || lines[i].match(/\bendwork\b/)) {
             if (romEnd||ramEnd) throw new Error("Include RAM Error at "+i);
             ramEnd=i+1;
         }
-        if (typeof ramEnd==="number" && lines[i].match(/;!RAM/)) {
+        if (lines[i].match(/;!RAM/) || 
+        (lines[i].match(/\bdefwork\b/) && !lines[i].match(/\bmacro\b/) ))  {
+            if (!ramEnd) throw new Error("Include RAM Error at "+i);
             ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];
             ramEnd=null;
         }*/
     }
+    //ramIncl.unshift("ds 8000h-$, 0");
     let res=lines.join("\n")
     .replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
     .replace(/;!INCLUDE_RAM/, ramIncl.join("\n"));

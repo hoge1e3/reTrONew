@@ -101,9 +101,8 @@ cpslt.loop:
  ret
 
 ;!INCLUDE_ROM
-; move after "endusr:" here
  ds 8000h-$, 0
-;!INCLUDE_RAM
+
 `,
         'z_math':`include z_ctrl
 
@@ -1004,7 +1003,7 @@ defsub th.term
  ; TODO th.ofs.stp
  ld L,th.ofs.stp
  ld (hl),th.st.blank
- jr adrssp
+ jp adrssp
 endsub th.term
 
 th.with.do macro to
@@ -1481,6 +1480,9 @@ new macro Class,flds,st,en
  pushi &Class, bc
  call o.new
 endm
+defwork svthis
+ db 0
+endwork svthis
 
 defsub o.new
 #local
@@ -1491,7 +1493,7 @@ defsub o.new
  pop hl;&initbl
  th.with.setdst hl
  ; save this
- ld (svthis-1),a
+ ld (svthis),a
  ; allocate thread
  call th.new
  jr nz, allocfail
@@ -1517,8 +1519,7 @@ defsub o.new
  ld h,a
  finally:
   ;restore a before call o.new
-  ld a,0
-  svthis:
+  ld a,(svthis)
   ;return
   jp 0
   retad:
@@ -1548,8 +1549,9 @@ new.arg macro n
  pushi &n,bc
 endm
 
-this:
-db 0
+defwork this
+ db 0
+endwork this
 
 fld.def macro n
  &n equ fldidx
@@ -1600,11 +1602,12 @@ class Object,null
  fld.bottom Object
  marker.e Object
 
-
+;!RAM
 defsub o.boot
  curth2this
  invoke .main
 endsub o.boot
+;!/RAM
 
 
 yield macro
@@ -1731,7 +1734,7 @@ spr.unscale macro n
 endm
  LD A,L
 endm
-
+;!RAM
 defsub spr.puts_old
 #local
  ld hl, 1b00h
@@ -1787,6 +1790,7 @@ defsub spr.puts
  ld (spr.puts.b),a
 #endlocal
 endsub spr.puts_new
+;!/RAM
 
 defwork spr.puts.b
  db th.start.h
@@ -1818,6 +1822,7 @@ defsub spr.putslp
 endsub spr.putslp
 
 
+;!RAM
 defsub spr.put1
 ; a: th.id
 #local
@@ -1852,6 +1857,7 @@ defsub spr.put1
   pop af
 #endlocal
 endsub spr.put1
+;!/RAM
 
 `,
         'z_sprpat':`include z_const
