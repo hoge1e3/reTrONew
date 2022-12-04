@@ -656,11 +656,12 @@ CSRX equ 0F3DDH
 
 null equ 0
 
+;last.marker: defl $
 marker.b macro n
- ;last.marker: defl $
 endm
+
+;len.##n: defl $-last.marker
 marker.e macro n
- ;len.##n: defl $-last.marker
 endm
 `,
         'z_ctrl':`include z_const
@@ -1547,16 +1548,6 @@ new.arg macro n
  pushi &n,bc
 endm
 
-o.assert.eq macro fld,v
-#local
- assert.do aa
-  getfld &fld
-  assert.eq &v
-  ret
- aa:
-#endlocal
-endm
-
 this:
 db 0
 
@@ -1940,6 +1931,8 @@ RActor.noovr macro Class
  fld.bottom RActor
 endm
 
+;!RAM
+
 class RActor,Sprite
  RActor.noovr RActor
  end.const RActor
@@ -2149,6 +2142,7 @@ loadPage macro Class,args,st,en
 call all.die
 new &Class,&args,&st,&en
 endm
+;!/RAM
 
 `,
         'z_key':`include z_debug
@@ -2802,6 +2796,7 @@ psg.ch2 equ psg.ch1+256
 psg.ch3 equ psg.ch2+256
 psg.chs equ psg.ch3+256
 
+;!RAM
 defsub mus.initPSG.a
  ld a, psg.psgs >> 8
  ld (this),a
@@ -2841,6 +2836,8 @@ defsub mus.step
   invoketg.a .psgfld.step
  popthis 0 
 endsub
+;!/RAM
+
 `
     };
 }
