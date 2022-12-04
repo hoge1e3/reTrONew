@@ -101,7 +101,7 @@ cpslt.loop:
  ret
 
 ;!INCLUDE_ROM
- ds 8000h-$, 0
+; ds 8000h-$, 0
 
 `,
         'z_math':`include z_ctrl
@@ -471,10 +471,9 @@ hllede:
 
 ziffalse:
 #local
- ld (resa-1),a
+ push af
  call ziffalse.a
- ld A,0
- resa:
+ popa 0
  ret
 ziffalse.a:
  ld a,0
@@ -1043,7 +1042,7 @@ th.ewith:
  ld sp,0
  th.wrssp:
 endsub th.with.s
-;!/RAM
+
 
 
 
@@ -1058,9 +1057,6 @@ defsub th.push
 endsub th.push
 
 
-defwork th.cur
- dw 0
-endwork th.cur
 
 defsub th.loop
  ; hook before stepall
@@ -1091,7 +1087,11 @@ defsub th.loop
  jr th.loop
 endsub th.loop
 
+;!/RAM
 
+defwork th.cur
+ dw 0
+endwork th.cur
 
 th.pushi macro val
  ld bc,&val
@@ -1480,10 +1480,8 @@ new macro Class,flds,st,en
  pushi &Class, bc
  call o.new
 endm
-defwork svthis
- db 0
-endwork svthis
 
+;!RAM
 defsub o.new
 #local
  ; {val .f} n &initbl retad
@@ -1493,7 +1491,7 @@ defsub o.new
  pop hl;&initbl
  th.with.setdst hl
  ; save this
- ld (svthis),a
+ ld (svthis-1),a
  ; allocate thread
  call th.new
  jr nz, allocfail
@@ -1519,8 +1517,9 @@ defsub o.new
  ld h,a
  finally:
   ;restore a before call o.new
-  ld a,(svthis)
-  ;return
+  ld a,0
+  svthis:
+  ;ret 
   jp 0
   retad:
  allocfail:
@@ -1539,6 +1538,7 @@ defsub o.new
   jr finally
 #endlocal
 endsub o.new
+;!/RAM
 
 new.arg.i macro n,v
  ld hl,&v
@@ -2103,7 +2103,7 @@ endsub crashTo1
 
 
 tnu.run macro Main,st,en
- unreach.new.init 0
+ ;unreach.new.init 0
  ld sp,sp.ini
  call screen1
  call screen2
@@ -2595,59 +2595,13 @@ a.dummy macro
 endm
 
 
-assert.eq macro o
- storelastpc
- pushall
- a.regi val, &o
- ld de,(a.reg.val)
- ld(a.reg.val),hl
- ld(a.reg.min),de
- ld(a.reg.max),de
- cpde
- jp nz,assert.fail
- popall
-endm
-
-assert.do macro nx
- storelastpc
- pushall
- call to
- popall
- jr &nx
- to:
-endm
-
-storelastpc macro
- push hl
- call getpc
- ld (lastpc),hl
- pop hl
-endm
-lastpc:
- dw 0
 
 getpc:
  pop hl
  push hl
  ret
 
-assert.fail:
- ld hl,0deadh
- show hl
- showm a.reg.trc
- showm a.reg.min
- showm a.reg.val
- showm a.reg.max
- showm a.reg.adr
- showm lastpc
- call freeze
-assert.meqw macro ad,val
- a.regi adr,&ad
- push hl
- ld hl,(&ad)
- assert.eq &val
- pop hl
-endm
+
 `,
         'z_vdp':`;https://www.msx.org/wiki/VDP_Status_Registers
 ;st 0 bit 7
@@ -2677,6 +2631,7 @@ defsub inted
  call RDVDP
  bit 7,a
 endsub inted
+
 doint:
  call inted
  jr z, norst
@@ -2686,9 +2641,11 @@ doint:
  norst:
  ;call rstint
  ret
+;!RAM
 h.tntimi:
  call int.nop
  ret
+;!/RAM
 defsub setInterval
  ld (h.tntimi+1), hl
 endsub setInterval
@@ -2701,8 +2658,10 @@ defsub int.nop
 ret
 endsub int.nop
 
-timecnt:
-db 0
+defwork timecnt
+ db 0
+endwork timecnt
+
 vdptest macro
 #local
 stk1:
@@ -2753,28 +2712,6 @@ endsub screen2
 `,
         'z_mus':`include z_mem
 include z_debug
-mus.ini:
- di
- ld hl,0fd9fh
- ld (hl),0c3h
- movw (0fd9fh+1),mus
- ei
- ret
-mus:
-#local
- push af
- push de
- ld a,(we-1)
- xor 15
- ld (we-1),a
- ld a,8
- ld e,15
- we:
- call WRTPSG
- pop af
- pop de
- ret
-#endlocal
 
 defsub mus.scale.a
  ; a: 0,1,2 ch

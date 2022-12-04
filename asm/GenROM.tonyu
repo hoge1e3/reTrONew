@@ -11,15 +11,15 @@ extends TObject;
     let ramIncl=[];
     for (let i=lines.length-1;i>=0;i--) {
         //print(i, romEnd, ramEnd, lines[i]);
-        if (lines[i].match(/^;!\/ROM/)) {
+        /*if (lines[i].match(/^;!\/ROM/)) {
             if (ramEnd||romEnd) throw new Error("Include ROM Error at "+i);
             romEnd=i+1;
         }
         if (typeof romEnd==="number" && lines[i].match(/;!ROM/)) {
             romIncl=[...lines.splice(i, romEnd-i), ...romIncl];
             romEnd=null;
-        }
-        /*
+        }*/
+        
         if (lines[i].match(/^;!\/RAM/) || lines[i].match(/\bendwork\b/)) {
             if (romEnd||ramEnd) throw new Error("Include RAM Error at "+i);
             ramEnd=i+1;
@@ -29,9 +29,9 @@ extends TObject;
             if (!ramEnd) throw new Error("Include RAM Error at "+i);
             ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];
             ramEnd=null;
-        }*/
+        }
     }
-    //ramIncl.unshift("ds 8000h-$, 0");
+    ramIncl.unshift("ds 8000h-$, 0");
     let res=lines.join("\n")
     .replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
     .replace(/;!INCLUDE_RAM/, ramIncl.join("\n"));

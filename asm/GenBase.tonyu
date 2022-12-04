@@ -387,14 +387,27 @@ switch ($config.postprocess.target) {
 }
 \dlROM() {
     //let romAsm=new GenROM{base:this}.gen(plain);
-    let bins=[], labels={};
+    let bins=[], labels={}, romlbls={};
     for (let line of plines) {
         if (line.label) {
             labels[line.label]=line.address;
+            if (line.address>=0x4000 && line.address<0x8000) {
+                //print("LB",line.label, line.address.toString(16));
+                romlbls[line.label]=line.address;
+            }
         }
         for (let e of line.bin) bins.push(e);
     }
     while(bins.length<0x8000) bins.push(0);
+    // Check mnemonics within ROM
+    /*for (let line of plines) {
+        line.body.replace(/[\w\.]+/g) \(r) {
+            if (romlbls[r]) {
+                print(line.body);
+            }
+        }   ;
+    }*/
+
         //print(bins);
     let romFile=file($config.postprocess.romFileName || "output.rom");
     romFile.setBytes(new Uint8Array(bins));
