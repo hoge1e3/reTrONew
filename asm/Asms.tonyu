@@ -865,11 +865,9 @@ th.for.a macro nx,st,en
 #endlocal
 endm
 
-th.new.range.a macro st,en
- ld a,&st+th.start.h
- ld(th.new.start),a
- ld a,&en+th.start.h
- ld(th.new.end),a
+th.new.range macro st,en
+ ld bc, 0 + ((&en+th.start.h)<<8) + (&st+th.start.h)
+ ld(th.new.start),bc
 endm
 
 defsub th.isblank.a
@@ -882,10 +880,9 @@ endsub th.isblank.a
 
 defwork th.new.start
  db th.start.h
-endwork th.new.start
-defwork th.new.end
+th.new.end:
  db th.end.h
-endwork th.new.end
+endwork th.new.start
 
 defsub th.find.blank
 ; h: result  nz: not found
@@ -1484,8 +1481,7 @@ getthis macro xx
 endm
 
 new macro Class,flds,st,en
- th.new.range.a &st, &en
- getthis 0
+ th.new.range &st, &en
  pushi &flds, bc
  pushi &Class, bc
  call o.new
