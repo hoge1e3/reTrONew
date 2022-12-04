@@ -117,7 +117,7 @@ PSG.main:
 ;var tempoc
 ;var mute
 ;var cmd
-L79.lbexit:
+L78.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -149,7 +149,7 @@ PSG.init:
  ld h,(ix+argidx+1*2+1)
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
-L80.lbexit:
+L79.lbexit:
  ld sp,ix
  pop ix
   exx
@@ -176,7 +176,7 @@ PSG.stop:
  call nothl
 ;then
  call ziffalse
- jp z,L81.lb4
+ jp z,L80.lb4
 ;sound_vol(chn,0);
  ld hl,0; const val
  ld e,l
@@ -188,8 +188,8 @@ PSG.stop:
  add a,8
  call WRTPSG
  ld a,(this)
-L81.lb4:
-L81.lbexit:
+L80.lb4:
+L80.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -207,17 +207,17 @@ PSG.step:
  call nothl
 ;then
  call ziffalse
- jp z,L82.lb5
+ jp z,L81.lb5
 ;return return;
- jp L82.lbexit
-L82.lb5:
+ jp L81.lbexit
+L81.lb5:
 ;if !mute
  ld ($+5),a
  ld hl,(MZO_FLD.mute)
  call nothl
 ;then
  call ziffalse
- jp z,L82.lb6
+ jp z,L81.lb6
 ;sound_vol(chn,v);
  ld ($+5),a
  ld hl,(MZO_FLD.v)
@@ -230,7 +230,7 @@ L82.lb5:
  add a,8
  call WRTPSG
  ld a,(this)
-L82.lb6:
+L81.lb6:
 ;mcount-=tempoc;
  ld ($+5),a
  ld hl,(MZO_FLD.mcount)
@@ -249,15 +249,15 @@ L82.lb6:
  call hlgtde
 ;then
  call ziffalse
- jp z,L82.lb7
+ jp z,L81.lb7
 ;v--;
  ld ($+5),a
  ld hl,(MZO_FLD.v)
  dec hl
  ld ($+5),a
  ld (MZO_FLD.v),hl
-L82.lb7:
-L82.lb8:
+L81.lb7:
+L81.lb8:
 ;while mcount>=-tempoc && mcount<=0
  ld ($+5),a
  ld hl,(MZO_FLD.tempoc)
@@ -268,22 +268,22 @@ L82.lb8:
  pop de
  call hlgede
  call ziffalse
- jp z,L82.lb10
+ jp z,L81.lb10
  ld hl,0; const val
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.mcount)
  pop de
  call hllede
-L82.lb10:
+L81.lb10:
  call ziffalse
- jp z,L82.lb9
+ jp z,L81.lb9
 ;cmd=peek(mpoint);
  ld ($+5),a
  ld hl,(MZO_FLD.mpoint)
-  ld (L83.w-2),hl
+  ld (L82.w-2),hl
   ld hl,(0)
-L83.w:
+L82.w:
  ld h,0
  ld ($+5),a
  ld (MZO_FLD.cmd),hl
@@ -295,24 +295,24 @@ L83.w:
  pop de
  call hlgede
  call ziffalse
- jp z,L82.lb12
+ jp z,L81.lb12
  ld hl,96; const val
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.cmd)
  pop de
  call hlltde
-L82.lb12:
+L81.lb12:
 ;then
  call ziffalse
- jp z,L82.lb11
+ jp z,L81.lb11
 ;if !mute
  ld ($+5),a
  ld hl,(MZO_FLD.mute)
  call nothl
 ;then
  call ziffalse
- jp z,L82.lb13
+ jp z,L81.lb13
 ;sound_scale(chn,cmd);
  ld ($+5),a
  ld hl,(MZO_FLD.cmd)
@@ -323,9 +323,122 @@ L82.lb12:
  pop hl
  call mus.scale.a
  ld a,(this)
-L82.lb13:
+L81.lb13:
 ;v=12;
  ld hl,12; const val
+ ld ($+5),a
+ ld (MZO_FLD.v),hl
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;if peek(mpoint)==123
+ ld hl,123; const val
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+  ld (L83.w-2),hl
+  ld hl,(0)
+L83.w:
+ ld h,0
+ pop de
+ call hleqde
+;then
+ call ziffalse
+ jp z,L81.lb15
+;mpoint++;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ inc hl
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+;mcount+=read16();
+ call PSG.read16
+ ld a,(this)
+ push hl
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ pop de
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+;mpoint+=2;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mpoint)
+ ld de,2; const val
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mpoint),hl
+ jp L81.lb14
+L81.lb15:;else
+;mcount+=len;
+ ld ($+5),a
+ ld hl,(MZO_FLD.mcount)
+ ld ($+6),a
+ ld de,(MZO_FLD.len)
+ add hl, de
+ ld ($+5),a
+ ld (MZO_FLD.mcount),hl
+L81.lb14:
+ jp L81.lb9
+L81.lb11:
+;switch cmd
+ ld ($+5),a
+ ld hl,(MZO_FLD.cmd)
+ ld de,99; const val
+ rst dcompr
+ jp z,L81.lb160
+ ld de,124; const val
+ rst dcompr
+ jp z,L81.lb161
+ ld de,104; const val
+ rst dcompr
+ jp z,L81.lb162
+ ld de,255; const val
+ rst dcompr
+ jp z,L81.lb163
+ ld de,100; const val
+ rst dcompr
+ jp z,L81.lb164
+ ld de,101; const val
+ rst dcompr
+ jp z,L81.lb165
+ ld de,102; const val
+ rst dcompr
+ jp z,L81.lb166
+ ld de,103; const val
+ rst dcompr
+ jp z,L81.lb167
+ ld de,107; const val
+ rst dcompr
+ jp z,L81.lb168
+ ld de,110; const val
+ rst dcompr
+ jp z,L81.lb169
+ ld de,115; const val
+ rst dcompr
+ jp z,L81.lb1610
+ ld de,116; const val
+ rst dcompr
+ jp z,L81.lb1611
+ ld de,118; const val
+ rst dcompr
+ jp z,L81.lb1612
+ ld de,120; const val
+ rst dcompr
+ jp z,L81.lb1613
+ ld de,122; const val
+ rst dcompr
+ jp z,L81.lb1614
+ ld a,(this)
+ jp L81.lb16def
+L81.lb160:
+ ld a,(this)
+;case 99
+;v=0;
+ ld hl,0; const val
  ld ($+5),a
  ld (MZO_FLD.v),hl
 ;mpoint++;
@@ -347,7 +460,7 @@ L84.w:
  call hleqde
 ;then
  call ziffalse
- jp z,L82.lb15
+ jp z,L81.lb18
 ;mpoint++;
  ld ($+5),a
  ld hl,(MZO_FLD.mpoint)
@@ -371,8 +484,8 @@ L84.w:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb14
-L82.lb15:;else
+ jp L81.lb17
+L81.lb18:;else
 ;mcount+=len;
  ld ($+5),a
  ld hl,(MZO_FLD.mcount)
@@ -381,122 +494,9 @@ L82.lb15:;else
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mcount),hl
-L82.lb14:
- jp L82.lb9
-L82.lb11:
-;switch cmd
- ld ($+5),a
- ld hl,(MZO_FLD.cmd)
- ld de,99; const val
- rst dcompr
- jp z,L82.lb160
- ld de,124; const val
- rst dcompr
- jp z,L82.lb161
- ld de,104; const val
- rst dcompr
- jp z,L82.lb162
- ld de,255; const val
- rst dcompr
- jp z,L82.lb163
- ld de,100; const val
- rst dcompr
- jp z,L82.lb164
- ld de,101; const val
- rst dcompr
- jp z,L82.lb165
- ld de,102; const val
- rst dcompr
- jp z,L82.lb166
- ld de,103; const val
- rst dcompr
- jp z,L82.lb167
- ld de,107; const val
- rst dcompr
- jp z,L82.lb168
- ld de,110; const val
- rst dcompr
- jp z,L82.lb169
- ld de,115; const val
- rst dcompr
- jp z,L82.lb1610
- ld de,116; const val
- rst dcompr
- jp z,L82.lb1611
- ld de,118; const val
- rst dcompr
- jp z,L82.lb1612
- ld de,120; const val
- rst dcompr
- jp z,L82.lb1613
- ld de,122; const val
- rst dcompr
- jp z,L82.lb1614
- ld a,(this)
- jp L82.lb16def
-L82.lb160:
- ld a,(this)
-;case 99
-;v=0;
- ld hl,0; const val
- ld ($+5),a
- ld (MZO_FLD.v),hl
-;mpoint++;
- ld ($+5),a
- ld hl,(MZO_FLD.mpoint)
- inc hl
- ld ($+5),a
- ld (MZO_FLD.mpoint),hl
-;if peek(mpoint)==123
- ld hl,123; const val
- push hl
- ld ($+5),a
- ld hl,(MZO_FLD.mpoint)
-  ld (L85.w-2),hl
-  ld hl,(0)
-L85.w:
- ld h,0
- pop de
- call hleqde
-;then
- call ziffalse
- jp z,L82.lb18
-;mpoint++;
- ld ($+5),a
- ld hl,(MZO_FLD.mpoint)
- inc hl
- ld ($+5),a
- ld (MZO_FLD.mpoint),hl
-;mcount+=read16();
- call PSG.read16
- ld a,(this)
- push hl
- ld ($+5),a
- ld hl,(MZO_FLD.mcount)
- pop de
- add hl, de
- ld ($+5),a
- ld (MZO_FLD.mcount),hl
-;mpoint+=2;
- ld ($+5),a
- ld hl,(MZO_FLD.mpoint)
- ld de,2; const val
- add hl, de
- ld ($+5),a
- ld (MZO_FLD.mpoint),hl
- jp L82.lb17
-L82.lb18:;else
-;mcount+=len;
- ld ($+5),a
- ld hl,(MZO_FLD.mcount)
- ld ($+6),a
- ld de,(MZO_FLD.len)
- add hl, de
- ld ($+5),a
- ld (MZO_FLD.mcount),hl
-L82.lb17:
- jp L82.lb16brk
-L82.lb161:
+L81.lb17:
+ jp L81.lb16brk
+L81.lb161:
  ld a,(this)
 ;case 124
 ;v=0;
@@ -509,8 +509,8 @@ L82.lb161:
  inc hl
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb162:
+ jp L81.lb16brk
+L81.lb162:
  ld a,(this)
 ;case 104
 ;mpoint++;
@@ -543,8 +543,8 @@ L82.lb162:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb163:
+ jp L81.lb16brk
+L81.lb163:
  ld a,(this)
 ;case 255
 ;stop();
@@ -554,8 +554,8 @@ L82.lb163:
  ld hl,1; const val
  ld ($+5),a
  ld (MZO_FLD.mcount),hl
- jp L82.lb16brk
-L82.lb164:
+ jp L81.lb16brk
+L81.lb164:
  ld a,(this)
 ;case 100
 ;mpoint+=2;
@@ -565,8 +565,8 @@ L82.lb164:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb165:
+ jp L81.lb16brk
+L81.lb165:
  ld a,(this)
 ;case 101
 ;mpoint+=2;
@@ -576,9 +576,9 @@ L82.lb165:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
- jp L82.lb16brk
-L82.lb166:
+ jp L81.lb16brk
+ jp L81.lb16brk
+L81.lb166:
  ld a,(this)
 ;case 102
 ;mpoint+=2;
@@ -588,8 +588,8 @@ L82.lb166:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb167:
+ jp L81.lb16brk
+L81.lb167:
  ld a,(this)
 ;case 103
 ;tempoc=read16()*168/60;
@@ -610,8 +610,8 @@ L82.lb167:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb168:
+ jp L81.lb16brk
+L81.lb168:
  ld a,(this)
 ;case 107
 ;mpoint+=2;
@@ -621,8 +621,8 @@ L82.lb168:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb169:
+ jp L81.lb16brk
+L81.lb169:
  ld a,(this)
 ;case 110
 ;mpoint+=2;
@@ -632,8 +632,8 @@ L82.lb169:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb1610:
+ jp L81.lb16brk
+L81.lb1610:
  ld a,(this)
 ;case 115
 ;mpoint+=4;
@@ -643,8 +643,8 @@ L82.lb1610:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb1611:
+ jp L81.lb16brk
+L81.lb1611:
  ld a,(this)
 ;case 116
 ;mpoint+=2;
@@ -654,8 +654,8 @@ L82.lb1611:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb1612:
+ jp L81.lb16brk
+L81.lb1612:
  ld a,(this)
 ;case 118
 ;mpoint+=2;
@@ -665,8 +665,8 @@ L82.lb1612:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb1613:
+ jp L81.lb16brk
+L81.lb1613:
  ld a,(this)
 ;case 120
 ;mpoint+=2;
@@ -676,8 +676,8 @@ L82.lb1613:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb1614:
+ jp L81.lb16brk
+L81.lb1614:
  ld a,(this)
 ;case 122
 ;mpoint++;
@@ -707,8 +707,8 @@ L82.lb1614:
  add hl, de
  ld ($+5),a
  ld (MZO_FLD.mpoint),hl
- jp L82.lb16brk
-L82.lb16def:
+ jp L81.lb16brk
+L81.lb16def:
 ;locate(0,6);
  ld hl,6; const val
  push hl
@@ -716,22 +716,22 @@ L82.lb16def:
  pop de
  call locate
 ;printf ("Inv %d %x" ,cmd, mpoint);
- ld hl,L86.st
- jp L86.nx
-L86.st: db 73, 110, 118, 32
+ ld hl,L85.st
+ jp L85.nx
+L85.st: db 73, 110, 118, 32
  db 0
-L86.nx:
+L85.nx:
  call print.a
  ld a,(this)
  ld ($+5),a
  ld hl,(MZO_FLD.cmd)
  call printi.a
  ld a,(this)
- ld hl,L87.st
- jp L87.nx
-L87.st: db 32
+ ld hl,L86.st
+ jp L86.nx
+L86.st: db 32
  db 0
-L87.nx:
+L86.nx:
  call print.a
  ld a,(this)
  ld ($+5),a
@@ -746,11 +746,11 @@ L87.nx:
  ld hl,1; const val
  ld ($+5),a
  ld (MZO_FLD.mcount),hl
- jp L82.lb16brk
-L82.lb16brk:
- jp L82.lb8
-L82.lb9:
-L82.lbexit:
+ jp L81.lb16brk
+L81.lb16brk:
+ jp L81.lb8
+L81.lb9:
+L81.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -768,27 +768,27 @@ PSG.read16:
  ld hl,(MZO_FLD.mpoint)
  ld de,1; const val
  add hl, de
-  ld (L89.w-2),hl
+  ld (L88.w-2),hl
   ld hl,(0)
-L89.w:
+L88.w:
  ld h,0
  pop bc
  ld b,c
-L90.loop:
+L89.loop:
  sla l
  rl h
-  djnz L90.loop
+  djnz L89.loop
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.mpoint)
-  ld (L91.w-2),hl
+  ld (L90.w-2),hl
   ld hl,(0)
-L91.w:
+L90.w:
  ld h,0
  pop de
  add hl, de
- jp L88.lbexit
-L88.lbexit:
+ jp L87.lbexit
+L87.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -880,7 +880,7 @@ PSGs.main:
 ;var ch2
 ;var ch3
 ;var chs
-L92.lbexit:
+L91.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -894,7 +894,7 @@ PSGs.init:
 ;ch1=$ch1 || new PSG{chn:0};
  ld hl,(MZO_FLD.gbl_ch1)
  call ziffalse
- jp nz,L93.lb19
+ jp nz,L92.lb19
  ld hl,0; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -908,7 +908,7 @@ PSGs.init:
  ld bc,PSG
  push bc
  call o.new
-L93.lb19:
+L92.lb19:
  ld ($+5),a
  ld (MZO_FLD.ch1),hl
 ;ch1.init(0);
@@ -938,13 +938,13 @@ L93.lb19:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L94.w-2),hl
+  ld (L93.w-2),hl
   ld (0),de
-L94.w:
+L93.w:
 ;ch2=$ch2 || new PSG{chn:1};
  ld hl,(MZO_FLD.gbl_ch2)
  call ziffalse
- jp nz,L93.lb20
+ jp nz,L92.lb20
  ld hl,1; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -958,7 +958,7 @@ L94.w:
  ld bc,PSG
  push bc
  call o.new
-L93.lb20:
+L92.lb20:
  ld ($+5),a
  ld (MZO_FLD.ch2),hl
 ;ch2.init(0);
@@ -988,13 +988,13 @@ L93.lb20:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L95.w-2),hl
+  ld (L94.w-2),hl
   ld (0),de
-L95.w:
+L94.w:
 ;ch3=$ch3 || new PSG{chn:2};
  ld hl,(MZO_FLD.gbl_ch3)
  call ziffalse
- jp nz,L93.lb21
+ jp nz,L92.lb21
  ld hl,2; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -1008,7 +1008,7 @@ L95.w:
  ld bc,PSG
  push bc
  call o.new
-L93.lb21:
+L92.lb21:
  ld ($+5),a
  ld (MZO_FLD.ch3),hl
 ;ch3.init(0);
@@ -1038,13 +1038,13 @@ L93.lb21:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L96.w-2),hl
+  ld (L95.w-2),hl
   ld (0),de
-L96.w:
+L95.w:
 ;chs=$chs || new PSG{chn:2};
  ld hl,(MZO_FLD.gbl_chs)
  call ziffalse
- jp nz,L93.lb22
+ jp nz,L92.lb22
  ld hl,2; const val
  push hl
  ld bc,MZO_FLD.chn
@@ -1058,7 +1058,7 @@ L96.w:
  ld bc,PSG
  push bc
  call o.new
-L93.lb22:
+L92.lb22:
  ld ($+5),a
  ld (MZO_FLD.chs),hl
 ;chs.init(0);
@@ -1088,14 +1088,14 @@ L93.lb22:
 ; stk=val hl=tg
  ld l,MZO_FLD.chn
  pop de
-  ld (L97.w-2),hl
+  ld (L96.w-2),hl
   ld (0),de
-L97.w:
+L96.w:
 ;setInterval(_step);
  ld ($+5),a
  ld hl,(MZO_FLD._step)
  call setInterval
-L93.lbexit:
+L92.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1250,7 +1250,7 @@ PSGs.initBGM:
  add hl, de
  ld (ix+argidx+1*2),l
  ld (ix+argidx+1*2+1),h
-L98.lbexit:
+L97.lbexit:
  ld sp,ix
  pop ix
   exx
@@ -1273,11 +1273,11 @@ PSGs.initSE:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L100.w-2),hl
+  ld (L99.w-2),hl
   ld hl,(0)
-L100.w:
+L99.w:
  call ziffalse
- jp z,L99.lb24
+ jp z,L98.lb24
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
  push hl
@@ -1285,18 +1285,18 @@ L100.w:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L101.w-2),hl
+  ld (L100.w-2),hl
   ld hl,(0)
-L101.w:
+L100.w:
  pop de
  call hlltde
-L99.lb24:
+L98.lb24:
 ;then
  call ziffalse
- jp z,L99.lb23
+ jp z,L98.lb23
 ;return return;
- jp L99.lbexit
-L99.lb23:
+ jp L98.lbexit
+L98.lb23:
 ;mpoint+=4;
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
@@ -1345,7 +1345,7 @@ L99.lb23:
   ld a,h
   pop HL
  ld (this),a
-L99.lbexit:
+L98.lbexit:
  ld sp,ix
  pop ix
   exx
@@ -1413,7 +1413,7 @@ PSGs.stopBGM:
   ld a,h
   pop HL
  ld (this),a
-L102.lbexit:
+L101.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1432,7 +1432,7 @@ PSGs._step:
  pop hl
  call MZOCmd
  ld a,(this)
-L103.lbexit:
+L102.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1465,18 +1465,18 @@ PSGs.step:
  ld hl,(MZO_FLD.chs)
 ;hl=tg
  ld l,MZO_FLD.mpoint
-  ld (L105.w-2),hl
+  ld (L104.w-2),hl
   ld hl,(0)
-L105.w:
+L104.w:
  push hl
  ld ($+5),a
  ld hl,(MZO_FLD.ch3)
 ; stk=val hl=tg
  ld l,MZO_FLD.mute
  pop de
-  ld (L106.w-2),hl
+  ld (L105.w-2),hl
   ld (0),de
-L106.w:
+L105.w:
 ;ch1.step();
  ld a,(this)
  push af
@@ -1528,7 +1528,7 @@ L106.w:
   ld a,h
   pop HL
  ld (this),a
-L104.lbexit:
+L103.lbexit:
  ld sp,ix
  pop ix
  ret
@@ -1546,27 +1546,27 @@ PSGs.read16:
  ld h,(ix+argidx+1*2+1)
  ld de,1; const val
  add hl, de
-  ld (L108.w-2),hl
+  ld (L107.w-2),hl
   ld hl,(0)
-L108.w:
+L107.w:
  ld h,0
  pop bc
  ld b,c
-L109.loop:
+L108.loop:
  sla l
  rl h
-  djnz L109.loop
+  djnz L108.loop
  push hl
  ld l,(ix+argidx+1*2)
  ld h,(ix+argidx+1*2+1)
-  ld (L110.w-2),hl
+  ld (L109.w-2),hl
   ld hl,(0)
-L110.w:
+L109.w:
  ld h,0
  pop de
  add hl, de
- jp L107.lbexit
-L107.lbexit:
+ jp L106.lbexit
+L106.lbexit:
  ld sp,ix
  pop ix
   exx
