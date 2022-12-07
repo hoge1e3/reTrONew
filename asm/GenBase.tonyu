@@ -25,6 +25,7 @@ let lval=false;
 let symSeq=1;
 let ide=$Boot.getIDE();
 let klass, klassSrc;
+let method:FuncInfo;
 let problems=[];
 let builtins={getkey:"getkey",rnd:"rnd"};
 let globalVars={};
@@ -77,6 +78,29 @@ let outbg=new OutBG;
 
 let hasMain;
 printf(";!RAM%n");
+
+\lit2s(l){
+    if (typeof l==="string") return l;
+    let s=l.text;
+    return s.substring(1,s.length-1);
+    ;
+}
+function getMethodPragma(
+m:FuncInfo){
+    let res={};
+    let st=m.stmts.filter \(s){
+        return s.type=="exprstmt";
+    };
+    for(let s of st){
+        let es:Exprstmt=s;
+        let ex=es.expr;
+        if(ex.type=="literal"){
+            let s=lit2s(ex);
+            res [s]=1;
+        }
+    }
+    return res;
+}
 for (klass of mem.ks) {
     let r=mem.objRange(klass);
     text=klass.shortName;
@@ -91,35 +115,8 @@ for (klass of mem.ks) {
     let methods=klass.decls.methods;
     anode=(klass.annotation);
     for (let mname, me of methods) {
-        let method:FuncInfo=me;
-        
-        text=klass.shortName+"."+mname;
-        params={};
-        let ln=1;
-        for (let i,pa of method.params) {
-            params[pa.name.text]=ln;
-            ln++;
-        }
-        locals={};
-        ln=1;
-        for (let k,v of method.locals.varDecls) {
-            // v:VarDecl|Forin|Catch|Token (See definition of SemCtx)
-            locals[k]=ln;
-            ln++;
-        }
-        members=mem.getMembers(klass);
-        new ConstVisitor().collect(
-        klass,method);
-        
-        printf("def %s.%s,%d,%d%{",
-        klass.shortName, mname, 
-        method.params.length,
-        Object.keys(locals).length);
-        printf("#local%n");
-        for(let s of method.stmts) visit(s);
-        printf("%s:%n#endlocal%n",lbexit);
-        printf("enddef %s.%s%n", klass.shortName, mname);
-        printf("%}");
+        method=me;
+        genMeth();
         update();
     }
     printf("; class_def_end %s%n",klass.shortName);
@@ -127,6 +124,74 @@ for (klass of mem.ks) {
 }
 printf(";!/RAM%n");
 
+\genMeth(){
+    //let method:FuncInfo=me;
+    let mname=method.name;
+    let pragma=getMethodPragma(method);
+    let iss=pragma ["static all"];
+    text=klass.shortName+"."+mname;
+    params={};
+    let ln=1;
+    for (let i,pa of method.params) {
+        params[pa.name.text]=ln;
+        ln++;
+    }
+    locals={};
+    ln=1;
+    for (let k,v of method.locals.varDecls) {
+            // v:VarDecl|Forin|Catch|Token (See definition of SemCtx)
+        locals[k]=ln;
+        ln++;
+    }
+    members=mem.getMembers(klass);
+    new ConstVisitor().
+    collect(klass,method);
+    if(iss)staticDef();
+    else    normalDef();
+}
+\normalDef(){
+    let mname=method.name;
+        
+    printf("def %s.%s,%d,%d%{",
+    klass.shortName, mname, 
+    method.params.length,
+    Object.keys(locals).length);
+    printf("#local%n");
+    for(let s of method.stmts) visit(s);
+    printf("%s:%n#endlocal%n",lbexit);
+    printf("enddef %s.%s%n", klass.shortName, mname);
+    printf("%}");
+        
+}
+\staticDef(){
+    let mname=method.name;
+    let h=klass.shortName+"."+
+    mname;
+    
+    for(let k,v in locals){
+        printf("%s.%s:%n",h,k);
+        printf("dw 0%n");
+    }
+    for(let k,v in params){
+        printf("%s.%s:%n",h,k);
+        printf("dw 0%n");
+    }
+    printf("%s:%n",h);
+    printf("pop bc%n");
+    for (let i,pa of method.params) {
+        printf("pop hl%n");
+        printf("ld (%s.%s),hl%n",
+        h,pa.name.text);
+    }
+    printf("push bc%n");
+    enter {mStatic:h
+    } \{
+        printf("#local%n");
+        for(let s of method.stmts) visit(s);
+        printf("%s:%n#endlocal%n",lbexit);
+        printf("ret%n");
+    };
+}
 if (!hasMain) throw new Error(`Main class ${$mainClassName} is not subclass of RActor`);
 text="Writing assets...";
 while(!outp.complete || !outbg.complete) update();

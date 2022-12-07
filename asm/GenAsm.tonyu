@@ -11,7 +11,7 @@ let comm={"*":1,"+":1,"&":1,"|":1,
 }; 
 let destReg;
 let closestCnt;
-
+let mStatic;
 function visit(n){
     let val=isConst(n);
     /*if (val==1) {
@@ -43,6 +43,9 @@ function cmtNode(n,head){
 \v_exprstmt(n:Exprstmt){
     let expr:Expression=n.expr;
     cmtNode(n);
+    if(expr.type=="literal"){
+        return;
+    }
     visit(expr);
 }
 \v_trifixr(n:Trifix){
@@ -239,12 +242,6 @@ function cmtNode(n,head){
    invoketg.a .push
    popthis 0*/
 }
-\lit2s(l){
-    if (typeof l==="string") return l;
-    let s=l.text;
-    return s.substring(1,s.length-1);
-    ;
-}
 \str2db(str) {
     printf("db ");
     str=$Boot.str2bin(str);
@@ -374,7 +371,22 @@ function cmtNode(n,head){
     let name:Token=n.name;
     let a=annotation(n);
     let rp=destReg ||"hl";
-    switch (a.scopeInfo.type) {
+    let st=a.scopeInfo.type;
+    if(mStatic&&(
+    st=="local"||st=="param")
+    ){
+
+        if(lval) {
+            printf("ld (%s.%s),hl%n"
+            ,mStatic,name.text);
+        }else {
+            printf("ld %s,(%s.%s)%n"
+            ,rp ,
+            mStatic,name.text);
+        }
+        return;
+    }
+    switch (st) {
         case "field":
         case "method":
         if (lval) {
@@ -436,6 +448,39 @@ function cmtNode(n,head){
         default:
         unsup(n,`${name.text}: Unsupported variable type '${a.scopeInfo.type}'`);
     }
+}
+\getfld(name:String) {
+    let rp=destReg ||"hl";
+    printf("getfld.%s .%s%n",
+    rp,name);
+}
+\getfldtg(name:String) {
+    //hl=tg
+    printf("getfldtg .%s%n",name);
+}
+\setfld(name:String) {
+    printf("setfld .%s%n", name);
+}
+\setfldtg(name:String) {
+    // stk=val hl=tg
+    printf("setfldtg .%s%n",name);
+}
+
+\getarg(name:String) {
+    let rp=destReg ||"hl";
+    printf ("getarg.%s %d%n",
+    rp,params[name]);
+}
+\setarg(name:String) {
+    printf ("setarg %d%n",params[name]);
+}
+\getlcl(name:String) {
+    let rp=destReg ||"hl";
+    printf ("getlcl.%s %d%n",
+    rp,locals[name]);
+}
+\setlcl(name:String) {
+    printf("setlcl %d%n",locals[name]);
 }
 
 \v_newExpr(n:NewExpr){

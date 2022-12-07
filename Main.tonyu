@@ -3,7 +3,7 @@ For details:
 https://github.com/hoge1e3/reTrONew
 */
 //setInterval(inter);
-printf("%d, %x",100,100);
+printf("%d, %x",testSub(10,3),100);
 sound_playBGM($se_Ribbon);
 //$sound.playBGM($se_Ribbon);
 /*while(true){
@@ -65,8 +65,9 @@ function showScore() {
         tmps=div(tmps,10);
     }*/
 }
-function testSub(i) {
-    var r=i*2;
+function testSub(i,j) {
+    //"static all";
+    var r=i*2+j;
     return r;
 }
 function fact(n) {
