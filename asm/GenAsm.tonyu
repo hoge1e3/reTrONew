@@ -162,7 +162,8 @@ function cmtNode(n,head){
         let tgme=isMemberRef(n);
         if (tgme) {
             visit(tgme[0]);
-            printf("getfldtg .%s%n",tgme[1]);
+            getfldtg(tgme[1].text);
+            //printf("getfldtg .%s%n",tgme[1]);
             return;
         } else if (op.type==="call") {
             if (left.type==="varAccess") {
@@ -201,7 +202,8 @@ function cmtNode(n,head){
             enter{lval:false} \{
                 visit(tgme[0]);
             };
-            printf("setfldtg .%s%n",tgme[1]);
+            setfldtg(tgme[1].text);
+            //printf("setfldtg .%s%n",tgme[1]);
             return;
         } else if (op.type==="arrayElem") {
             printf("push hl%n");
@@ -390,10 +392,11 @@ function cmtNode(n,head){
         case "field":
         case "method":
         if (lval) {
-            printf("setfld .%s%n",name);
+            setfld(name.text);
+            //printf("setfld .%s%n",name);
         } else{
-            printf("getfld.%s .%s%n",
-            rp,name);
+            getfld(name.text);
+            //printf("getfld.%s .%s%n",rp,name);
         }
         break;
         case "class":
@@ -428,10 +431,11 @@ function cmtNode(n,head){
             return;
         }
         if (lval) {
-            printf ("setlcl %d%n",locals[name.text]);
+            setlcl(name.text);
+            //printf ("setlcl %d%n",locals[name.text]);
         } else {
-            printf ("getlcl.%s %d%n",
-            rp,locals[name.text]);
+            getlcl(name.text);
+            //printf ("getlcl.%s %d%n", rp,locals[name.text]);
         }
         break;
         case "param":
@@ -439,10 +443,11 @@ function cmtNode(n,head){
             unsup(name,`Undefined paramter ${name.text}`);
         }
         if (lval) {
-            printf ("setarg %d%n",params[name.text]);
+            setarg(name.text);
+            //printf ("setarg %d%n",params[name.text]);
         } else {
-            printf ("getarg.%s %d%n",
-            rp,params[name.text]);
+            getarg(name.text);
+            //printf ("getarg.%s %d%n",rp,params[name.text]);
         }
         break;
         default:
@@ -496,11 +501,14 @@ function cmtNode(n,head){
                     visit(elem.value);
                 } else {
                     if (this.params[elem.key.text]) {
-                        printf ("getarg %d%n",this.params[elem.key.text]);
+                        getarg(elem.key.text);
+                        //printf ("getarg %d%n",this.params[elem.key.text]);
                     } else if (locals[elem.key.text] ) {
-                        printf ("getlcl %d%n",locals[elem.key.text]);
+                        getlcl(elem.key.text);
+                        //printf ("getlcl %d%n",locals[elem.key.text]);
                     } else {
-                        printf("getfld .%s%n",elem.key);
+                        getfld(elem.key.text);
+                        //printf("getfld .%s%n",elem.key);
                     }
                 }
                 printf("new.arg .%s%n",elem.key);
@@ -627,9 +635,11 @@ function cmtNode(n,head){
         let va=annotation(vars[0]);
         //print (va);
         if (va.scopeInfo.type==="field") {
-            printf("setfld .%s%n", vars[0].text);
+            setfld(vars[0].text);
+            //printf("setfld .%s%n", vars[0].text);
         } else if (va.scopeInfo.type==="local") {
-            printf("setlcl %d%n",locals[vars[0].text]);
+            setlcl(vars[0].text);
+            //printf("setlcl %d%n",locals[vars[0].text]);
         } else if (va.scopeInfo.type==="global") {
             printf("ld (%s),hl%n", globalLabel(vars[0].text));
         } else {
@@ -694,13 +704,15 @@ function cmtNode(n,head){
     if (!value) return;
     visit(value);
     if (a.varInMain) {
-        printf("setfld .%s%n",name);
+        setfld(name.text);
+        //printf("setfld .%s%n",name);
     } else {
         if (!locals[name.text]) {
             unsup(n,`Undefined variable: ${name.text}`);
             return;
         }
-        printf("setlcl %s%n",locals[name.text]);
+        setlcl(name.text);
+        //printf("setlcl %s%n",locals[name.text]);
     }
 }
 \v_varsDecl(n:VarsDecl){
