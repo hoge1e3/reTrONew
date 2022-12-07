@@ -564,7 +564,7 @@ peekw macro regv,regm
 #local
   ld (w-2),&regm
   ld &regv,(0)
-  w:
+srlabel w
 #endlocal
 endm
 
@@ -572,7 +572,7 @@ pokew macro regm,regv
 #local
   ld (w-2),&regm
   ld (0),&regv
-  w:
+srlabel w
 #endlocal
 endm
 endram
@@ -1011,7 +1011,7 @@ defsub th.yield
  ld hl,(th.cur)
  ld l,th.ofs.sp
  sp2mem 0
- adrssp:
+srlabel adrssp
  ld sp,0
  jp doint
 endsub th.yield
@@ -1055,12 +1055,12 @@ defsub th.with.s
  ld (th.updsp-2),hl
  mem2sp 0
  jp 0
- th.jpdest:
+srlabel th.jpdest
 th.ewith:
  ld (0),sp
- th.updsp:
+srlabel th.updsp
  ld sp,0
- th.wrssp:
+srlabel th.wrssp
 endsub th.with.s
 
 
@@ -1305,7 +1305,7 @@ mem2sp macro &n
 #local
  ld (rs-2),hl
  ld sp,(0)
- rs:
+srlabel rs
 #endlocal
 endm
 
@@ -1476,11 +1476,11 @@ tgconst macro n
 endm
 tgconst.g macro r16,n,fld
  ld &r16,(&fld)
- &n:
+srlabel &n
 endm
 tgconst.s macro n,fld,r16
  ld (&fld),&r16
- &n:
+srlabel &n
 endm
 
 endram
@@ -1530,7 +1530,7 @@ defsub o.new
   ld (w-2),hl
   pop hl; val
   ld (w),hl
-  w:
+  srlabel w
  jr loop
  lpend:
  ; return h as this
@@ -1538,10 +1538,10 @@ defsub o.new
  finally:
   ;restore a before call o.new
   ld a,0
-  svthis:
+  srlabel svthis
   ;ret 
   jp 0
-  retad:
+  srlabel retad
  allocfail:
   ; drop {val .f}
   pop bc; n of {val .f}
@@ -2665,7 +2665,7 @@ doint:
  ret
 
 beginram
-h.tntimi:
+srlabel h.tntimi
  call int.nop
  ret
 endram
