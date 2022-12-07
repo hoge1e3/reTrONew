@@ -1,7 +1,26 @@
 extends TObject;
 let data;
 nowait function init(){
-    data={z_romboot=` org 04000h
+    data={
+        z_ram=` ds 8000h-$, 0
+ram macro
+;--begin RAM area
+endm
+endram macro
+;--end RAM area
+endm
+defwork macro n
+ head &n
+endm
+endwork macro n
+ marker.e &n
+endm
+; self-rewrite label
+srlabel macro n
+&n:
+endm
+        `,
+        z_romboot=` org 04000h
  db 41h, 42h
  dw rom.init
  ds 12,0
@@ -811,12 +830,7 @@ endsub macro n
  ret
  marker.e &n
 endm
-defwork macro n
- head &n
-endm
-endwork macro n
- marker.e &n
-endm
+; defwork,endwork moved to z_ram
 deftbl macro n
  head &n
 endm

@@ -20,7 +20,8 @@ extends TObject;
             romEnd=null;
         }*/
         
-        if (lines[i].match(/^;!\/RAM/) || lines[i].match(/\bendwork\b/)) {
+        if (lines[i].match(/^;!\/RAM/) || 
+        (lines[i].match(/\bendwork\b/) && !lines[i].match(/\bmacro\b/) )) {
             if (romEnd||ramEnd) throw new Error("Include RAM Error at "+i);
             ramEnd=i+1;
         }
@@ -31,7 +32,7 @@ extends TObject;
             ramEnd=null;
         }
     }
-    ramIncl.unshift("ds 8000h-$, 0");
+    //ramIncl.unshift("ds 8000h-$, 0");
     let res=lines.join("\n")
     .replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
     .replace(/;!INCLUDE_RAM/, ramIncl.join("\n"));

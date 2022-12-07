@@ -277,6 +277,7 @@ bg.name:
 end.bg.name:
 ;!/ROM
 
+include z_ram
 ;!INCLUDE_RAM
 end _main`);
 
@@ -333,6 +334,7 @@ let export_platforms={
 let expButtons=[];
 let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
+outAsm("before.genrom",included);
 included=genROM(included);
 outAsm("macro.ram", included);
 text="Loading assembler...";
