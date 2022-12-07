@@ -559,7 +559,7 @@ endsub nothl
 `,
         'z_mem':`include z_const
 
-;!RAM
+ram
 peekw macro regv,regm
 #local
   ld (w-2),&regm
@@ -575,7 +575,7 @@ pokew macro regm,regv
   w:
 #endlocal
 endm
-;!/RAM
+endram
 
 movw macro dst,src
  push hl
@@ -1006,7 +1006,7 @@ defsub th.step
  jp (hl)
 endsub th.step
 
-;!RAM
+ram
 defsub th.yield
  ld hl,(th.cur)
  ld l,th.ofs.sp
@@ -1015,7 +1015,7 @@ defsub th.yield
  ld sp,0
  jp doint
 endsub th.yield
-;!/RAM
+endram
 
 defsub th.term
  ld hl,(th.cur)
@@ -1044,7 +1044,7 @@ th.with.ret macro n
  jp th.ewith
 endm
 
-;!RAM
+ram
 defsub th.with.s
 ; with(this) { init routine } 
 ;  init routine should end with th.with.ret
@@ -1107,7 +1107,7 @@ defsub th.loop
  jr th.loop
 endsub th.loop
 
-;!/RAM
+endram
 
 defwork th.cur
  dw 0
@@ -1299,7 +1299,7 @@ sp.set macro
  ld sp,hl
 endm
 
-;!RAM
+ram
 mem2sp macro &n
  ;(hl)->sp
 #local
@@ -1317,7 +1317,7 @@ sp2mem macro &n
  spad:
 #endlocal
 endm
-;!/RAM
+endram
 
 showsp macro
  ld (sptmp),sp
@@ -1421,7 +1421,7 @@ popthis macro xx
  ld (this),a
 endm
 
-;!RAM
+ram
 
 ; pushthis before arg push
 ; hl=target
@@ -1483,7 +1483,7 @@ tgconst.s macro n,fld,r16
  &n:
 endm
 
-;!/RAM
+endram
 
 
 curth2this macro
@@ -1501,7 +1501,7 @@ new macro Class,flds,st,en
  call o.new
 endm
 
-;!RAM
+ram
 defsub o.new
 #local
  ; {val .f} n &initbl retad
@@ -1558,7 +1558,7 @@ defsub o.new
   jr finally
 #endlocal
 endsub o.new
-;!/RAM
+endram
 
 new.arg.i macro n,v
  ld hl,&v
@@ -1622,12 +1622,12 @@ class Object,null
  fld.bottom Object
  marker.e Object
 
-;!RAM
+ram
 defsub o.boot
  curth2this
  invoke .main
 endsub o.boot
-;!/RAM
+endram
 
 
 yield macro
@@ -1692,7 +1692,7 @@ defsub isobj.a
  and a
 endsub isobj.a
 
-;!RAM
+ram
 defsub instanceof
  ; a=this de=Class
  ; z: true
@@ -1706,7 +1706,7 @@ defsub get.superclass
  dec hl
  peekw hl,hl
 endsub get.superclass
-;!/RAM
+endram
 
 defsub is.subclass.a
 #local
@@ -1754,7 +1754,7 @@ spr.unscale macro n
 endm
  LD A,L
 endm
-;!RAM
+ram
 defsub spr.puts_old
 #local
  ld hl, 1b00h
@@ -1810,7 +1810,7 @@ defsub spr.puts
  ld (spr.puts.b),a
 #endlocal
 endsub spr.puts_new
-;!/RAM
+endram
 
 defwork spr.puts.b
  db th.start.h
@@ -1842,7 +1842,7 @@ defsub spr.putslp
 endsub spr.putslp
 
 
-;!RAM
+ram
 defsub spr.put1
 ; a: th.id
 #local
@@ -1877,7 +1877,7 @@ defsub spr.put1
   pop af
 #endlocal
 endsub spr.put1
-;!/RAM
+endram
 
 `,
         'z_sprpat':`include z_const
@@ -1957,7 +1957,7 @@ RActor.noovr macro Class
  fld.bottom RActor
 endm
 
-;!RAM
+ram
 
 class RActor,Sprite
  RActor.noovr RActor
@@ -2120,7 +2120,7 @@ defsub crashTo1
 endsub crashTo1
 
 
-;!/RAM
+endram
 
 tnu.run macro Main,st,en
  ;unreach.new.init 0
@@ -2150,7 +2150,7 @@ tnu.run macro Main,st,en
  jp th.loop
 endm
 
-;!RAM
+ram
 defsub all.die
 #local
  pushthis 0
@@ -2163,7 +2163,7 @@ defsub all.die
  popthis 0
 #endlocal
 endsub all.die
-;!/RAM
+endram
 
 loadPage macro Class,args,st,en
 ;call clearInterval
@@ -2663,11 +2663,13 @@ doint:
  norst:
  ;call rstint
  ret
-;!RAM
+
+ram
 h.tntimi:
  call int.nop
  ret
-;!/RAM
+endram
+
 defsub setInterval
  ld (h.tntimi+1), hl
 endsub setInterval
@@ -2761,7 +2763,7 @@ psg.ch2 equ psg.ch1+256
 psg.ch3 equ psg.ch2+256
 psg.chs equ psg.ch3+256
 
-;!RAM
+ram
 defsub mus.initPSG.a
  ld a, psg.psgs >> 8
  ld (this),a
@@ -2801,7 +2803,7 @@ defsub mus.step
   invoketg.a .psgfld.step
  popthis 0 
 endsub
-;!/RAM
+endram
 
 `
     };

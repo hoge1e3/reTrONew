@@ -1,7 +1,7 @@
 extends TObject;
 let data;
 nowait function init(){
-    data={'z_mzo':`;!RAM
+    data={'z_mzo':`ram
 MZO_FLD.gbl_ch1:
 dw MZO.ch1
 MZO_FLD.gbl_ch2:
@@ -1686,7 +1686,7 @@ invoketg.a MZO_FLD.step
 popthis 0
 ret
 #endlocal
-;!/RAM
+endram
 ` };
 }
 init();

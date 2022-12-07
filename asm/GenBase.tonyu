@@ -77,7 +77,7 @@ let outp=new OutPat;
 let outbg=new OutBG;
 
 let hasMain;
-printf(";!RAM%n");
+printf("ram%n");
 
 \lit2s(l){
     if (typeof l==="string") return l;
@@ -122,7 +122,7 @@ for (klass of mem.ks) {
     printf("; class_def_end %s%n",klass.shortName);
     update();
 }
-printf(";!/RAM%n");
+printf("endram%n");
 
 \genMeth(){
     //let method:FuncInfo=me;
@@ -218,7 +218,7 @@ for (let k of Object.keys($MZO.arrays)) {
 }
 printf(";!/ROM%n");
 printf(`
-;!RAM
+ram
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -236,7 +236,8 @@ ${Object.keys(globalVars).map \(k){
     if ($config.intArrays[k]) return "";
     return globalLabel(k)+":dw 0";
 }.join("\n")}
-;!/RAM
+endram
+
 endusr:
 ;!ROM
 inivrm macro n, dst
