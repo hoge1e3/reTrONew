@@ -374,20 +374,7 @@ function cmtNode(n,head){
     let a=annotation(n);
     let rp=destReg ||"hl";
     let st=a.scopeInfo.type;
-    if(mStatic&&(
-    st=="local"||st=="param")
-    ){
-
-        if(lval) {
-            printf("ld (%s.%s),hl%n"
-            ,mStatic,name.text);
-        }else {
-            printf("ld %s,(%s.%s)%n"
-            ,rp ,
-            mStatic,name.text);
-        }
-        return;
-    }
+    
     switch (st) {
         case "field":
         case "method":
@@ -473,18 +460,40 @@ function cmtNode(n,head){
 
 \getarg(name:String) {
     let rp=destReg ||"hl";
+    if(mStatic){
+        printf("ld %s,(%s.%s)%n"
+        ,rp,
+        mStatic,name);
+        return;
+    }
     printf ("getarg.%s %d%n",
     rp,params[name]);
 }
 \setarg(name:String) {
+    if(mStatic){
+        printf("ld (%s.%s),hl%n"
+        ,mStatic,name);
+        return;
+    }
     printf ("setarg %d%n",params[name]);
 }
 \getlcl(name:String) {
     let rp=destReg ||"hl";
+    if(mStatic){
+        printf("ld %s,(%s.%s)%n"
+        ,rp,
+        mStatic,name);
+        return;
+    }
     printf ("getlcl.%s %d%n",
     rp,locals[name]);
 }
 \setlcl(name:String) {
+    if(mStatic){
+        printf("ld (%s.%s),hl%n"
+        ,mStatic,name);
+        return;
+    }
     printf("setlcl %d%n",locals[name]);
 }
 
