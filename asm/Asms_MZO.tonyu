@@ -1,7 +1,7 @@
 extends TObject;
 let data;
 nowait function init(){
-    data={'z_mzo':`ram
+    data={'z_mzo':`beginram
 MZO_FLD.gbl_ch1:
 dw MZO.ch1
 MZO_FLD.gbl_ch2:
@@ -102,8 +102,6 @@ MZO_FLD.read16 equ 0
  ld bc,o.boot
  push bc
  jp th.ewith
-;trace mesg
- call h.unreach
 PSG.main:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -121,8 +119,6 @@ L78.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSG.init:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -159,8 +155,6 @@ L79.lbexit:
   push bc
   exx
  ret
-;trace mesg
- call h.unreach
 PSG.stop:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -193,8 +187,6 @@ L80.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSG.step:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -754,8 +746,6 @@ L81.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSG.read16:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -869,8 +859,6 @@ MZO_FLD._step equ 8
  ld bc,o.boot
  push bc
  jp th.ewith
-;trace mesg
- call h.unreach
 PSGs.main:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -884,8 +872,6 @@ L91.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSGs.init:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -899,10 +885,8 @@ PSGs.init:
  push hl
  ld bc,MZO_FLD.chn
  push bc
- ld bc,th.start+0*th.size
+ ld bc, 0 + ((20+th.start.h)<<8) + (0+th.start.h)
  ld(th.new.start),bc
- ld bc,th.start+20*th.size
- ld(th.new.end),bc
  ld bc,1
  push bc
  ld bc,PSG
@@ -949,10 +933,8 @@ L93.w:
  push hl
  ld bc,MZO_FLD.chn
  push bc
- ld bc,th.start+0*th.size
+ ld bc, 0 + ((20+th.start.h)<<8) + (0+th.start.h)
  ld(th.new.start),bc
- ld bc,th.start+20*th.size
- ld(th.new.end),bc
  ld bc,1
  push bc
  ld bc,PSG
@@ -999,10 +981,8 @@ L94.w:
  push hl
  ld bc,MZO_FLD.chn
  push bc
- ld bc,th.start+0*th.size
+ ld bc, 0 + ((20+th.start.h)<<8) + (0+th.start.h)
  ld(th.new.start),bc
- ld bc,th.start+20*th.size
- ld(th.new.end),bc
  ld bc,1
  push bc
  ld bc,PSG
@@ -1049,10 +1029,8 @@ L95.w:
  push hl
  ld bc,MZO_FLD.chn
  push bc
- ld bc,th.start+0*th.size
+ ld bc, 0 + ((20+th.start.h)<<8) + (0+th.start.h)
  ld(th.new.start),bc
- ld bc,th.start+20*th.size
- ld(th.new.end),bc
  ld bc,1
  push bc
  ld bc,PSG
@@ -1099,8 +1077,6 @@ L92.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSGs.initBGM:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -1260,8 +1236,6 @@ L97.lbexit:
   push bc
   exx
  ret
-;trace mesg
- call h.unreach
 PSGs.initSE:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -1355,8 +1329,6 @@ L98.lbexit:
   push bc
   exx
  ret
-;trace mesg
- call h.unreach
 PSGs.stopBGM:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -1417,8 +1389,6 @@ L101.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSGs._step:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -1436,8 +1406,6 @@ L102.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSGs.step:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix
@@ -1532,8 +1500,6 @@ L103.lbexit:
  ld sp,ix
  pop ix
  ret
-;trace mesg
- call h.unreach
 PSGs.read16:
 ;  arg2 arg1 retad oldix lcl1 lcl2
  push ix

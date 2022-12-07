@@ -25,7 +25,7 @@ extends TObject;
             if (romEnd||ramEnd) throw new Error("Include end RAM Error at "+i+" / "+ramEnd);
             ramEnd=i+1;
         }
-        if (lines[i].match(/^\s*ram\s*$/) || 
+        if (lines[i].match(/^\s*beginram\s*$/) || 
         (lines[i].match(/\bdefwork\b/) && !lines[i].match(/\bmacro\b/) ))  {
             if (!ramEnd) throw new Error("Include begin RAM Error at "+i+" "+lines[i]);
             ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];

@@ -77,7 +77,7 @@ let outp=new OutPat;
 let outbg=new OutBG;
 
 let hasMain;
-printf("ram%n");
+printf("beginram%n");
 
 \lit2s(l){
     if (typeof l==="string") return l;
@@ -218,7 +218,7 @@ for (let k of Object.keys($MZO.arrays)) {
 }
 printf(";!/ROM%n");
 printf(`
-ram
+beginram
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -337,7 +337,7 @@ let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
 outAsm("before.genrom",included);
 included=genROM(included);
-outAsm("macro.ram", included);
+outAsm("macro", included);
 text="Loading assembler...";
 while(!worker) update();
 text="Assemble in progress...";
@@ -354,7 +354,7 @@ let plines=runPromise \(s,err){
 };
 text="";
 let plain=plines.map\(e){return e.body;}.join("\n");
-outAsm("plain.ram", plain);
+outAsm("plain", plain);
 
 
 switch ($config.postprocess.target) {
