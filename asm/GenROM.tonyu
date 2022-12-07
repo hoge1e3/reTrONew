@@ -5,9 +5,9 @@ extends TObject;
 
 \genROM(asm:String) {
     let lines=asm.split("\n");
-    let romEnd;
-    let romIncl=[];
-    let ramEnd;
+    //let romEnd;
+    //let romIncl=[];
+    let ramEnd,ramDepth=0;
     let ramIncl=[];
     for (let i=lines.length-1;i>=0;i--) {
         //print(i, romEnd, ramEnd, lines[i]);
@@ -22,19 +22,31 @@ extends TObject;
         
         if (lines[i].match(/^\s*endram\s*$/) || 
         (lines[i].match(/\bendwork\b/) && !lines[i].match(/\bmacro\b/) )) {
-            if (romEnd||ramEnd) throw new Error("Include end RAM Error at "+i+" / "+ramEnd);
-            ramEnd=i+1;
+            if (ramDepth==0) {
+                if (ramEnd) throw new Error("Include end RAM Error at "+i+" / "+ramEnd);
+                ramEnd=i+1;
+            }
+            ramDepth++;
         }
         if (lines[i].match(/^\s*beginram\s*$/) || 
         (lines[i].match(/\bdefwork\b/) && !lines[i].match(/\bmacro\b/) ))  {
-            if (!ramEnd) throw new Error("Include begin RAM Error at "+i+" "+lines[i]);
-            ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];
-            ramEnd=null;
+            ramDepth--;
+            if (ramDepth<0) {
+                throw new Error("Depth Include begin RAM Error at "+i+" "+lines[i]);
+            }
+            if (ramDepth==0) {
+                if (!ramEnd) throw new Error("Include begin RAM Error at "+i+" "+lines[i]);
+                ramIncl=[...lines.splice(i, ramEnd-i), ...ramIncl];
+                ramEnd=null;
+            }
         }
+    }
+    if (ramDepth!=0) {
+        throw new Error("Depth is not 0, Include begin RAM Error at "+ramDepth);
     }
     //ramIncl.unshift("ds 8000h-$, 0");
     let res=lines.join("\n")
-    .replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
+    //.replace(/;!INCLUDE_ROM/, romIncl.join("\n"))
     .replace(/;!INCLUDE_RAM/, ramIncl.join("\n"));
     return res;
 }

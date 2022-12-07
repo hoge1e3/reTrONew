@@ -167,7 +167,7 @@ printf("endram%n");
     let mname=method.name;
     let h=klass.shortName+"."+
     mname;
-    
+    printf("beginram%n");
     for(let k,v in locals){
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
@@ -176,6 +176,8 @@ printf("endram%n");
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
     }
+    printf("endram%n");
+    
     printf("%s:%n",h);
     printf("pop bc%n");
     for (let i,pa of method.params) {
