@@ -2125,6 +2125,8 @@ crashToClass macro Class,st,en
 #endlocal
 endm
 
+endram
+
 foreach.a macro Class,st,en,nxt
  th.for.a &nxt, &st, &en
   all.skip &Class
@@ -2155,6 +2157,8 @@ all.skip macro Class
  all.skip.blank.self 0
  all.skip.isnot &Class
 endm
+
+beginram
 
 defsub crashTo1
  ; call crashTo.setXY before

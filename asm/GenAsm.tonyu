@@ -187,12 +187,24 @@ function cmtNode(n,head){
             let ae:ArrayElem=op;
             let subscript:Expression=ae.subscript;
             visit(subscript);
-            printf("push hl%n");
-            visit(left);
-            printf("pop de%n");
-            printf("slde 0%n");
+            printf("add hl,hl%n");
+            if (deable(left)) {
+                enter{destReg:"de"} \{
+                    visit(left);
+                };
+            } else {
+                printf("push hl%n");
+                visit(left);
+                printf("pop de%n");
+            }
             printf("add hl,de%n");
             printf("peekw hl,hl%n");
+            /* peekw hl,hl for ROM
+            ld e,(hl)
+            inc hl
+            ld d,(hl)
+            ex de,hl
+            */
             return;
         }
     } else {
@@ -211,14 +223,27 @@ function cmtNode(n,head){
             let subscript:Expression=ae.subscript;
             enter{lval:false}\{
                 visit(subscript);
-                printf("push hl%n");
-                visit(left);
-                printf("pop de%n");
+                printf("add hl,hl%n");
+                if (deable(left)) {
+                    enter{destReg:"de"} \{
+                        visit(left);
+                    };
+                } else {
+                    printf("push hl%n");
+                    visit(left);
+                    printf("pop de%n");
+                }
             };
-            printf("slde 0%n");
             printf("add hl,de%n");
             printf("pop de%n");
             printf("pokew hl,de%n");
+            /* pokew hl,de for ROM
+            ex de,hl
+            ld e,(hl)
+            inc hl
+            ld d,(hl)
+            ex de,hl
+            */
             return;
         }
     }
