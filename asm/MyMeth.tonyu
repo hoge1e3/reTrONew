@@ -1,5 +1,14 @@
 extends Actor;
 let g:GenAsm;
+let keynames={space: 0x0108, 
+    right:0x8008,down:0x4008,up:0x2008,left:0x1008,
+    w:0x1005,a:0x4002,s:0x0105,d:0x0203,t:0x0205,
+    //;  rdul
+    j1_right:0x800b, j1_down:0x400b, j1_up: 0x200b,j1_left:0x100b,
+    j1_trig1: 0x010b, j1_trig2: 0x020b,
+    j2_right:0x800c, j2_down:0x400c, j2_up: 0x200c,j2_left:0x100c,
+    j2_trig1: 0x010c, j2_trig2: 0x020c,
+};
 
 \unsup(...a) {return g.unsup(...a);}
 \printf(...a) {return g.printf(...a);}
@@ -25,7 +34,6 @@ let g:GenAsm;
             if (kn.type==="literal") {
                 let lit:Token=kn;
                 let s=g.lit2s(lit);
-                let keynames=g.keynames;
                 if (!keynames[s]) {
                     return unsup(kn, `Undefined key name '${s}'.`);
                 }
@@ -46,7 +54,6 @@ let g:GenAsm;
             if (kn.type==="literal") {
                 let lit:Token=kn;
                 let s=g.lit2s(lit);
-                let keynames=g.keynames;
                 if (!keynames[s]) {
                     return unsup(kn, `Undefined key name '${s}'.`);
                 }
