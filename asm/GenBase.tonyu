@@ -215,7 +215,7 @@ while(!outp.complete || !outbg.complete) update();
 }
 printf(";!ROM%n");
 for (let k of Object.keys($MZO.arrays)) {
-    printf("%s: dw $+2%n",globalLabel(k));
+    printf("%s: %n",globalLabel(k));//dw $+2%n
     dataSection("db", Array.from($MZO.arrays[k]));
 }
 printf(";!/ROM%n");
@@ -224,17 +224,17 @@ beginram
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
-        return globalLabel(k)+":dw $+2\n"+
+        return globalLabel(k)+":\n"+//dw $+2\n"+
         "ds "+(i*2)+", 0";
     } else {
         // 1-d array only currently
-        return globalLabel(k)+":dw $+2\n"+
+        return globalLabel(k)+":\n"+//dw $+2\n"+
         "dw "+i.join(", ");
     }
 }.join("\n")};
 ${Object.keys(globalVars).map \(k){
     if ($MZO.arrays[k]) return "";
-    if ($config.consts[k]) return "";
+    if ($config.consts[k]!=null) return "";
     if ($config.intArrays[k]) return "";
     return globalLabel(k)+":dw 0";
 }.join("\n")}
@@ -499,7 +499,8 @@ switch ($config.postprocess.target) {
 }
 
 \globalLabel(n:String) {
-    return `gbl_${n.replace(/\$/g,"")}`;
+    return $Boot.globalLabel(n);
+    //return `gbl_${n.replace(/\$/g,"")}`;
 }
 \unsup(n:TNode, mesg:String) {
     mesg=mesg|| "Unsupported syntax";

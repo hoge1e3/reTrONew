@@ -1435,8 +1435,7 @@ endm
 
 invoke macro fld
  getfld &fld
- callhl
-; pops args
+ callhl 
  getthis 0
 endm
 
@@ -1483,7 +1482,71 @@ tgconst.s macro n,fld,r16
 srlabel &n
 endm
 
+defsub h.getfld.hl.rom
+ db 2ah; ld hl,(nn)
+srlabel getfld.hl.rom.fld
+ db 0
+srlabel getfld.hl.rom.tg
+ db 0
+ ret
+endsub h.getfld.hl.rom
+
+defsub h.getfld.de.rom
+;01RP1011
+;01011011
+ db 0edh, 5bh; ld de,(nn)
+srlabel getfld.de.rom.fld
+ db 0
+srlabel getfld.de.rom.tg
+ db 0
+ ret
+endsub h.getfld.de.rom
+
+defsub h.setfld.rom
+ db 22h ; ld (nn),hl
+srlabel setfld.rom.fld
+ db 0
+srlabel setfld.rom.tg
+ db 0
+ ret
+endsub h.setfld.rom
+
 endram
+
+getfld.hl.rom macro fld
+ ld h,a
+ ld l,&fld
+ ld(getfld.hl.rom.fld),hl
+ call h.getfld.hl.rom
+endm
+getfld.de.rom macro fld
+ ld d,a
+ ld e,&fld
+ ld(getfld.de.rom.fld),de
+ call h.getfld.de.rom
+endm
+setfld.rom macro fld
+ ld d,a
+ ld e,&fld
+ ld(setfld.rom.fld),de
+ call h.setfld.rom
+endm
+getfldtg.rom macro n
+;hl=tg
+ ld l,&n
+ ld(getfld.hl.rom.fld),hl
+ call h.getfld.hl.rom
+endm
+
+setfldtg.rom macro n
+; stk=val hl=tg
+ ld l,&n
+ ld (setfld.rom.fld),hl
+ pop hl
+ call h.setfld.rom
+endm
+
+
 
 
 curth2this macro

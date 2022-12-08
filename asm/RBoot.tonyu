@@ -16,6 +16,7 @@ native Tonyu;
         },
         // global int arrays
         "intArrays": {
+            
         },
         // unimplemented: global strings(char*). length cannot be changed.
         "chars": {
@@ -83,6 +84,7 @@ let kanaTbl,dac10,dac5;
     $MZO=new MZO{mapper:$mapper};
     for (var k,v in $MZO.adrs) {
         Tonyu.setGlobal(k,v);
+        $config.consts [k]=globalLabel(k);
     }
 
     $pat_font_orig=$pat_font;
@@ -96,6 +98,7 @@ let kanaTbl,dac10,dac5;
             v=v.slice();// TODO matrix deep slice
         }
         Tonyu.setGlobal(k,v);
+        $config.consts [k]=globalLabel(k);
             //$mapper.assignAry16(v);
     }
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
@@ -124,6 +127,9 @@ let kanaTbl,dac10,dac5;
     $Boot.onInter=\{};
     $sound.on("interval", \{$Boot.onInter();});
     new mainClass;
+}
+\globalLabel(n:String) {
+    return `gbl_${n.replace(/\$/g,"")}`;
 }
 \loadPage(Class) {
     $MLayer.all(RSprite).die();

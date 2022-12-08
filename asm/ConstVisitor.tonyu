@@ -212,9 +212,9 @@ function isConst(n){
         case "field":
         break;
         case "global":
-        let isc=$config.consts[name.text];
-        if (isc!=null){
-            anonConst(n,isc);
+        let constVal=$config.consts[name.text];
+        if (constVal!=null){
+            anonConst(n,constVal);
         }
         break;
         case "local":

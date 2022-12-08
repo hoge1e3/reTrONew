@@ -6,6 +6,7 @@ https://github.com/hoge1e3/reTrONew
 locate(0,2);
 printf("%d, %x",testSub(10,3),100);
 sound_playBGM($se_Ribbon);
+
 //$sound.playBGM($se_Ribbon);
 /*while(true){
     sound_cmd(4,0);

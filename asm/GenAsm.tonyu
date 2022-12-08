@@ -13,12 +13,12 @@ let destReg;
 let closestCnt;
 let mStatic;
 function visit(n){
-    let val=isConst(n);
+    let constVal=isConst(n);
     /*if (val==1) {
         print("CONST ",isConst(n),lval,n);
     }*/
-    if (!lval && typeof val=="number"){
-        printf("ld %s,%d; const val%n", destReg||"hl", val);
+    if (!lval && constVal!=null){
+        printf("ld %s,%s; const val%n", destReg||"hl", constVal+"");
         return;
     }
     
@@ -396,16 +396,16 @@ function cmtNode(n,head){
         break;
         case "global":
         globalVars[name.text]=1;
-        let isc=$config.consts[name.text];
+        let constVal=$config.consts[name.text];
         if (lval) {
-            if (isc!=null){
+            if (constVal!=null){
                 return unsup(name,"Cannot assign to constant"); 
             }
             printf("ld (%s),hl%n",globalLabel(name.text));
         } else {
-            if (isc!=null){
-                printf("ld %s,%d%n",
-                rp,isc);
+            if (constVal!=null){
+                printf("ld %s,%s%n",
+                rp,constVal+"");
             } else {
                 printf("ld %s,(%s)%n",
                 rp,globalLabel(name.text));
