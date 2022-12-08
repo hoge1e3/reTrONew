@@ -1421,8 +1421,20 @@ popthis macro xx
  ld (this),a
 endm
 
-beginram
 
+invoketg.a.rom macro fld
+ ld a,h
+ ld (this),a
+ getfld.hl.rom &fld
+ callhl
+endm
+invoke.rom macro fld
+ getfld.hl.rom &fld
+ callhl 
+ getthis 0
+endm
+
+beginram
 ; pushthis before arg push
 ; hl=target
 invoketg.a macro fld
@@ -2108,6 +2120,7 @@ def RActor.crashTo,1,0
   flagtobool c
 #endlocal
 enddef RActor.crashTo
+endram
 
 crashToClass macro Class,st,en
 #local
@@ -2125,7 +2138,6 @@ crashToClass macro Class,st,en
 #endlocal
 endm
 
-endram
 
 foreach.a macro Class,st,en,nxt
  th.for.a &nxt, &st, &en

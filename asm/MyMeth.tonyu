@@ -284,7 +284,9 @@ let keynames={space: 0x0108,
             m [mname].declin.
             shortName,mname);
             printf("getthis 0%n");
-        }else
-        printf("invoke .%s%n", mname);
+        }else{
+            let rom=g.isROM()?".rom":"";
+            printf("invoke%s .%s%n", rom, mname);
+        }
     }
 }

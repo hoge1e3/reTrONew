@@ -198,12 +198,15 @@ function cmtNode(n,head){
                 printf("pop de%n");
             }
             printf("add hl,de%n");
-            printf("peekw hl,hl%n");
+            if (isROM()) {
+                printf("ld e,(hl)%n");
+                printf("inc hl%n");
+                printf("ld d,(hl)%n");
+                printf("ex de,hl%n");    
+            } else {
+                printf("peekw hl,hl%n");
+            }
             /* peekw hl,hl for ROM
-            ld e,(hl)
-            inc hl
-            ld d,(hl)
-            ex de,hl
             */
             return;
         }
@@ -236,14 +239,13 @@ function cmtNode(n,head){
             };
             printf("add hl,de%n");
             printf("pop de%n");
-            printf("pokew hl,de%n");
-            /* pokew hl,de for ROM
-            ex de,hl
-            ld e,(hl)
-            inc hl
-            ld d,(hl)
-            ex de,hl
-            */
+            if (isROM()) {
+                printf("ld (hl),e%n");
+                printf("inc hl%n");
+                printf("ld (hl),d%n");
+            } else {
+                printf("pokew hl,de%n");
+            }
             return;
         }
     }
@@ -261,7 +263,8 @@ function cmtNode(n,head){
         printf("push hl%n");
     }
     visit(target);
-    printf("invoketg.a .%s%n",name);
+    let rom=isROM()?".rom":"";
+    printf("invoketg.a%s .%s%n",rom, name);
     printf("popthis 0%n");
     /*
     pushthis 0
@@ -468,19 +471,23 @@ function cmtNode(n,head){
 }
 \getfld(name:String) {
     let rp=destReg ||"hl";
-    printf("getfld.%s .%s%n",
-    rp,name);
+    let rom=isROM()?".rom":"";
+    printf("getfld.%s%s .%s%n",
+    rp, rom, name);
 }
 \getfldtg(name:String) {
     //hl=tg
-    printf("getfldtg .%s%n",name);
+    let rom=isROM()?".rom":"";
+    printf("getfldtg%s .%s%n",rom, name);
 }
 \setfld(name:String) {
-    printf("setfld .%s%n", name);
+    let rom=isROM()?".rom":"";
+    printf("setfld%s .%s%n", rom, name);
 }
 \setfldtg(name:String) {
     // stk=val hl=tg
-    printf("setfldtg .%s%n",name);
+    let rom=isROM()?".rom":"";
+    printf("setfldtg%s .%s%n",rom, name);
 }
 
 \getarg(name:String) {

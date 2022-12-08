@@ -67,7 +67,6 @@ let outp=new OutPat;
 let outbg=new OutBG;
 
 let hasMain;
-printf("beginram%n");
 
 \lit2s(l){
     if (typeof l==="string") return l;
@@ -92,6 +91,7 @@ m:FuncInfo){
     return res;
 }
 for (klass of mem.ks) {
+    if (!isROM()) printf("beginram%n");
     let r=mem.objRange(klass);
     text=klass.shortName;
     if (text===$mainClassName) {
@@ -110,9 +110,9 @@ for (klass of mem.ks) {
         update();
     }
     printf("; class_def_end %s%n",klass.shortName);
+    if (!isROM()) printf("endram%n");
     update();
 }
-printf("endram%n");
 
 \genMeth(){
     //let method:FuncInfo=me;
@@ -418,4 +418,8 @@ new PostProcess{plines, plain};
     if ($Navigator.isNW()) {
         file(`asm/${name}.asm`).text(content);
     }
+}
+\isROM() {
+    return $config.ROM===true || 
+    ($config.ROM && $config.ROM[klass.shortName]);
 }
