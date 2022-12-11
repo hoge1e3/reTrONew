@@ -84,6 +84,9 @@ let dotAlign=1;
 \peek(ad) {
     return $mapper.peek(ad);
 }
+\peekw(ad) {
+    return peek(ad)+(peek(ad+1)<<8);
+}
 \poke(ad,v) {
     return $mapper.poke(ad,v);
 }
