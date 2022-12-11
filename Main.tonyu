@@ -4,7 +4,7 @@ https://github.com/hoge1e3/reTrONew
 */
 //setInterval(inter);
 locate(0,2);
-printf("%d, %x",testSub(10,3),100);
+printf("%d, %x, %d",testSub(10,3),100, 65536);
 sound_playBGM($se_Ribbon);
 
 //$sound.playBGM($se_Ribbon);
