@@ -2,7 +2,10 @@ extends TObject;
 let data;
 nowait function init(){
     data={
-        z_ram=` ds 8000h-$, 0
+        z_ram=` 
+if $<8000h
+ ds 8000h-$, 0
+endif
 beginram macro
 ;--begin RAM area
 endm
