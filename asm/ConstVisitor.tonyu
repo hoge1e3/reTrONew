@@ -31,6 +31,7 @@ let idSeq=1;
 }
 function anonConst(n,val){
     //if(val==1) print(n,val);
+    if (typeof val=="number") val=(~~val)&0xffff;
     annotation(n,{constVal:val});
 }
 function isConst(n){
