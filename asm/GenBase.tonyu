@@ -270,8 +270,24 @@ print(n.superclass.fullName);
 let cg=new Includer;
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
 outAsm("before.genrom",included);
+
+if ($config.postprocess&&
+$config.postprocess.target=="beforeGenROM"&&
+$config.postprocess.onExport==="function") {
+    $config.postprocess.onExport{genAsm:this, asm:included};
+    return;
+}
+
 included=genROM(included);
 outAsm("macro", included);
+
+if ($config.postprocess&&
+$config.postprocess.target=="beforeAsm"&&
+$config.postprocess.onExport==="function") {
+    $config.postprocess.onExport{genAsm:this, asm:included};
+    return;
+}
+
 text="Loading assembler...";
 while(!worker) update();
 text="Assemble in progress...";
