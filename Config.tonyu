@@ -1,6 +1,8 @@
 extends RBoot;
 \config() {
     $config={
+        //ROM=true,
+        //scriptHost="http://localhost/hoge1e3.github.io",
         "spr.scale"=1,
         //"crashTo.size"=32,
         "obj.limits"={
