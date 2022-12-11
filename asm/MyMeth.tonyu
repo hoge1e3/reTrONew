@@ -249,8 +249,25 @@ let keynames={space: 0x0108,
         printf("call setInterval%n");
     } else if (mname==="peek") {
         visit(args[0]);
-        printf("peekw hl,hl%n");
+        if(g.isROM()){
+            printf("ld l,(hl)%n");
+            
+        }else {
+            printf("peekw hl,hl%n");
+        }
         printf("ld h,0%n");
+        
+    } else if (mname==="peekw") {
+        visit(args[0]);
+        if(g.isROM()){
+            printf("ld e,(hl)%n");
+            printf("inc hl%n");
+            printf("ld d,(hl)%n");
+            printf("ex de,hl%n");    
+
+        }else {
+            printf("peekw hl,hl%n");
+        }
     } else if (mname==="clamp") {
         if (argNG(3,"should supply 3 numbers (val, min, max)")) return;
         visit(args[2]);
