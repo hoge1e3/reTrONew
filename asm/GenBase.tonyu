@@ -221,13 +221,13 @@ endusr:
 include z_vram
 `);
 printf("spr.pat:%n");
-dataSection("db",outp.sprgen);
+dataSection("dbx",outp.sprgen);
 printf("end.spr.pat:%n");
 printf("bg.gen:%n");
-dataSection("db",outbg.patgen);
+dataSection("dbx",outbg.patgen);
 printf("end.bg.gen:%n");
 printf("bg.col:%n");
-dataSection("db",outbg.coltbl);
+dataSection("dbx",outbg.coltbl);
 printf("end.bg.col:%n");
 printf(`
 
@@ -351,11 +351,20 @@ new PostProcess{plines, plain};
 
 \dataSection(type, array) {
     let perline=16;
+    let fmt="%d";
+    if (type[2]=="x") {
+        type=type.substring(0,2);
+        if (type[1]=="w") {
+            fmt="%4x";
+        } else {
+            fmt="%2x";
+        }
+    }
     for (let i=0;i<array.length;i++) {
         if (i%perline==0) {
             printf("%s ",type);
         }
-        printf("%d",array[i]);
+        printf(fmt,array[i]);
         if ((i+1)%perline==0 || i==array.length-1) {
             printf("%n");
         } else {

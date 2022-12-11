@@ -28,6 +28,12 @@ let visitor:Visitor;
         printraw(fmt.substring(0,i));
         i++;
         let fstr=fmt.charAt(i);
+        let fopt="";
+        while (fstr.match(/[0-9\.]/)) {
+            fopt+=fstr;
+            i++;
+            fstr=fmt.charAt(i);
+        }
         if (fstr=="s") {
             let str=shiftArg();
             if (typeof str == "string" || typeof str =="number") {}
@@ -99,7 +105,18 @@ let visitor:Visitor;
         } else if (fstr=="D"){
             shiftArg(true);
             i++;
+        } else if (fstr=="x") {
+            let n=shiftArg();
+            if (typeof n!="number") throw new Error (n+" is not a number: fmt="+fmt);
+            if (n>=65536 || n<=-65536) n=n&65535;
+            n=~~n;
+            let s="00000"+n.toString(16);
+            fopt=fopt-0;
+            if (!fopt) fopt=4;
+            printraw(s.substring(s.length-fopt-1)+"h"); 
+            i++;
         } else {
+            throw new Error("Invalid format "+fstr);
             i+=2;
         }
         fmt=fmt.substring(i);
