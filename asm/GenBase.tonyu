@@ -187,22 +187,6 @@ for (klass of mem.ks) {
 if (!hasMain) throw new Error(`Main class ${$mainClassName} is not subclass of RActor`);
 text="Writing assets...";
 while(!outp.complete || !outbg.complete) update();
-
-\dataSection(type, array) {
-    let perline=16;
-    for (let i=0;i<array.length;i++) {
-        if (i%perline==0) {
-            printf("%s ",type);
-        }
-        printf("%d",array[i]);
-        if ((i+1)%perline==0 || i==array.length-1) {
-            printf("%n");
-        } else {
-            printf(", ");
-        }
-    }
-    return "";
-}
 printf(";!ROM%n");
 for (let k of Object.keys($MZO.arrays)) {
     printf("%s: %n",globalLabel(k));//dw $+2%n
@@ -211,6 +195,7 @@ for (let k of Object.keys($MZO.arrays)) {
 printf(";!/ROM%n");
 printf(`
 beginram
+;global variables
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -228,47 +213,26 @@ ${Object.keys(globalVars).map \(k){
     if ($config.intArrays[k]) return "";
     return globalLabel(k)+":dw 0";
 }.join("\n")}
+;end of global variables
 endram
 
 endusr:
-;!ROM
-inivrm macro n, dst
- ld de,&dst
- ld hl,&n
- ld bc,end.&n-&n
- call LDIRVM
-endm
+include z_vram
 
-spr.inipat:
- inivrm spr.pat, 3800h
- ret
+call inipat
 
 spr.pat:
 ${outp.buf}
 end.spr.pat:
 
-bg.inipat:
- inivrm bg.gen, 0000h
- inivrm bg.gen, 0800h
- inivrm bg.gen, 1000h
- inivrm bg.col, 2000h
- inivrm bg.col, 2800h
- inivrm bg.col, 3000h
- inivrm bg.name, 1800h
- ret
-
-bg.gen:
-${toDB(outbg.patgen)}
-end.bg.gen:
-
-bg.col:
-${toDB(outbg.coltbl)}
-end.bg.col:
-
-bg.name:
- ds 256*3,32
-end.bg.name:
-;!/ROM
+`);
+printf("bg.gen:%n");
+dataSection("db",outbg.patgen);
+printf("end.bg.gen:%n");
+printf("bg.col:%n");
+dataSection("db",outbg.coltbl);
+printf("end.bg.col:%n");
+printf(`
 
 include z_ram
 ;!INCLUDE_RAM
@@ -377,19 +341,6 @@ new PostProcess{plines, plain};
     return res;
 }
 //new Button{top:420,text:"to MSXPen",onClick:showDiag,fillStyle:$RSprPat.palette[2]};
-\toDB(bytes) {
-    let buf="",c=[];
-    while(bytes.length) {
-        let b=bytes.shift();
-        c.push("0"+b.toString(16)+"h");
-        if (c.length>=8) {
-            buf+="db "+c.join(", ")+"\n";
-            c=[];
-        }
-    }
-    if (c.length) buf+="db "+c.join(", ")+"\n";
-    return buf;
-}
 \def(n){
     if(!n){
         throw new Error("Visited undefined");
@@ -399,6 +350,22 @@ new PostProcess{plines, plain};
     print(n.type,":",
     Object.keys(n));
     unsup(n);
+}
+
+\dataSection(type, array) {
+    let perline=16;
+    for (let i=0;i<array.length;i++) {
+        if (i%perline==0) {
+            printf("%s ",type);
+        }
+        printf("%d",array[i]);
+        if ((i+1)%perline==0 || i==array.length-1) {
+            printf("%n");
+        } else {
+            printf(", ");
+        }
+    }
+    return "";
 }
 
 \globalLabel(n:String) {

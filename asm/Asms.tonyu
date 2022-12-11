@@ -2,6 +2,30 @@ extends TObject;
 let data;
 nowait function init(){
     data={
+        z_vram=`
+
+inivrm macro n, dst
+ ld de,&dst
+ ld hl,&n
+ ld bc,end.&n-&n
+ call LDIRVM
+endm
+
+inipat:
+ inivrm spr.pat, 3800h
+ inivrm bg.gen, 0000h
+ inivrm bg.gen, 0800h
+ inivrm bg.gen, 1000h
+ inivrm bg.col, 2000h
+ inivrm bg.col, 2800h
+ inivrm bg.col, 3000h
+ ld hl,1800h
+ ld a,32
+ ld bc,300h
+ call filvrm
+ ret
+
+        `,
         z_ram=` 
 if $<8000h
  ds 8000h-$, 0
@@ -657,6 +681,7 @@ ENASLT EQU 0024H
 RSLREG EQU 0138H
 EXPTBL EQU 0FCC1H
 SETWRT equ 0053H
+filvrm equ 0056H
 LDIRVM equ 005CH
 WRTVDP equ 0047H
 RG1SAV equ 0F3E0H
@@ -2212,8 +2237,7 @@ tnu.run macro Main,st,en
 
  showsp
  showlb endusr
- call spr.inipat
- call bg.inipat
+ call inipat
 
  ld hl,th.start
  ld (hl),0cdh
