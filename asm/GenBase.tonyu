@@ -158,7 +158,7 @@ for (klass of mem.ks) {
     let mname=method.name;
     let h=klass.shortName+"."+
     mname;
-    printf(";begin of static vars for %s%n",h);
+    printf(";begin of static variables for %s%n",h);
     printf("beginram%n");
     for(let k,v in locals){
         printf("%s.%s:%n",h,k);
@@ -169,7 +169,7 @@ for (klass of mem.ks) {
         printf("dw 0%n");
     }
     printf("endram%n");
-    printf(";end of static vars for %s%n",h);
+    printf(";end of static variables for %s%n",h);
     
     printf("%s:%n",h);
     printf("pop bc%n");
@@ -198,7 +198,7 @@ for (let k of Object.keys($MZO.arrays)) {
 printf(";!/ROM%n");
 printf(`
 beginram
-;global variables
+;begin of global variables
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
