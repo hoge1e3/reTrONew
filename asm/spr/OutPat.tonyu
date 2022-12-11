@@ -10,7 +10,7 @@ if (ide) ide.runDialog.resize {
     left:10,top:300,width:400,
     height:400
 };*/
-let buf='',count=0;
+let /*buf='',*/count=0,sprgen=[];
 for(let i=0;
 i<$imageList.length;i++){
     let l=$imageList [i];
@@ -36,16 +36,18 @@ pa.die();
 complete=true;
 \out(d){
     let c="0b";
-    let db= [];
+    //let db= [];
     for(let i=3;i<d.length;
     i+=4) {
         c+=(d [i]>128?1:0);
         if(c.length>=10){
-            c=(c-0).toString(16);
+            sprgen.push(c-0);
+
+            /*c=(c-0).toString(16);
             c="0"+c+"h";
-            db.push(c);
+            db.push(c);*/
             c="0b";
         }
     }
-    buf+="db "+db+"\n";
+    //buf+="db "+db+"\n";
 }

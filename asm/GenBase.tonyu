@@ -5,7 +5,8 @@ native Worker;
 native $;
 native asmWorker;
 let worker;//=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
-let workerURL="https://hoge1e3.github.io/msx/asmWorker.js";
+let scriptHost=$config.scriptHost||"https://hoge1e3.github.io";
+let workerURL=`${scriptHost}/msx/asmWorker.js`;
 //let workerURL="https://edit.tonyu.jp/cgi-bin/asmWorker.js?"+rnd();
 $.getScript(workerURL).then \(r) {
     worker=asmWorker;
@@ -218,14 +219,10 @@ endram
 
 endusr:
 include z_vram
-
-call inipat
-
-spr.pat:
-${outp.buf}
-end.spr.pat:
-
 `);
+printf("spr.pat:%n");
+dataSection("db",outp.sprgen);
+printf("end.spr.pat:%n");
 printf("bg.gen:%n");
 dataSection("db",outbg.patgen);
 printf("end.bg.gen:%n");
