@@ -158,8 +158,8 @@ for (klass of mem.ks) {
     let mname=method.name;
     let h=klass.shortName+"."+
     mname;
-    printf(";begin of static variables for %s%n",h);
     printf("beginram%n");
+    printf(";begin of static variables for %s%n",h);
     for(let k,v in locals){
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
@@ -168,8 +168,8 @@ for (klass of mem.ks) {
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
     }
-    printf("endram%n");
     printf(";end of static variables for %s%n",h);
+    printf("endram%n");
     
     printf("%s:%n",h);
     printf("pop bc%n");
