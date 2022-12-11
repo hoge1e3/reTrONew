@@ -53,7 +53,7 @@ while(true) {
 
 function inter() {
     //$psg.step();
-    sound_cmd(4,0);
+    //sound_cmd(4,0);
 }
 function showScore() {
     locate(0,0);

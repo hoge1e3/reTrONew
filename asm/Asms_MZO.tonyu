@@ -58,7 +58,7 @@ MZO:
  ld bc,MZO.stopBGM
  push bc
 ;._step equ 214
- ld bc,MZO._step
+; ld bc,MZO._step
  push bc
 ;.stepAll equ 212
  ld bc,MZO.stepAll
@@ -989,23 +989,7 @@ L65.lb23:
 L65.lb22:
 L65.lbexit:
  ret
-MZO._step:
-;  arg2 arg1 retad oldix lcl1 lcl2
- push ix
- ld ix,0
- add ix,sp
-;sound_cmd(4,0);
- ld hl,0; const val
- push hl
- ld hl,4; const val
- ld a,l
- pop hl
- call MZOCmd
- ld a,(this)
-L66.lbexit:
- ld sp,ix
- pop ix
- ret
+
 MZO.stepAll:
  pop bc
  push bc
@@ -1056,6 +1040,58 @@ L67.lb25:
 L67.lbexit:
  ret
 ; class_def_end MZO
+beginram
+MZO.init.ch:
+ dw 0
+MZO.init.mp:
+ dw 0
+endram
+beginram
+MZO.stop.chn:
+ dw 0
+MZO.stop.ch:
+ dw 0
+endram
+beginram
+MZO.step.chn:
+ dw 0
+MZO.step.mpoint:
+ dw 0
+MZO.step.mcount:
+ dw 0
+MZO.step.tempoc:
+ dw 0
+MZO.step.len:
+ dw 0
+MZO.step.v:
+ dw 0
+MZO.step.cmd:
+ dw 0
+MZO.step.ofs:
+ dw 0
+MZO.step.ch:
+ dw 0
+endram
+beginram
+MZO.initBGM.size:
+ dw 0
+MZO.initBGM.mpoint:
+ dw 0
+endram
+beginram
+MZO.initSE.size:
+ dw 0
+MZO.initSE.mpoint:
+ dw 0
+endram
+beginram
+MZO.stopBGM.i:
+ dw 0
+endram
+beginram
+MZO.stepAll.i:
+ dw 0
+endram
 beginram
 MZOgbl_mpoint:
  dw 0, 0, 0, 0

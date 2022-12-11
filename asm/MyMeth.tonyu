@@ -233,20 +233,20 @@ let keynames={space: 0x0108,
     } else if (mname==="sound_playBGM") {
         visit(args[0]);
         printf("push hl%n");
-        printf("call MZO.initBGM");
+        printf("call MZO.initBGM%n");
         //printf("ld a,1%n");
         //printf("call MZOCmd%n");
         printf("getthis 0%n");
     } else if (mname==="sound_playSE") {
         visit(args[0]);
         printf("push hl%n");
-        printf("call MZO.initSE");
+        printf("call MZO.initSE%n");
         //printf("ld a,2%n");
         //printf("call MZOCmd%n");
         printf("getthis 0%n");
     } else if (mname==="sound_stopBGM") {
         printf("push hl%n");
-        printf("call MZO.stopBGM");
+        printf("call MZO.stopBGM%n");
         //printf("ld a,3%n");
         //printf("call MZOCmd%n");
         printf("getthis 0%n");
