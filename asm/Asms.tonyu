@@ -2246,9 +2246,12 @@ tnu.run macro Main,st,en
  ldir
 
  call th.init
- ld a,0
- call MZOCmd
  
+ ld hl, MZO.stepAll
+ call setInterval
+ 
+ ;ld a,0
+ ;call MZOCmd
  ;call mus.ini
  new &Main, 0,&st ,&en
  movw (h.thlop),spr.puts
@@ -2862,56 +2865,7 @@ endsub mus.scale.a
 deftbl scltbl
 dw 0d5dh, 0c9ch, 0be7h, 0b3ch, 0a9bh, 0a02h, 0973h, 08ebh, 086bh, 07f2h, 0780h, 0714h, 06afh, 064eh, 05f4h, 059eh, 054eh, 0501h, 04bah, 0476h, 0436h, 03f9h, 03c0h, 038ah, 0357h, 0327h, 02fah, 02cfh, 02a7h, 0281h, 025dh, 023bh, 021bh, 01fdh, 01e0h, 01c5h, 01ach, 0194h, 017dh, 0168h, 0153h, 0140h, 012eh, 011dh, 010dh, 0feh, 0f0h, 0e3h, 0d6h, 0cah, 0beh, 0b4h, 0aah, 0a0h, 097h, 08fh, 087h, 07fh, 078h, 071h, 06bh, 065h, 05fh, 05ah, 055h, 050h, 04ch, 047h, 043h, 040h, 03ch, 039h, 035h, 032h, 030h, 02dh, 02ah, 028h, 026h, 024h, 022h, 020h, 01eh, 01ch, 01bh, 019h, 018h, 016h, 015h, 014h, 013h, 012h, 011h, 010h, 0fh, 0eh
 endtbl scltbl`,
-        psgdrv: `
-psg.psgs equ th.start
-psg.ch1 equ psg.psgs+256
-psg.ch2 equ psg.ch1+256
-psg.ch3 equ psg.ch2+256
-psg.chs equ psg.ch3+256
-
-beginram
-defsub mus.initPSG.a
- ld a, psg.psgs >> 8
- ld (this),a
- ld hl, psg.ch1
- setfld .psgfld.ch1
- ld hl, psg.ch2
- setfld .psgfld.ch2
- ld hl, psg.ch3
- setfld .psgfld.ch3
- ld hl, psg.chs
- setfld .psgfld.chs
-endsub
-
-defsub mus.startBGM
- pushthis 0
-  push hl
-  ld hl, psg.psgs
-  invoketg.a .psgfld.initBGM
- popthis 0
-endsub
-defsub mus.startSE
- pushthis 0
-  push hl
-  ld hl, psg.psgs
-  invoketg.a .psgfld.initSE
- popthis 0 
-endsub
-defsub mus.stopBGM
- pushthis 0
-  ld hl, psg.psgs
-  invoketg.a .psgfld.stopBGM
- popthis 0 
-endsub
-defsub mus.step
- pushthis 0
-  ld hl, psg.psgs
-  invoketg.a .psgfld.step
- popthis 0 
-endsub
-endram
-
-`
+       
     };
 }
 init();

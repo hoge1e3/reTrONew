@@ -211,7 +211,7 @@ let keynames={space: 0x0108,
         printf("pop hl%n");
         printf("call mus.scale.a%n");
         printf("getthis 0%n");
-    } else if (mname==="sound_cmd") {
+    } else if (false && mname==="sound_cmd") {
         /*
         cp 0
         jp z,initMZOs
@@ -232,17 +232,23 @@ let keynames={space: 0x0108,
         printf("getthis 0%n");
     } else if (mname==="sound_playBGM") {
         visit(args[0]);
-        printf("ld a,1%n");
-        printf("call MZOCmd%n");
+        printf("push hl%n");
+        printf("call MZO.initBGM");
+        //printf("ld a,1%n");
+        //printf("call MZOCmd%n");
         printf("getthis 0%n");
     } else if (mname==="sound_playSE") {
         visit(args[0]);
-        printf("ld a,2%n");
-        printf("call MZOCmd%n");
+        printf("push hl%n");
+        printf("call MZO.initSE");
+        //printf("ld a,2%n");
+        //printf("call MZOCmd%n");
         printf("getthis 0%n");
     } else if (mname==="sound_stopBGM") {
-        printf("ld a,3%n");
-        printf("call MZOCmd%n");
+        printf("push hl%n");
+        printf("call MZO.stopBGM");
+        //printf("ld a,3%n");
+        //printf("call MZOCmd%n");
         printf("getthis 0%n");
     } else if (mname==="setInterval") {
         visit(args[0]);
