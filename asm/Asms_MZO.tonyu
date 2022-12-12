@@ -1,1111 +1,1038 @@
 extends TObject;
 let data;
 nowait function init(){
-    data={'z_mzo':`; class_def_start MZO
-;range 0-20
-;trace mesg
- call h.unreach
- dw RActor
-MZO:
-; .class equ 250
- ld bc,MZO
- push bc
-; .main equ 248
- ld bc,MZO.main
- push bc
- ld bc,0
- push bc
- ld bc,0
- push bc
- ld bc,0
- push bc
- ld bc,0
- push bc
-; .onUpdate equ 238
- ld bc,RActor.onUpdate
- push bc
-; .update equ 236
- ld bc,RActor.update
- push bc
-; .screenOut equ 234
- ld bc,RActor.screenOut
- push bc
-; .die equ 232
- ld bc,RActor.die
- push bc
-; .updateEx equ 230
- ld bc,RActor.updateEx
- push bc
-; .crashTo equ 228
- ld bc,RActor.crashTo
- push bc
-;.init equ 226
- ld bc,MZO.init
- push bc
-;.stop equ 224
- ld bc,MZO.stop
- push bc
-;.step equ 222
- ld bc,MZO.step
- push bc
-;.initBGM equ 220
- ld bc,MZO.initBGM
- push bc
-;.initSE equ 218
- ld bc,MZO.initSE
- push bc
-;.stopBGM equ 216
- ld bc,MZO.stopBGM
- push bc
-;._step equ 214
-; ld bc,MZO._step
- push bc
-;.stepAll equ 212
- ld bc,MZO.stepAll
- push bc
- ld bc,RActor.wait
- push bc
- ld bc,o.boot
- push bc
- jp th.ewith
-MZO.main:
-;  arg2 arg1 retad oldix lcl1 lcl2
- push ix
- ld ix,0
- add ix,sp
-L57.lbexit:
- ld sp,ix
- pop ix
- ret
-MZO.init:
- pop bc
- pop hl
- ld (MZO.init.ch),hl
- pop hl
- ld (MZO.init.mp),hl
- push bc
-;"static all";
-;$len[ch]=20160/2;
- ld hl,10080; const val
- push hl
- ld hl,(MZO.init.ch)
- add hl,hl
- ld de,MZOgbl_len
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$mcount[ch]=0;
- ld hl,0; const val
- push hl
- ld hl,(MZO.init.ch)
- add hl,hl
- ld de,MZOgbl_mcount
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$tempoc[ch]=336;
- ld hl,336; const val
- push hl
- ld hl,(MZO.init.ch)
- add hl,hl
- ld de,MZOgbl_tempoc
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$mute[ch]=0;
- ld hl,0; const val
- push hl
- ld hl,(MZO.init.ch)
- add hl,hl
- ld de,MZOgbl_mute
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$mpoint[ch]=mp;
- ld hl,(MZO.init.mp)
- push hl
- ld hl,(MZO.init.ch)
- add hl,hl
- ld de,MZOgbl_mpoint
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-L58.lbexit:
- ret
-MZO.stop:
- pop bc
- pop hl
- ld (MZO.stop.ch),hl
- push bc
-;"static all";
-;$mpoint[ch]=0;
- ld hl,0; const val
- push hl
- ld hl,(MZO.stop.ch)
- add hl,hl
- ld de,MZOgbl_mpoint
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;var chn=clamp(ch,0,2)
- ld hl,2; const val
- push hl
- ld hl,0; const val
- push hl
- ld hl,(MZO.stop.ch)
- pop bc
- pop de
- call clamp
- ld (MZO.stop.chn),hl
-;if !$mute[ch]
- ld hl,(MZO.stop.ch)
- add hl,hl
- ld de,MZOgbl_mute; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- call nothl
-;then
- call ziffalse
- jp z,L59.lb4
-;sound_vol(chn,0);
- ld hl,0; const val
- ld e,l
- push de
- ld hl,(MZO.stop.chn)
- ld a,l
- pop de
- add a,8
- call WRTPSG
- ld a,(this)
-L59.lb4:
-L59.lbexit:
- ret
-MZO.step:
- pop bc
- pop hl
- ld (MZO.step.ch),hl
- push bc
-;"static all";
-;var chn=clamp(ch,0,2)
- ld hl,2; const val
- push hl
- ld hl,0; const val
- push hl
- ld hl,(MZO.step.ch)
- pop bc
- pop de
- call clamp
- ld (MZO.step.chn),hl
-;var mpoint=$mpoint[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mpoint; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.mpoint),hl
-;if !mpoint
- ld hl,(MZO.step.mpoint)
- call nothl
-;then
- call ziffalse
- jp z,L60.lb5
-;return return;
- jp L60.lbexit
-L60.lb5:
-;var mcount=$mcount[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mcount; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.mcount),hl
-;var tempoc=$tempoc[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_tempoc; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.tempoc),hl
-;var len=$len[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_len; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.len),hl
-;var v=$v [ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_v; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.v),hl
-;var cmd
-;if !$mute[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mute; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- call nothl
-;then
- call ziffalse
- jp z,L60.lb6
-;sound_vol(chn,v);
- ld hl,(MZO.step.v)
- ld e,l
- push de
- ld hl,(MZO.step.chn)
- ld a,l
- pop de
- add a,8
- call WRTPSG
- ld a,(this)
-L60.lb6:
-;mcount-=tempoc;
- ld hl,(MZO.step.mcount)
- ld de,(MZO.step.tempoc)
- and a
- sbc hl,de
- ld (MZO.step.mcount),hl
-;if v>0
- ld hl,0; const val
- push hl
- ld hl,(MZO.step.v)
- pop de
- call hlgtde
-;then
- call ziffalse
- jp z,L60.lb7
-;v--;
- ld hl,(MZO.step.v)
- dec hl
- ld (MZO.step.v),hl
-L60.lb7:
-L60.lb8:
-;while mcount>=-tempoc && mcount<=0
- ld hl,(MZO.step.tempoc)
- call neghl
- push hl
- ld hl,(MZO.step.mcount)
- pop de
- call hlgede
- call ziffalse
- jp z,L60.lb10
- ld hl,0; const val
- push hl
- ld hl,(MZO.step.mcount)
- pop de
- call hllede
-L60.lb10:
- call ziffalse
- jp z,L60.lb9
-;cmd=peek(mpoint);
- ld hl,(MZO.step.mpoint)
- ld l,(hl)
- ld h,0
- ld (MZO.step.cmd),hl
-;if cmd>=0 && cmd<96
- ld hl,0; const val
- push hl
- ld hl,(MZO.step.cmd)
- pop de
- call hlgede
- call ziffalse
- jp z,L60.lb12
- ld hl,96; const val
- push hl
- ld hl,(MZO.step.cmd)
- pop de
- call hlltde
-L60.lb12:
-;then
- call ziffalse
- jp z,L60.lb11
-;if !$mute[ch]
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mute; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- call nothl
-;then
- call ziffalse
- jp z,L60.lb13
-;sound_scale(chn,cmd);
- ld hl,(MZO.step.cmd)
- push hl
- ld hl,(MZO.step.chn)
- ld a,l
- pop hl
- call mus.scale.a
- ld a,(this)
-L60.lb13:
-;v=12;
- ld hl,12; const val
- ld (MZO.step.v),hl
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;if peek(mpoint)==123
- ld hl,123; const val
- push hl
- ld hl,(MZO.step.mpoint)
- ld l,(hl)
- ld h,0
- pop de
- call hleqde
-;then
- call ziffalse
- jp z,L60.lb15
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;mcount+=peekw(mpoint);
- ld hl,(MZO.step.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- push hl
- ld hl,(MZO.step.mcount)
- pop de
- add hl, de
- ld (MZO.step.mcount),hl
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb14
-L60.lb15:;else
-;mcount+=len;
- ld hl,(MZO.step.mcount)
- ld de,(MZO.step.len)
- add hl, de
- ld (MZO.step.mcount),hl
-L60.lb14:
- jp L60.lb9
-L60.lb11:
-;switch cmd
- ld hl,(MZO.step.cmd)
- ld de,99; const val
- rst dcompr
- jp z,L60.lb160
- ld de,124; const val
- rst dcompr
- jp z,L60.lb161
- ld de,104; const val
- rst dcompr
- jp z,L60.lb162
- ld de,255; const val
- rst dcompr
- jp z,L60.lb163
- ld de,100; const val
- rst dcompr
- jp z,L60.lb164
- ld de,101; const val
- rst dcompr
- jp z,L60.lb165
- ld de,102; const val
- rst dcompr
- jp z,L60.lb166
- ld de,103; const val
- rst dcompr
- jp z,L60.lb167
- ld de,107; const val
- rst dcompr
- jp z,L60.lb168
- ld de,110; const val
- rst dcompr
- jp z,L60.lb169
- ld de,115; const val
- rst dcompr
- jp z,L60.lb1610
- ld de,116; const val
- rst dcompr
- jp z,L60.lb1611
- ld de,118; const val
- rst dcompr
- jp z,L60.lb1612
- ld de,120; const val
- rst dcompr
- jp z,L60.lb1613
- ld de,122; const val
- rst dcompr
- jp z,L60.lb1614
- ld a,(this)
- jp L60.lb16def
-L60.lb160:
- ld a,(this)
-;case 99
-;v=0;
- ld hl,0; const val
- ld (MZO.step.v),hl
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;if peek(mpoint)==123
- ld hl,123; const val
- push hl
- ld hl,(MZO.step.mpoint)
- ld l,(hl)
- ld h,0
- pop de
- call hleqde
-;then
- call ziffalse
- jp z,L60.lb18
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;mcount+=peekw(mpoint);
- ld hl,(MZO.step.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- push hl
- ld hl,(MZO.step.mcount)
- pop de
- add hl, de
- ld (MZO.step.mcount),hl
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb17
-L60.lb18:;else
-;mcount+=len;
- ld hl,(MZO.step.mcount)
- ld de,(MZO.step.len)
- add hl, de
- ld (MZO.step.mcount),hl
-L60.lb17:
- jp L60.lb16brk
-L60.lb161:
- ld a,(this)
-;case 124
-;v=0;
- ld hl,0; const val
- ld (MZO.step.v),hl
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb162:
- ld a,(this)
-;case 104
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;var ofs=peekw(mpoint)
- ld hl,(MZO.step.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.ofs),hl
-;mpoint--;
- ld hl,(MZO.step.mpoint)
- dec hl
- ld (MZO.step.mpoint),hl
-;mpoint+=ofs-65536;
- ld hl,(MZO.step.ofs)
- ld de,65536; const val
- and a
- sbc hl,de
- push hl
- ld hl,(MZO.step.mpoint)
- pop de
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb163:
- ld a,(this)
-;case 255
-;stop();
- call MZO.stop
- ld a,(this)
-;mcount=1;
- ld hl,1; const val
- ld (MZO.step.mcount),hl
- jp L60.lb16brk
-L60.lb164:
- ld a,(this)
-;case 100
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb165:
- ld a,(this)
-;case 101
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
- jp L60.lb16brk
-L60.lb166:
- ld a,(this)
-;case 102
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb167:
- ld a,(this)
-;case 103
-;tempoc=peekw(mpoint)*168/60;
- ld hl,(MZO.step.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld de,168; const val
- call mul.a
- ld a,(this)
- ld de,60; const val
- call div.a
- ld a,(this)
- ld (MZO.step.tempoc),hl
-;mpoint+=3;
- ld hl,(MZO.step.mpoint)
- ld de,3; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb168:
- ld a,(this)
-;case 107
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb169:
- ld a,(this)
-;case 110
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb1610:
- ld a,(this)
-;case 115
-;mpoint+=4;
- ld hl,(MZO.step.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb1611:
- ld a,(this)
-;case 116
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb1612:
- ld a,(this)
-;case 118
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb1613:
- ld a,(this)
-;case 120
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb1614:
- ld a,(this)
-;case 122
-;mpoint++;
- ld hl,(MZO.step.mpoint)
- inc hl
- ld (MZO.step.mpoint),hl
-;len=peekw(mpoint);
- ld hl,(MZO.step.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.step.len),hl
-;locate(0,3+chn);
- ld hl,3; const val
- ld de,(MZO.step.chn)
- add hl, de
- push hl
- ld hl,0; const val
- pop de
- call locate
-;mpoint+=2;
- ld hl,(MZO.step.mpoint)
- ld de,2; const val
- add hl, de
- ld (MZO.step.mpoint),hl
- jp L60.lb16brk
-L60.lb16def:
-;locate(0,6);
- ld hl,6; const val
- push hl
- ld hl,0; const val
- pop de
- call locate
-;printf ("Inv %d %x" ,cmd, mpoint);
- ld hl,L61.st
- jp L61.nx
-L61.st: db 73, 110, 118, 32
- db 0
-L61.nx:
- call print.a
- ld a,(this)
- ld hl,(MZO.step.cmd)
- call printi.a
- ld a,(this)
- ld hl,L62.st
- jp L62.nx
-L62.st: db 32
- db 0
-L62.nx:
- call print.a
- ld a,(this)
- ld hl,(MZO.step.mpoint)
- ld (hexval),hl
- call showhex
- ld a,(this)
-;stop();
- call MZO.stop
- ld a,(this)
-;mcount=1;
- ld hl,1; const val
- ld (MZO.step.mcount),hl
- jp L60.lb16brk
-L60.lb16brk:
- jp L60.lb8
-L60.lb9:
-;$mpoint[ch]=mpoint;
- ld hl,(MZO.step.mpoint)
- push hl
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mpoint
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$mcount[ch]=mcount;
- ld hl,(MZO.step.mcount)
- push hl
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_mcount
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$tempoc[ch]=tempoc;
- ld hl,(MZO.step.tempoc)
- push hl
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_tempoc
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$len[ch]=len;
- ld hl,(MZO.step.len)
- push hl
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_len
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-;$v [ch]=v;
- ld hl,(MZO.step.v)
- push hl
- ld hl,(MZO.step.ch)
- add hl,hl
- ld de,MZOgbl_v
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-L60.lbexit:
- ret
-MZO.initBGM:
- pop bc
- pop hl
- ld (MZO.initBGM.mpoint),hl
- push bc
-;"static all";
-;mpoint+=4;
- ld hl,(MZO.initBGM.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;mpoint++;
- ld hl,(MZO.initBGM.mpoint)
- inc hl
- ld (MZO.initBGM.mpoint),hl
-;var size
-;size=peekw(mpoint);
- ld hl,(MZO.initBGM.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.initBGM.size),hl
-;mpoint+=4;
- ld hl,(MZO.initBGM.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;init(0,mpoint);
- ld hl,(MZO.initBGM.mpoint)
- push hl
- ld hl,0; const val
- push hl
- call MZO.init
- ld a,(this)
-;mpoint+=size;
- ld hl,(MZO.initBGM.mpoint)
- ld de,(MZO.initBGM.size)
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;size=peekw(mpoint);
- ld hl,(MZO.initBGM.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.initBGM.size),hl
-;mpoint+=4;
- ld hl,(MZO.initBGM.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;init(1,mpoint);
- ld hl,(MZO.initBGM.mpoint)
- push hl
- ld hl,1; const val
- push hl
- call MZO.init
- ld a,(this)
-;mpoint+=size;
- ld hl,(MZO.initBGM.mpoint)
- ld de,(MZO.initBGM.size)
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;size=peekw(mpoint);
- ld hl,(MZO.initBGM.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.initBGM.size),hl
-;mpoint+=4;
- ld hl,(MZO.initBGM.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-;init(2,mpoint);
- ld hl,(MZO.initBGM.mpoint)
- push hl
- ld hl,2; const val
- push hl
- call MZO.init
- ld a,(this)
-;mpoint+=size;
- ld hl,(MZO.initBGM.mpoint)
- ld de,(MZO.initBGM.size)
- add hl, de
- ld (MZO.initBGM.mpoint),hl
-L63.lbexit:
- ret
-MZO.initSE:
- pop bc
- pop hl
- ld (MZO.initSE.mpoint),hl
- push bc
-;"static all";
-;if $mpoint [3] &&    $mpoint [3]<mpoint
- ld hl,3; const val
- add hl,hl
- ld de,MZOgbl_mpoint; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- call ziffalse
- jp z,L64.lb20
- ld hl,(MZO.initSE.mpoint)
- push hl
- ld hl,3; const val
- add hl,hl
- ld de,MZOgbl_mpoint; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- pop de
- call hlltde
-L64.lb20:
-;then
- call ziffalse
- jp z,L64.lb19
-;return return;
- jp L64.lbexit
-L64.lb19:
-;mpoint+=4;
- ld hl,(MZO.initSE.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initSE.mpoint),hl
-;mpoint++;
- ld hl,(MZO.initSE.mpoint)
- inc hl
- ld (MZO.initSE.mpoint),hl
-;var size=peekw(mpoint)
- ld hl,(MZO.initSE.mpoint)
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- ld (MZO.initSE.size),hl
-;mpoint+=4;
- ld hl,(MZO.initSE.mpoint)
- ld de,4; const val
- add hl, de
- ld (MZO.initSE.mpoint),hl
-;init(3,mpoint);
- ld hl,(MZO.initSE.mpoint)
- push hl
- ld hl,3; const val
- push hl
- call MZO.init
- ld a,(this)
-L64.lbexit:
- ret
-MZO.stopBGM:
- pop bc
- push bc
-;"static all";
-;for var i=0;
-;var i=0
- ld hl,0; const val
- ld (MZO.stopBGM.i),hl
-L65.lb21:
-;while i<3
- ld hl,3; const val
- push hl
- ld hl,(MZO.stopBGM.i)
- pop de
- call hlltde
- call ziffalse
- jp z,L65.lb22
-;stop(i);
- ld hl,(MZO.stopBGM.i)
- push hl
- call MZO.stop
- ld a,(this)
-L65.lb23:
-;next i++
- ld hl,(MZO.stopBGM.i)
- inc hl
- ld (MZO.stopBGM.i),hl
- jp L65.lb21
-L65.lb22:
-L65.lbexit:
- ret
-
-MZO.stepAll:
- pop bc
- push bc
-;"static all";
-;for var i=0;
-;var i=0
- ld hl,0; const val
- ld (MZO.stepAll.i),hl
-L67.lb24:
-;while i<4
- ld hl,4; const val
- push hl
- ld hl,(MZO.stepAll.i)
- pop de
- call hlltde
- call ziffalse
- jp z,L67.lb25
-;step(i);
- ld hl,(MZO.stepAll.i)
- push hl
- call MZO.step
- ld a,(this)
-L67.lb26:
-;next i++
- ld hl,(MZO.stepAll.i)
- inc hl
- ld (MZO.stepAll.i),hl
- jp L67.lb24
-L67.lb25:
-;$mute[3]=$mpoint [2];
- ld hl,2; const val
- add hl,hl
- ld de,MZOgbl_mpoint; const val
- add hl,de
- ld e,(hl)
- inc hl
- ld d,(hl)
- ex de,hl
- push hl
- ld hl,3
- add hl,hl
- ld de,MZOgbl_mute
- add hl,de
- pop de
- ld (hl),e
- inc hl
- ld (hl),d
-L67.lbexit:
- ret
-; class_def_end MZO
+    data={'z_mzo':`;range 0-20
+def MZO.main,0,0
+ #local
+ lbexit:
+ #endlocal
+ enddef MZO.main
 beginram
 MZO.init.ch:
- dw 0
+dw 0
 MZO.init.mp:
- dw 0
+dw 0
 endram
+MZO.init:
+pop bc
+pop hl
+ld (MZO.init.ch),hl
+pop hl
+ld (MZO.init.mp),hl
+push bc
+#local
+;"static all";
+;$len[ch]=20160/2;
+ld hl,10080; const val
+push hl
+ld hl,(MZO.init.ch)
+add hl,hl
+ld de,MZOgbl_len
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$mcount[ch]=0;
+ld hl,0; const val
+push hl
+ld hl,(MZO.init.ch)
+add hl,hl
+ld de,MZOgbl_mcount
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$tempoc[ch]=336;
+ld hl,336; const val
+push hl
+ld hl,(MZO.init.ch)
+add hl,hl
+ld de,MZOgbl_tempoc
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$mute[ch]=0;
+ld hl,0; const val
+push hl
+ld hl,(MZO.init.ch)
+add hl,hl
+ld de,MZOgbl_mute
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$mpoint[ch]=mp;
+ld hl,(MZO.init.mp)
+push hl
+ld hl,(MZO.init.ch)
+add hl,hl
+ld de,MZOgbl_mpoint
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+lbexit:
+#endlocal
+ret
 beginram
 MZO.stop.chn:
- dw 0
+dw 0
 MZO.stop.ch:
- dw 0
+dw 0
 endram
+MZO.stop:
+pop bc
+pop hl
+ld (MZO.stop.ch),hl
+push bc
+#local
+;"static all";
+;$mpoint[ch]=0;
+ld hl,0; const val
+push hl
+ld hl,(MZO.stop.ch)
+add hl,hl
+ld de,MZOgbl_mpoint
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;var chn=clamp(ch,0,2)
+ld hl,2; const val
+push hl
+ld hl,0; const val
+push hl
+ld hl,(MZO.stop.ch)
+pop bc
+pop de
+call clamp
+ld (MZO.stop.chn),hl
+;if !$mute[ch]
+ld hl,(MZO.stop.ch)
+add hl,hl
+ld de,MZOgbl_mute; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+call nothl
+jpf lb4;then
+;sound_vol(chn,0);
+ld hl,0; const val
+ld e,l
+push de
+ld hl,(MZO.stop.chn)
+ld a,l
+pop de
+add a,8
+call WRTPSG
+getthis 0
+lb4:
+lbexit:
+#endlocal
+ret
 beginram
 MZO.step.chn:
- dw 0
+dw 0
 MZO.step.mpoint:
- dw 0
+dw 0
 MZO.step.mcount:
- dw 0
+dw 0
 MZO.step.tempoc:
- dw 0
+dw 0
 MZO.step.len:
- dw 0
+dw 0
 MZO.step.v:
- dw 0
+dw 0
 MZO.step.cmd:
- dw 0
+dw 0
 MZO.step.ofs:
- dw 0
+dw 0
 MZO.step.ch:
- dw 0
+dw 0
 endram
+MZO.step:
+pop bc
+pop hl
+ld (MZO.step.ch),hl
+push bc
+#local
+;"static all";
+;var chn=clamp(ch,0,2)
+ld hl,2; const val
+push hl
+ld hl,0; const val
+push hl
+ld hl,(MZO.step.ch)
+pop bc
+pop de
+call clamp
+ld (MZO.step.chn),hl
+;var mpoint=$mpoint[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mpoint; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.mpoint),hl
+;if !mpoint
+ld hl,(MZO.step.mpoint)
+call nothl
+jpf lb5;then
+;return return;
+jp lbexit
+lb5:
+;var mcount=$mcount[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mcount; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.mcount),hl
+;var tempoc=$tempoc[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_tempoc; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.tempoc),hl
+;var len=$len[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_len; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.len),hl
+;var v=$v [ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_v; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.v),hl
+;var cmd
+;if !$mute[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mute; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+call nothl
+jpf lb6;then
+;sound_vol(chn,v);
+ld hl,(MZO.step.v)
+ld e,l
+push de
+ld hl,(MZO.step.chn)
+ld a,l
+pop de
+add a,8
+call WRTPSG
+getthis 0
+lb6:
+;mcount-=tempoc;
+ld hl,(MZO.step.mcount)
+ld de,(MZO.step.tempoc)
+subhl de
+ld (MZO.step.mcount),hl
+;if v>0
+ld hl,0; const val
+push hl
+ld hl,(MZO.step.v)
+pop de
+call hlgtde
+jpf lb7;then
+;v--;
+ld hl,(MZO.step.v)
+dec hl
+ld (MZO.step.v),hl
+lb7:
+lb8:
+;while mcount>=-tempoc && mcount<=0
+ld hl,(MZO.step.tempoc)
+call neghl
+push hl
+ld hl,(MZO.step.mcount)
+pop de
+call hlgede
+andand lb10
+ld hl,0; const val
+push hl
+ld hl,(MZO.step.mcount)
+pop de
+call hllede
+lb10:
+jpf lb9
+;cmd=peek(mpoint);
+ld hl,(MZO.step.mpoint)
+ld l,(hl)
+ld h,0
+ld (MZO.step.cmd),hl
+;if cmd>=0 && cmd<96
+ld hl,0; const val
+push hl
+ld hl,(MZO.step.cmd)
+pop de
+call hlgede
+andand lb12
+ld hl,96; const val
+push hl
+ld hl,(MZO.step.cmd)
+pop de
+call hlltde
+lb12:
+jpf lb11;then
+;if !$mute[ch]
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mute; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+call nothl
+jpf lb13;then
+;sound_scale(chn,cmd);
+ld hl,(MZO.step.cmd)
+push hl
+ld hl,(MZO.step.chn)
+ld a,l
+pop hl
+call mus.scale.a
+getthis 0
+lb13:
+;v=12;
+ld hl,12; const val
+ld (MZO.step.v),hl
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;if peek(mpoint)==123
+ld hl,123; const val
+push hl
+ld hl,(MZO.step.mpoint)
+ld l,(hl)
+ld h,0
+pop de
+call hleqde
+jpf lb15;then
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;mcount+=peekw(mpoint);
+ld hl,(MZO.step.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+push hl
+ld hl,(MZO.step.mcount)
+pop de
+add hl, de
+ld (MZO.step.mcount),hl
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb14
+lb15:;else
+;mcount+=len;
+ld hl,(MZO.step.mcount)
+ld de,(MZO.step.len)
+add hl, de
+ld (MZO.step.mcount),hl
+lb14:
+jp lb9
+lb11:
+;switch cmd
+ld hl,(MZO.step.cmd)
+ld de,99; const val
+rst dcompr
+jp z,lb160
+ld de,124; const val
+rst dcompr
+jp z,lb161
+ld de,104; const val
+rst dcompr
+jp z,lb162
+ld de,255; const val
+rst dcompr
+jp z,lb163
+ld de,100; const val
+rst dcompr
+jp z,lb164
+ld de,101; const val
+rst dcompr
+jp z,lb165
+ld de,102; const val
+rst dcompr
+jp z,lb166
+ld de,103; const val
+rst dcompr
+jp z,lb167
+ld de,107; const val
+rst dcompr
+jp z,lb168
+ld de,110; const val
+rst dcompr
+jp z,lb169
+ld de,115; const val
+rst dcompr
+jp z,lb1610
+ld de,116; const val
+rst dcompr
+jp z,lb1611
+ld de,118; const val
+rst dcompr
+jp z,lb1612
+ld de,120; const val
+rst dcompr
+jp z,lb1613
+ld de,122; const val
+rst dcompr
+jp z,lb1614
+getthis 0
+jp lb16def
+lb160:
+getthis 0
+;case 99
+;v=0;
+ld hl,0; const val
+ld (MZO.step.v),hl
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;if peek(mpoint)==123
+ld hl,123; const val
+push hl
+ld hl,(MZO.step.mpoint)
+ld l,(hl)
+ld h,0
+pop de
+call hleqde
+jpf lb18;then
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;mcount+=peekw(mpoint);
+ld hl,(MZO.step.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+push hl
+ld hl,(MZO.step.mcount)
+pop de
+add hl, de
+ld (MZO.step.mcount),hl
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb17
+lb18:;else
+;mcount+=len;
+ld hl,(MZO.step.mcount)
+ld de,(MZO.step.len)
+add hl, de
+ld (MZO.step.mcount),hl
+lb17:
+jp lb16brk
+lb161:
+getthis 0
+;case 124
+;v=0;
+ld hl,0; const val
+ld (MZO.step.v),hl
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb162:
+getthis 0
+;case 104
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;var ofs=peekw(mpoint)
+ld hl,(MZO.step.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.ofs),hl
+;mpoint--;
+ld hl,(MZO.step.mpoint)
+dec hl
+ld (MZO.step.mpoint),hl
+;mpoint+=ofs-65536;
+ld hl,0; const val
+push hl
+ld hl,(MZO.step.ofs)
+pop de
+subhl de
+push hl
+ld hl,(MZO.step.mpoint)
+pop de
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb163:
+getthis 0
+;case 255
+;stop();
+call MZO.stop
+getthis 0
+;mcount=1;
+ld hl,1; const val
+ld (MZO.step.mcount),hl
+jp lb16brk
+lb164:
+getthis 0
+;case 100
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb165:
+getthis 0
+;case 101
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+jp lb16brk
+lb166:
+getthis 0
+;case 102
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb167:
+getthis 0
+;case 103
+;tempoc=peekw(mpoint)*168/60;
+ld hl,(MZO.step.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld de,168; const val
+call mul.a
+getthis 0
+ld de,60; const val
+call div.a
+getthis 0
+ld (MZO.step.tempoc),hl
+;mpoint+=3;
+ld hl,(MZO.step.mpoint)
+ld de,3; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb168:
+getthis 0
+;case 107
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb169:
+getthis 0
+;case 110
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb1610:
+getthis 0
+;case 115
+;mpoint+=4;
+ld hl,(MZO.step.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb1611:
+getthis 0
+;case 116
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb1612:
+getthis 0
+;case 118
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb1613:
+getthis 0
+;case 120
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb1614:
+getthis 0
+;case 122
+;mpoint++;
+ld hl,(MZO.step.mpoint)
+inc hl
+ld (MZO.step.mpoint),hl
+;len=peekw(mpoint);
+ld hl,(MZO.step.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.step.len),hl
+;locate(0,3+chn);
+ld hl,3; const val
+ld de,(MZO.step.chn)
+add hl, de
+push hl
+ld hl,0; const val
+pop de
+call locate
+;mpoint+=2;
+ld hl,(MZO.step.mpoint)
+ld de,2; const val
+add hl, de
+ld (MZO.step.mpoint),hl
+jp lb16brk
+lb16def:
+;locate(0,6);
+ld hl,6; const val
+push hl
+ld hl,0; const val
+pop de
+call locate
+;printf ("Inv %d %x" ,cmd, mpoint);
+#local
+ld hl,st
+jp nx
+st: db 73, 110, 118, 32
+db 0
+nx:
+#endlocal
+call print.a
+getthis 0
+ld hl,(MZO.step.cmd)
+call printi.a
+getthis 0
+#local
+ld hl,st
+jp nx
+st: db 32
+db 0
+nx:
+#endlocal
+call print.a
+getthis 0
+ld hl,(MZO.step.mpoint)
+show hl
+getthis 0
+;stop();
+call MZO.stop
+getthis 0
+;mcount=1;
+ld hl,1; const val
+ld (MZO.step.mcount),hl
+jp lb16brk
+lb16brk:
+jp lb8
+lb9:
+;$mpoint[ch]=mpoint;
+ld hl,(MZO.step.mpoint)
+push hl
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mpoint
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$mcount[ch]=mcount;
+ld hl,(MZO.step.mcount)
+push hl
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_mcount
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$tempoc[ch]=tempoc;
+ld hl,(MZO.step.tempoc)
+push hl
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_tempoc
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$len[ch]=len;
+ld hl,(MZO.step.len)
+push hl
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_len
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+;$v [ch]=v;
+ld hl,(MZO.step.v)
+push hl
+ld hl,(MZO.step.ch)
+add hl,hl
+ld de,MZOgbl_v
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+lbexit:
+#endlocal
+ret
 beginram
 MZO.initBGM.size:
- dw 0
+dw 0
 MZO.initBGM.mpoint:
- dw 0
+dw 0
 endram
+MZO.initBGM:
+pop bc
+pop hl
+ld (MZO.initBGM.mpoint),hl
+push bc
+#local
+;"static all";
+;mpoint+=4;
+ld hl,(MZO.initBGM.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;mpoint++;
+ld hl,(MZO.initBGM.mpoint)
+inc hl
+ld (MZO.initBGM.mpoint),hl
+;var size
+;size=peekw(mpoint);
+ld hl,(MZO.initBGM.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.initBGM.size),hl
+;mpoint+=4;
+ld hl,(MZO.initBGM.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;init(0,mpoint);
+ld hl,(MZO.initBGM.mpoint)
+push hl
+ld hl,0; const val
+push hl
+call MZO.init
+getthis 0
+;mpoint+=size;
+ld hl,(MZO.initBGM.mpoint)
+ld de,(MZO.initBGM.size)
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;size=peekw(mpoint);
+ld hl,(MZO.initBGM.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.initBGM.size),hl
+;mpoint+=4;
+ld hl,(MZO.initBGM.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;init(1,mpoint);
+ld hl,(MZO.initBGM.mpoint)
+push hl
+ld hl,1; const val
+push hl
+call MZO.init
+getthis 0
+;mpoint+=size;
+ld hl,(MZO.initBGM.mpoint)
+ld de,(MZO.initBGM.size)
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;size=peekw(mpoint);
+ld hl,(MZO.initBGM.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.initBGM.size),hl
+;mpoint+=4;
+ld hl,(MZO.initBGM.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+;init(2,mpoint);
+ld hl,(MZO.initBGM.mpoint)
+push hl
+ld hl,2; const val
+push hl
+call MZO.init
+getthis 0
+;mpoint+=size;
+ld hl,(MZO.initBGM.mpoint)
+ld de,(MZO.initBGM.size)
+add hl, de
+ld (MZO.initBGM.mpoint),hl
+lbexit:
+#endlocal
+ret
 beginram
 MZO.initSE.size:
- dw 0
+dw 0
 MZO.initSE.mpoint:
- dw 0
+dw 0
 endram
+MZO.initSE:
+pop bc
+pop hl
+ld (MZO.initSE.mpoint),hl
+push bc
+#local
+;"static all";
+;if $mpoint [3] &&    $mpoint [3]<mpoint
+ld hl,3; const val
+add hl,hl
+ld de,MZOgbl_mpoint; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+andand lb20
+ld hl,(MZO.initSE.mpoint)
+push hl
+ld hl,3; const val
+add hl,hl
+ld de,MZOgbl_mpoint; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+pop de
+call hlltde
+lb20:
+jpf lb19;then
+;return return;
+jp lbexit
+lb19:
+;mpoint+=4;
+ld hl,(MZO.initSE.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initSE.mpoint),hl
+;mpoint++;
+ld hl,(MZO.initSE.mpoint)
+inc hl
+ld (MZO.initSE.mpoint),hl
+;var size=peekw(mpoint)
+ld hl,(MZO.initSE.mpoint)
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+ld (MZO.initSE.size),hl
+;mpoint+=4;
+ld hl,(MZO.initSE.mpoint)
+ld de,4; const val
+add hl, de
+ld (MZO.initSE.mpoint),hl
+;init(3,mpoint);
+ld hl,(MZO.initSE.mpoint)
+push hl
+ld hl,3; const val
+push hl
+call MZO.init
+getthis 0
+lbexit:
+#endlocal
+ret
 beginram
 MZO.stopBGM.i:
- dw 0
+dw 0
 endram
+MZO.stopBGM:
+pop bc
+push bc
+#local
+;"static all";
+;for var i=0;
+;var i=0
+ld hl,0; const val
+ld (MZO.stopBGM.i),hl
+lb21:
+;while i<3
+ld hl,3; const val
+push hl
+ld hl,(MZO.stopBGM.i)
+pop de
+call hlltde
+jpf lb22
+;stop(i);
+ld hl,(MZO.stopBGM.i)
+push hl
+call MZO.stop
+getthis 0
+lb23:
+;next i++
+ld hl,(MZO.stopBGM.i)
+inc hl
+ld (MZO.stopBGM.i),hl
+jp lb21
+lb22:
+lbexit:
+#endlocal
+ret
 beginram
 MZO.stepAll.i:
- dw 0
+dw 0
 endram
+MZO.stepAll:
+pop bc
+push bc
+#local
+;"static all";
+;for var i=0;
+;var i=0
+ld hl,0; const val
+ld (MZO.stepAll.i),hl
+lb24:
+;while i<4
+ld hl,4; const val
+push hl
+ld hl,(MZO.stepAll.i)
+pop de
+call hlltde
+jpf lb25
+;step(i);
+ld hl,(MZO.stepAll.i)
+push hl
+call MZO.step
+getthis 0
+lb26:
+;next i++
+ld hl,(MZO.stepAll.i)
+inc hl
+ld (MZO.stepAll.i),hl
+jp lb24
+lb25:
+;$mute[2]=$mpoint [3];
+ld hl,3; const val
+add hl,hl
+ld de,MZOgbl_mpoint; const val
+add hl,de
+ld e,(hl)
+inc hl
+ld d,(hl)
+ex de,hl
+push hl
+ld hl,2
+add hl,hl
+ld de,MZOgbl_mute
+add hl,de
+pop de
+ld (hl),e
+inc hl
+ld (hl),d
+lbexit:
+#endlocal
+ret
 beginram
 MZOgbl_mpoint:
- dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 MZOgbl_mcount:
- dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 MZOgbl_v:
- dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 MZOgbl_len:
- dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 MZOgbl_tempoc:
- dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 MZOgbl_mute:
- dw 0, 0, 0, 0;
+dw 0, 0, 0, 0;
 MZOgbl_psgs:dw 0
+
+
+
+
+
+
 endram` };
 }
 init();

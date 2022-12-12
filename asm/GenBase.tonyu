@@ -158,8 +158,8 @@ for (klass of mem.ks) {
     let mname=method.name;
     let h=klass.shortName+"."+
     mname;
-    printf("beginram%n");
     printf(";begin of static variables for %s%n",h);
+    printf("beginram%n");
     for(let k,v in locals){
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
@@ -168,8 +168,8 @@ for (klass of mem.ks) {
         printf("%s.%s:%n",h,k);
         printf("dw 0%n");
     }
-    printf(";end of static variables for %s%n",h);
     printf("endram%n");
+    printf(";end of static variables for %s%n",h);
     
     printf("%s:%n",h);
     printf("pop bc%n");
@@ -197,8 +197,8 @@ for (let k of Object.keys($MZO.arrays)) {
 }
 printf(";!/ROM%n");
 printf(`
-beginram
 ;begin of global variables
+beginram
 ${Object.keys($config.intArrays||{}).map \(k) {
     let i= $config.intArrays[k];
     if (typeof i==="number") {
@@ -216,8 +216,8 @@ ${Object.keys(globalVars).map \(k){
     if ($config.intArrays[k]) return "";
     return globalLabel(k)+":dw 0";
 }.join("\n")}
-;end of global variables
 endram
+;end of global variables
 
 endusr:
 include z_vram
@@ -273,7 +273,7 @@ outAsm("before.genrom",included);
 
 if ($config.postprocess&&
 $config.postprocess.target=="beforeGenROM"&&
-$config.postprocess.onExport==="function") {
+typeof $config.postprocess.onExport==="function") {
     $config.postprocess.onExport{genAsm:this, asm:included};
     return;
 }
@@ -283,7 +283,7 @@ outAsm("macro", included);
 
 if ($config.postprocess&&
 $config.postprocess.target=="beforeAsm"&&
-$config.postprocess.onExport==="function") {
+typeof $config.postprocess.onExport==="function") {
     $config.postprocess.onExport{genAsm:this, asm:included};
     return;
 }
