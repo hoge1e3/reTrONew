@@ -14,6 +14,17 @@ let arys=[];
     //print("ADR=",adr);
     return pa;
 }
+\assignStr(str){
+    let b=$Boot.str2bin(str);
+    b.push(0);
+    return assignAry8(b);
+}
+\assignStrAry(stra){
+    return assignAry16(
+    stra.map \(str){
+        return assignStr(str);
+    });
+}
 \getEntry(adr, type) {
     for (let e of arys) {
         let ofs=adr-e.adr;

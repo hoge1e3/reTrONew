@@ -44,9 +44,6 @@ include z_map
 include z_bool
 include z_dac
 include z_mus
-;include z_mzo
-
-
 `);
 let anode;
 \annotation(n) {
@@ -210,23 +207,24 @@ printf(";!/ROM%n");
 printf(`
 ;begin of global variables
 beginram
-${Object.keys($config.intArrays||{}).map \(k) {
+`);
+for(let k of $config.intArrays||{}){
     let i= $config.intArrays[k];
+    printf("%s:%n",globalLabel(k));
     if (typeof i==="number") {
-        return globalLabel(k)+":\n"+//dw $+2\n"+
-        "ds "+(i*2)+", 0";
+        printf("ds %d,0%n",i*2);
     } else {
-        // 1-d array only currently
-        return globalLabel(k)+":\n"+//dw $+2\n"+
-        "dw "+i.join(", ");
+        dataSection("dw",i);
     }
-}.join("\n")};
-${Object.keys(globalVars).map \(k){
-    if ($MZO.arrays[k]) return "";
-    if ($config.consts[k]!=null) return "";
-    if ($config.intArrays[k]) return "";
-    return globalLabel(k)+":dw 0";
-}.join("\n")}
+}
+for(let k,v in globalVars){
+    if ($MZO.arrays[k]) continue;
+    if ($config.consts[k]!=null) continue;
+    if ($config.intArrays[k]) continue;
+    printf("%s:dw 0%n",
+    globalLabel(k));
+}
+printf(`
 endram
 ;end of global variables
 
@@ -401,6 +399,16 @@ new PostProcess{plines, plain};
         }
     }
     return "";
+}
+\str2db(str) {
+    printf("db ");
+    str=$Boot.str2bin(str);
+    for (let i=0;i<str.length;i++) {
+        printf("%d",str [i]);
+        if (i<str.length-1) printf(", ");
+    }
+    printf("%n");
+    
 }
 
 \globalLabel(n:String) {

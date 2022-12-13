@@ -101,6 +101,15 @@ let kanaTbl,dac10,dac5;
         $config.consts [k]=globalLabel(k);
             //$mapper.assignAry16(v);
     }
+    for (let k,v in $config.chars) {
+        if(typeof v=="string"){
+            v=$mapper.assignStr(v);
+        }else {
+            v=$mapper.assignStrAry(v);
+        }       
+        Tonyu.setGlobal(k,v);
+        $config.consts [k]=globalLabel(k);
+    }
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
     $exporter=new GenAsm;
     let ide=$Boot.getIDE();

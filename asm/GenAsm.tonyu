@@ -272,16 +272,6 @@ function cmtNode(n,head){
    invoketg.a .push
    popthis 0*/
 }
-\str2db(str) {
-    printf("db ");
-    str=$Boot.str2bin(str);
-    for (let i=0;i<str.length;i++) {
-        printf("%d",str [i]);
-        if (i<str.length-1) printf(", ");
-    }
-    printf("%n");
-    
-}
 \setLit(l){
     let s=lit2s(l);
     printf("#local%n");
