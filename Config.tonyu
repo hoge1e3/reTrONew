@@ -31,6 +31,7 @@ extends RBoot;
             //noPreview: true,   
             
             // auto select export target: "rom", "msxpen", "8bitws"
+            //   without assembing: "beforeGenROM","beforeAsm"     
             //target: "rom",
             
             // when target is "rom", specify rom file name (also valid wen target is not specifed) 

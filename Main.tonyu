@@ -6,7 +6,11 @@ https://github.com/hoge1e3/reTrONew
 locate(0,2);
 printf("%d, %x, %d",testSub(10,3),100, 65536);
 sound_playBGM($se_Ribbon);
-
+print(`
+LD hl,1800h
+LD A,35
+CALL 4dH
+`);
 //$sound.playBGM($se_Ribbon);
 /*while(true){
     sound_cmd(4,0);
@@ -53,7 +57,7 @@ while(true) {
 
 function inter() {
     //$psg.step();
-    sound_cmd(4,0);
+    //sound_cmd(4,0);
 }
 function showScore() {
     locate(0,0);
