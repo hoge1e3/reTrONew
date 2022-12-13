@@ -152,7 +152,7 @@ let keynames={space: 0x0108,
         g.arith2(args[0],"/",args[1]);
     } else if (mname==="print") {
         for (let k of args){
-            if (k.type==="literal") {
+            if (k.type==="literal"||k.type==="backquoteLiteral") {
                 g.setLit(k);
                 printf("call print.a%n");
             }else {
@@ -294,7 +294,8 @@ let keynames={space: 0x0108,
         range[0], range[1]);
     } else if (mname==="asm_label") {
         printf("ld hl, %s%n", g.lit2s(args[0]));
-    
+    } else if (mname==="asm_inline") {
+        printf(g.lit2s(args[0]));
     } else {
         for(let a of args.reverse()) {
             visit(a);

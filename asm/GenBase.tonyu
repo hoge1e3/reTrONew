@@ -71,6 +71,17 @@ let hasMain;
 
 \lit2s(l){
     if (typeof l==="string") return l;
+    if (l.type==="backquoteLiteral") {
+        let res="";
+        for (let b of l.body) {
+            if (b.type==="backquoteText") {
+                res+=b.text;
+            } else {
+                unsup(l,"expression in backquote not supported");
+            }
+        }
+        return res;
+    }
     let s=l.text;
     return s.substring(1,s.length-1);
     ;
