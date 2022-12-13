@@ -515,9 +515,14 @@ jp lb16brk
 lb163:
 getthis 0
 ;case 255
-;stop();
+;stop(ch);
+ld hl,(MZO.step.ch)
+push hl
 call MZO.stop
 getthis 0
+;mpoint=0;
+ld hl,0; const val
+ld (MZO.step.mpoint),hl
 ;mcount=1;
 ld hl,1; const val
 ld (MZO.step.mcount),hl
@@ -640,14 +645,6 @@ inc hl
 ld d,(hl)
 ex de,hl
 ld (MZO.step.len),hl
-;locate(0,3+chn);
-ld hl,3; const val
-ld de,(MZO.step.chn)
-add hl, de
-push hl
-ld hl,0; const val
-pop de
-call locate
 ;mpoint+=2;
 ld hl,(MZO.step.mpoint)
 ld de,2; const val
@@ -686,9 +683,14 @@ getthis 0
 ld hl,(MZO.step.mpoint)
 show hl
 getthis 0
-;stop();
+;stop(ch);
+ld hl,(MZO.step.ch)
+push hl
 call MZO.stop
 getthis 0
+;mpoint=0;
+ld hl,0; const val
+ld (MZO.step.mpoint),hl
 ;mcount=1;
 ld hl,1; const val
 ld (MZO.step.mcount),hl
