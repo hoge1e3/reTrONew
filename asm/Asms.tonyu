@@ -2077,18 +2077,20 @@ RActor.onUpdate:
 RActor.screenOut:
 #local
  getfld .x
- bit 1,h
- jr nz, true
- getfld .y
- ld de,192*2
+ ld de,256 << spr.scale
  cpde.a 0
  getthis 0
- jr nc,true
- ld hl,0
- xor a
+ jr nc, lb_true
+ getfld .y
+ ld de,192 << spr.scale
+ cpde.a 0
+ getthis 0
+ jr nc, lb_true
+ ld hl,false
+ and a
  ret
- true:
- ld hl,1
+ lb_true:
+ ld hl,true
  scf
  ret
 #endlocal

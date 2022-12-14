@@ -101,7 +101,7 @@ let kanaTbl,dac10,dac5;
         $config.consts [k]=globalLabel(k);
             //$mapper.assignAry16(v);
     }
-    for (let k,v in $config.chars) {
+    for (let k,v in ($config.chars||{})) {
         if(typeof v=="string"){
             v=$mapper.assignStr(v);
         }else {
