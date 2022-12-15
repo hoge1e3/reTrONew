@@ -3,8 +3,10 @@ For details:
 https://github.com/hoge1e3/reTrONew
 */
 //setInterval(inter);
-locate(0,2);
-printf("%d, %x, %d",testSub(10,3),100, 65536);
+locate(0,5);
+
+printf("Aaa %s %d, %x, %d",$mesg,
+testSub(10,3),100, 65536);
 sound_playBGM($se_Ribbon);
 print(`
 LD hl,1800h
