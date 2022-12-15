@@ -219,10 +219,22 @@ for(let k of $config.intArrays||{}){
 }
 for(let k,v in globalVars){
     if ($MZO.arrays[k]) continue;
-    if ($config.consts[k]!=null) continue;
-    if ($config.intArrays[k]) continue;
+    if ($config.consts&&
+    $config.consts[k]!=null) continue;
+    if ($config.intArrays&&
+    $config.intArrays[k]) continue;
+    if ($config.chars&&
+    $config.chars[k]) continue;
+    
     printf("%s:dw 0%n",
     globalLabel(k));
+}
+for(let k,v in $config.chars ||{}){
+    if(typeof v=="string"){
+        printf("%s:",
+        globalLabel(k));
+        str2db(v);
+    }
 }
 printf(`
 endram
@@ -401,14 +413,9 @@ new PostProcess{plines, plain};
     return "";
 }
 \str2db(str) {
-    printf("db ");
     str=$Boot.str2bin(str);
-    for (let i=0;i<str.length;i++) {
-        printf("%d",str [i]);
-        if (i<str.length-1) printf(", ");
-    }
-    printf("%n");
-    
+    str.push(0);
+    dataSection("db",str);
 }
 
 \globalLabel(n:String) {

@@ -166,6 +166,12 @@ let dotAlign=1;
         value: \(p, ex) {
             if (p=="%d") {
                 print(ex);
+            } else if (p=="%s") {
+                let a=ex,c;
+                while(c=$mapper.peek(a)){
+                    print(String.fromCharCode(c));
+                    a++;
+                }
             } else {
                 print(ex.toString(16));
             }

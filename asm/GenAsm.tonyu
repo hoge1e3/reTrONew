@@ -277,9 +277,10 @@ function cmtNode(n,head){
     printf("#local%n");
     printf("ld hl,st%n");
     printf("jp nx%n");
-    printf("st: ");str2db(s);
+    printf("st: ");
+    str2db(s);
     //printf(`st: db "${s}"%n`);
-    printf("db 0%n");
+    //printf("db 0%n");
     printf("nx:%n");
     printf("#endlocal%n");
 }

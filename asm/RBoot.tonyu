@@ -20,6 +20,7 @@ native Tonyu;
         },
         // unimplemented: global strings(char*). length cannot be changed.
         "chars": {
+            
         }
     };
 }
@@ -179,7 +180,7 @@ let kanaTbl,dac10,dac5;
 }
 \parsePrintf(str:String, a, callbacks) {
     a=a.slice();
-    let per=/%(d|x)/;
+    let per=/%(d|x|s)/;
     while(str) {
         //print("pprf2",str);
         let m=per.exec(str);

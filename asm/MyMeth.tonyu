@@ -179,6 +179,10 @@ let keynames={space: 0x0108,
                 visit(ex);
                 if (p=="%d") {
                     printf("call printi.a%n");
+                } else if (p=="%s") {
+                    printf("call print.a%n");
+                    printf("getthis 0%n");
+        
                 } else {
                     printf("show hl%n");
                 }
