@@ -197,7 +197,10 @@ for (klass of mem.ks) {
 }
 if (!hasMain) throw new Error(`Main class ${$mainClassName} is not subclass of RActor`);
 text="Writing assets...";
-while(!outp.complete || !outbg.complete) update();
+while(!outp.complete || !outbg.complete) {
+    update();
+}
+text="export globals";
 printf(";!ROM%n");
 for (let k of Object.keys($MZO.arrays)) {
     printf("%s: %n",globalLabel(k));//dw $+2%n
@@ -231,9 +234,25 @@ for(let k,v in globalVars){
 }
 for(let k,v in $config.chars ||{}){
     if(typeof v=="string"){
-        printf("%s:",
+        printf("%s:%n",
         globalLabel(k));
         str2db(v);
+    }else if($Boot.isArray(v)){
+        printf("%s:%n",
+        globalLabel(k));
+        for(let i,e in v){
+            printf("dw %s_%d%n",
+            globalLabel(k),i);
+        }
+        for(let i,e in v){
+            printf("%s_%d:%n",
+            globalLabel(k),i);
+            str2db(e);
+        }
+    }else {
+        throw new Error(
+        "invalid char type"+
+        k);
     }
 }
 printf(`
@@ -243,12 +262,15 @@ endram
 endusr:
 include z_vram
 `);
+text="write pat";
 printf("spr.pat:%n");
 dataSection("dbx",outp.sprgen);
 printf("end.spr.pat:%n");
+text="write patgen";
 printf("bg.gen:%n");
 dataSection("dbx",outbg.patgen);
 printf("end.bg.gen:%n");
+text="write coltbl";
 printf("bg.col:%n");
 dataSection("dbx",outbg.coltbl);
 printf("end.bg.col:%n");
@@ -257,6 +279,7 @@ printf(`
 include z_ram
 ;!INCLUDE_RAM
 end _main`);
+text="check problems";
 
 if (problems.length) {
     let tx=new HTMLUI{
@@ -388,7 +411,7 @@ new PostProcess{plines, plain};
     unsup(n);
 }
 
-\dataSection(type, array) {
+nowait \dataSection(type, array) {
     let perline=16;
     let fmt="%d";
     if (type[2]=="x") {
@@ -434,6 +457,11 @@ new PostProcess{plines, plain};
 \outAsm(name, content) {
     if ($Navigator.isNW()) {
         file(`asm/${name}.asm`).text(content);
+    }else if($config.asmDebug){
+        name=name.replace(/\W/g,"_");
+        file(`../AsmD_${name}.tonyu`).
+        text("/*"+content+"*/");
+    
     }
 }
 \isROM() {

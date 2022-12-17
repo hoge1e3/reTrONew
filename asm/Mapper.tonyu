@@ -20,10 +20,9 @@ let arys=[];
     return assignAry8(b);
 }
 \assignStrAry(stra){
-    return assignAry16(
-    stra.map \(str){
+    return stra.map \(str){
         return assignStr(str);
-    });
+    };
 }
 \getEntry(adr, type) {
     for (let e of arys) {

@@ -1,16 +1,14 @@
 extends Actor;
+
+let genf=file("sprgen.json");
+let complete;
+let count=0,sprgen=[];
+//chkCache();
 let pa=new Panel {
     x:50,y:20,
     width:16,height:16,
     scaleX:2
 };
-let complete;
-/*let ide=$Boot.getIDE();
-if (ide) ide.runDialog.resize {
-    left:10,top:300,width:400,
-    height:400
-};*/
-let /*buf='',*/count=0,sprgen=[];
 for(let i=0;
 i<$imageList.length;i++){
     let l=$imageList [i];
@@ -32,6 +30,10 @@ i<$imageList.length;i++){
     update();
     //print(d.data.length);
 }
+genf.obj(sprgen);
+/*print("nocache spr",
+sprgen.length);*/
+    
 pa.die();
 complete=true;
 \out(d){
@@ -50,4 +52,14 @@ complete=true;
         }
     }
     //buf+="db "+db+"\n";
+}
+\chkCache(){
+    if(!genf.exists())return;
+    if(genf.lastUpdate()<
+    $assetTimestamp)return;
+    sprgen=genf.obj();
+    /*print("cache spr",
+    sprgen.length);*/
+    complete=true;
+    while(true) update();
 }

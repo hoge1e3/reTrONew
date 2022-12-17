@@ -25,7 +25,7 @@ function append(content) {
             content=content.substring(r);
         }
     }
-    validate();
+    //validate();
 }
 function rowcol(index) {
     let row=Math.floor(index/bufSize);

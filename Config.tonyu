@@ -48,7 +48,8 @@ extends RBoot;
             "$mesgs": ["Hello", "World!!"], // (char*)[2]
             // "Hello" and "World!!" may not be placed in contiguous memory areas.
             //"$f_str": "ERROR! float cannot point string",
-        }
+        },
+        asmDebug=0
     };
 }
 super.main();

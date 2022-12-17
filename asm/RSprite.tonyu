@@ -165,6 +165,10 @@ let dotAlign=1;
         },
         value: \(p, ex) {
             if (p=="%d") {
+                if(typeof ex!=
+                "number")
+                throw new Error(
+                `printf("${fmt}") ${ex}`);
                 print(ex);
             } else if (p=="%s") {
                 let a=ex,c;

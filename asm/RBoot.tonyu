@@ -113,6 +113,8 @@ let kanaTbl,dac10,dac5;
     }
     //for (let y=0;y<24;y++) for(let x=0;x<32;x++) $map.set(x,y,$pat_font+35);
     $exporter=new GenAsm;
+    $assetTimestamp=getAssetTimestamp();
+    //print($assetTimestamp);
     let ide=$Boot.getIDE();
     if (ide && $Navigator.isMobile()) ide.runDialog.resize {
         left:10,top:100,width:400,
@@ -137,6 +139,21 @@ let kanaTbl,dac10,dac5;
     $Boot.onInter=\{};
     $sound.on("interval", \{$Boot.onInter();});
     new mainClass;
+}
+\getAssetTimestamp(){
+    let r=0;
+    let res=$currentProject.getResource();
+    for(let img of res.images){
+        if(!img.url.match(/^ls:/))
+        continue;
+        if(img.url.match(/thumbnail/))
+        continue;
+        let f=img.url.replace(
+        /^ls:/,"../");
+        let m=(file(f).lastUpdate());
+        if(m>r)r=m;
+    }
+    return(r);
 }
 \globalLabel(n:String) {
     return `gbl_${n.replace(/\$/g,"")}`;
@@ -204,5 +221,9 @@ let kanaTbl,dac10,dac5;
     $pad=new Pad {
         buttonCnt=2
     };
+}
+\isArray(v){
+    return v &&
+    typeof v.slice=="function";
 }
 super.main();

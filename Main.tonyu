@@ -5,8 +5,9 @@ https://github.com/hoge1e3/reTrONew
 //setInterval(inter);
 locate(0,5);
 
-printf("Aaa %s %d, %x, %d",$mesg,
-testSub(10,3),100, 65536);
+printf("Aaa %s bbb",
+$mesgs [1]);
+print( $mesgs [1]);
 sound_playBGM($se_Ribbon);
 print(`
 LD hl,1800h

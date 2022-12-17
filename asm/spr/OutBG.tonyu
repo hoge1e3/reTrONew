@@ -1,14 +1,19 @@
 //extends TObject;
 extends Actor;
+
+let complete;
+$RSprPat=$RSprPat||new RSprPat;
+let buf='',count=0;
+let pf=file("patgen.json");
+let cf=file("coltbl.json");
+
+let patgen=[], coltbl=[];
+chkCache();
 let pa=new Panel {
     x:16,y:16,
     width:8,height:8,
     scaleX:1
 };
-let complete;
-$RSprPat=$RSprPat||new RSprPat;
-let buf='',count=0;
-let patgen=[], coltbl=[];
 for(let i=0;
 i<$imageList.length;i++){
     let l=$imageList [i];
@@ -28,6 +33,13 @@ i<$imageList.length;i++){
     //print(d.data.length);
 }
 //print(patgen.map\(e){return e.toString(2);},coltbl.map\(e){return e.toString(16);});
+pf.obj(patgen);
+cf.obj(coltbl);
+/*print("nocache bg",
+patgen.length,
+coltbl.length);*/
+    
+
 pa.die();
 complete=true;
 fireEvent("complete");
@@ -83,3 +95,17 @@ fireEvent("complete");
         patgen.push(bits-0);
     }
 }
+\chkCache(){
+    if(!pf.exists())return;
+    if(pf.lastUpdate()<
+    $assetTimestamp)return;
+    patgen=pf.obj();
+    coltbl=cf.obj();
+    
+    /*print("cache bg",
+    patgen.length,
+    coltbl.length);*/
+    complete=true;
+    while(true) update();
+}
+
