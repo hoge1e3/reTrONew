@@ -84,6 +84,23 @@ let keynames={space: 0x0108,
         }
         visit(args[0]);
         printf("call abs%n");
+    } else if(mname=="map_line"){
+        visit(args[1]); // y
+        printf("push hl%n");
+        visit(args[0]); // x
+        printf("pop de%n");
+        printf("call map.adr%n");
+        printf("push hl%n");
+        
+        visit(args [3]);//len
+        printf("push hl%n");
+        
+        visit(args [2]);//str
+        printf("pop bc%n");
+        printf("pop de%n");
+        printf("call LDIRVM%n");
+        printf("getthis 0%n");
+        
     } else if (mname.match(/^map_set(At)?/)) {
         if (args.length!==3) {
             unsup(left, "'map_set(At) should give (x,y,p)");

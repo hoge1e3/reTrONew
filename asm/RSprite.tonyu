@@ -30,6 +30,19 @@ let dotAlign=1;
 \map_get(x,y) {
     return $map.get( x , y)-$pat_font_orig;
 }
+\map_line(x,y,s,l){
+    for(;l>0;l--){
+        $map.set( x , y,
+        $pat_font_orig+peek(s));
+        s++;
+        x++;
+        
+        if(x>=$map.col){
+            x=0;
+            y++;
+        }
+    }
+}
 \div(x,y) {
     return floor(x/y);
 }
@@ -184,4 +197,7 @@ let dotAlign=1;
             throw new Error(r);
         },
     };
+}
+\asm_inline(s){
+    
 }
