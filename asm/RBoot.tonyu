@@ -66,11 +66,16 @@ let kanaTbl,dac10,dac5;
     $crashTo_size=8<<$config["spr.scale"];
     $screenWidth=256<<$config["spr.scale"];
     $screenHeight=192<<$config["spr.scale"];
+    $offsetX= 0;
+    $offsetY= 0;
     $builtinGlobals={
-        $screenWidth,
-        $screenHeight,
+        //$screenWidth,
+        //$screenHeight,
         $frameCount: 0,
+        $offsetX,
+        $offsetY,
     };
+    
     for (let k,v of $config.consts) {
         Tonyu.setGlobal(k,v);
     }

@@ -224,6 +224,8 @@ for(let k,v in globalVars){
     if ($MZO.arrays[k]) continue;
     if ($config.consts&&
     $config.consts[k]!=null) continue;
+    if ($builtinGlobals[k]!=null)
+    continue;
     if ($config.intArrays&&
     $config.intArrays[k]) continue;
     if ($config.chars&&

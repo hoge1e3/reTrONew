@@ -155,7 +155,8 @@ let dotAlign=1;
     let pa:Panel=sprpat.get(p,c);
     if(pa==null)return;
     ctx.save();
-    let sx=x,sy=y;
+    let sx=x- $offsetX,
+    sy=y - $offsetY;
     x=floor(x/dotAlign)*dotAlign>> spr_scale;
     y=floor(y/dotAlign)*dotAlign>> spr_scale;
     performTransform(ctx);

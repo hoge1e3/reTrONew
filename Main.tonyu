@@ -54,7 +54,7 @@ print(keycode("j1_up"));
 while(true) {
     map_line(0,9,$mesg+coli,4);
     var e=new Enemy{x:rnd(512), y:0, p:5, c:$colors[coli]};
-    print(e.x, rnd(10));
+    print($screenWidth, $frameCount);
     coli=(coli+1)%4;
     updateEx(30);
     showScore();

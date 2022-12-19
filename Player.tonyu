@@ -36,7 +36,7 @@ while(true) {
         if (e) e.c=rnd(10)+5;
         
     }
-
+    $offsetX=x-256;
     update();
     
 }
