@@ -3,7 +3,7 @@ extends Actor;
 let genf=file("sprgen.json");
 let complete;
 let count=0,sprgen=[];
-//chkCache();
+chkCache();
 let pa=new Panel {
     x:50,y:20,
     width:16,height:16,
