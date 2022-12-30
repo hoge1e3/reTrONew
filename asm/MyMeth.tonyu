@@ -284,6 +284,13 @@ let keynames={space: 0x0108,
         }
         printf("ld h,0%n");
         
+    } else if (mname==="poke") {
+        visit(args[1]);
+        printf("push hl%n");
+        visit(args[0]);
+        printf("pop de%n");
+        printf("ld (hl),e%n");
+        
     } else if (mname==="peekw") {
         visit(args[0]);
         if(g.isROM()){

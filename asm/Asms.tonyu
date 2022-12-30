@@ -1957,6 +1957,7 @@ endwork gbl_offsetX
 beginram
 defsub spr.put1
 ; a: th.id
+; uses c
 #local
 
   tgconst t1
@@ -1973,14 +1974,23 @@ defsub spr.put1
   subhl de
   bit 7,h
   jp nz, setsco
+  ld de,spr.ymax
+  cpde.a 0
+  jp nc, setsco
   spr.unscale 0
   sub 8
-  outwrt 0
+  ld c,a
 
   tgconst.g hl,t2,.x
   ld de,(gbl_offsetX)
+  subhl de
   bit 7,h
   jp nz, setsco
+  ld de,spr.xmax
+  cpde.a 0
+  jp nc,setsco
+  ld a,c
+  outwrt 0
   subhl de
   spr.unscale 0
   sub 8

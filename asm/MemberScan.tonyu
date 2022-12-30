@@ -110,6 +110,7 @@ for (let klass of ks) {
     klass.shortName,
     klass.superclass.shortName);
     for (let k,v in r){
+        if(fld.resv[k])continue;
         let i=fld.n2idx(k);
         if(i<min)min=i;
         if(i>max)max=i;

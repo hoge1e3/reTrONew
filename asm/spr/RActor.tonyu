@@ -1,5 +1,5 @@
 extends RSprite;
-let x,y,p,c;
+let x,y,p,c,statusReg;
 //\getkey(){}
 /*\new(params){
     super(params);

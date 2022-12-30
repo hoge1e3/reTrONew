@@ -1,6 +1,6 @@
 var e,d;
 while(true) {
-    locate(0,1);print(statusReg," ");
+    locate(0,2);print(statusReg," ");
     map_setAt(x,y,$wall);
     //locate(0,3);print(getkey("j1_left"),getkey("j1_right"));
     /*if (getkey("left")||getkey("j1_left")) x-=3;
@@ -13,7 +13,7 @@ while(true) {
     if (getkey("right")) x+=3;
     if (getkey("up")) y-=3;
     if (getkey("down")) y+=3;*/
-    x=clamp(x,16,512-16);
+    //x=clamp(x,16,512-16);
     // TODO combine these crashTo with hierarchical index
     //   AbstractEnemy <- {Enemy, EBullet}
     if (crashTo(Enemy) || crashTo(EBullet)) {
@@ -36,7 +36,7 @@ while(true) {
         if (e) e.c=rnd(10)+5;
         
     }
-    $offsetX=x-256;
+    //$offsetX=x-256;
     update();
     
 }

@@ -3,6 +3,7 @@ let idx=256-4-2;
 let _n2idx={};//optimized
 let _n2seq={};//not optimized
 let genasm:GenAsm;
+let resv= {};
 \fldidx(){
     let def=`Actor.noovr macro Class
  fld .class,Class
@@ -39,9 +40,11 @@ endm
         m=fldp.exec(ln)||
         metp.exec(ln);
         if(m){
+            if(ln.match(/;/)){
+                resv [m [1]]=1;
+            }
             res [m [1]]=idx;
-            print(m [1],idx.
-            toString(16));
+           // print(m [1],idx.toString(16));
             n2seq(m[1]);
             idx-=2;
         }
