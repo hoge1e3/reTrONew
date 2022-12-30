@@ -2,9 +2,9 @@ extends TObject;
 let idx=256-4-2;
 let _n2idx={};//optimized
 let _n2seq={};//not optimized
-
+let genasm:GenAsm;
 \fldidx(){
-    let def=`Actor.noovr,Class
+    let def=`Actor.noovr macro Class
  fld .class,Class
  meth Class,main
  fld.bottom Object
@@ -22,17 +22,26 @@ let _n2seq={};//not optimized
  fld.bottom Actor
 endm
 `;
+    def=genasm.asms.data.z_tnu;
+    let startp=/noovr macro/;
+    let endp=/^\s*endm/;
     let fldp=/fld \.(\w+)/;
     let metp=/meth.*,(\w+)/;
     idx=256-4-2;
     let res={};
+    let rd;
     for(let ln of def.split("\n")){
-        let m=fldp.exec(ln)||
+        let m=startp.exec(ln);
+        if(!rd &&!m )continue;
+        if(!rd)rd=true;
+        m=endp.exec(ln);
+        if(m)rd=false;
+        m=fldp.exec(ln)||
         metp.exec(ln);
         if(m){
             res [m [1]]=idx;
-            /*print(m [1],idx.
-            toString(16));*/
+            print(m [1],idx.
+            toString(16));
             n2seq(m[1]);
             idx-=2;
         }

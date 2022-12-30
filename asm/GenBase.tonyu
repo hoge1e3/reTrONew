@@ -4,6 +4,10 @@ native Tonyu;
 native Worker;
 native $;
 native asmWorker;
+let asms=new Asms;
+let asmsp=new Asms_MZO;
+Object.assign(asms.data, asmsp.data);
+
 let worker;//=asmWorker;//new Worker("https://edit.tonyu.jp/cgi-bin/main.js?"+rnd());
 let scriptHost=$config.scriptHost||"https://hoge1e3.github.io";
 let workerURL=`${scriptHost}/msx/asmWorker.js`;
@@ -313,7 +317,7 @@ print(n.superclass.fullName);
 
 //msxpen.com/codes/-N8kZzjv3KL0vbHvgiqT";
 
-let cg=new Includer;
+let cg=new Includer {asms};
 let included=cg.gensrc(buf+"").replace(/\r/g,"");
 outAsm("before.genrom",included);
 

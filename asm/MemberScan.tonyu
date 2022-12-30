@@ -3,13 +3,20 @@ native Tonyu;
 \u(obj) {
     return Object.assign({},obj);
 }
+let memcache={};
 \getMembers(klass){
+    if(memcache [klass.shortName])
+    return memcache [klass.shortName];
     let d=klass.decls;
     let f=(d.fields),m=(d.methods);
     let s=klass.superclass;
     //print(klass.shortName, klass, f,m);
     let res={};
-    if(klass.shortName!="RActor" && s)res=getMembers(s);
+    if(klass.shortName!="RActor" 
+    && s){
+        res=Object.assign(res,
+        getMembers(s));
+    }
     //let p=Tonyu.iterator2(f);
     f=new FldCollect{klass}.collect();
     for(let n,v in f){
@@ -20,11 +27,15 @@ native Tonyu;
     }
     for(let n,v in m){
         if (n=="new") continue;
+        if(res [n]){
+            res [n].hasChild=true;
+        }
         res [n]={
             type="meth",
             declin=klass
         };
     }
+    memcache [klass.shortName]=res;
     return res;
 }
 \inherits(klass, parent) {
@@ -39,7 +50,7 @@ let anodes=genasm.anodes;
 let Za="RActor";/*(anodes.filter \(e){
     return e.shortName==="RActor";
 }[0])*/;
-let fld=new FldIdx;
+let fld=new FldIdx {genasm};
 let ks=anodes.filter \(klass){
     return
     inherits(klass, Za) &&
@@ -83,6 +94,7 @@ for (let klass of ks) {
 
 \proc(klass){
     //print(klass);
+    klass.superclass.hasChild=true;
     let r=getMembers(klass);
     fld.addMembers(
     Object.keys(r));

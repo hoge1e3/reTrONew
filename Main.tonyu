@@ -60,7 +60,9 @@ while(true) {
     showScore();
     //i+=1;
 }
-
+function update(){
+    super.update();
+}
 function inter() {
     //$psg.step();
     //sound_cmd(4,0);

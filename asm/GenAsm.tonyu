@@ -33,6 +33,31 @@ function visit(n){
 \v_parenExpr(n:ParenExpr) {
     visit(n.expr);
 }
+\v_superExpr(n:SuperExpr){
+    let name=n.name;
+    let params=n.params;
+    let args=params.args;
+    if(!name){
+        unsup(n," super(...) not allowed ");
+    }
+    let m=mem.getMembers(
+    klass.superclass);
+    let meth=m [name.text];
+    if(!meth){
+        unsup(n, `super. ${name.text} not found `);
+    }
+    for(let a of args.reverse()) {
+        visit(a);
+        printf("push hl%n");
+    }
+   // if(meth.declin.shortName===)
+    printf("call %s.%s%n",
+    meth.declin.shortName,
+    name.text);
+    printf("getthis 0%n");
+       
+
+}
 function cmtNode(n,head){
     head=head?head+" ":"";
     printf(";%s%s%n", 

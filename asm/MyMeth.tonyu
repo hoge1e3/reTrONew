@@ -324,7 +324,9 @@ let keynames={space: 0x0108,
         }
         let m=g.members;
         if(m [mname]&&
-        m [mname].type=="meth"){
+        m [mname].type=="meth"&&
+        (!m [mname].hasChild ||
+        !g.klass.hasChild)){
             printf("call %s.%s%n",
             m [mname].declin.
             shortName,mname);

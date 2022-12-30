@@ -2,6 +2,7 @@ extends Actor;
 let sprpat;
 let p,c;
 let dotAlign=1;
+let statusReg;
 \spr_scale {
     return $config["spr.scale"];
 }

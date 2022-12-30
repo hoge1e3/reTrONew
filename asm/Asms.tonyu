@@ -1687,6 +1687,7 @@ class macro Class,super
  fldidx:defl fld.top
  &Class:
   fld .class,&Class
+  fld .statusReg,0
 endm
 fld.bottom macro Class
  if 0
@@ -1930,7 +1931,9 @@ defsub spr.putslp
  ld a, (spr.puts.b)
  ld b, th.count
  sprl:
+  ld (this),a
   call spr.put1
+  getthis 0
   ld c,a
   ld a,(spr.puts.s)
   add a,c
@@ -1955,7 +1958,6 @@ beginram
 defsub spr.put1
 ; a: th.id
 #local
-  push af
 
   tgconst t1
   tgconst t2
@@ -1963,20 +1965,23 @@ defsub spr.put1
   tgconst t4
   ld h,a
   call th.isblank.a
-  jr z,nothave
-
+  ret z
+  getthis 0
+  
   tgconst.g hl,t1,.y
   ld de,(gbl_offsetY)
-  and a
-  sbc hl,de
+  subhl de
+  bit 7,h
+  jp nz, setsco
   spr.unscale 0
   sub 8
   outwrt 0
 
   tgconst.g hl,t2,.x
   ld de,(gbl_offsetX)
-  and a
-  sbc hl,de
+  bit 7,h
+  jp nz, setsco
+  subhl de
   spr.unscale 0
   sub 8
   outwrt 0
@@ -1988,8 +1993,17 @@ defsub spr.put1
 
   tgconst.g a,t4,.c
   outwrt 0
-  nothave:
-  pop af
+  getthis 0
+  ld h,a
+  ld l,.statusReg+1
+  res 7,(hl)
+  ret 
+  
+  setsco:
+  getthis 0
+  ld h,a
+  ld l,.statusReg+1
+  set 7,(hl)
 #endlocal
 endsub spr.put1
 endram
@@ -2056,6 +2070,9 @@ end.const macro n
 endm
 
 RActor.noovr macro Class
+ ;keep'em. used in FldIdx
+ ;fld .class,Class
+ ;fld .statusReg,0
  meth &Class,main
  fld.bottom Object
  fld .x, 0
@@ -2076,7 +2093,7 @@ beginram
 
 class RActor,Sprite
  RActor.noovr RActor
- end.const RActor
+end.const RActor
 RActor.main:
  enter 0
  exit 0
@@ -2089,20 +2106,16 @@ RActor.onUpdate:
 RActor.screenOut:
 #local
  getfld .x
- and a
  ld de,(gbl_offsetX)
- sbc hl,de
+ subhl de
  ld de,256 << spr.scale
- cpde.a 0
- getthis 0
+ subhl de
  jr nc, lb_true
  getfld .y
- and a
  ld de,(gbl_offsetY)
- sbc hl,de
+ subhl de
  ld de,192 << spr.scale
- cpde.a 0
- getthis 0
+ subhl de
  jr nc, lb_true
  ld hl,false
  and a
@@ -2533,7 +2546,7 @@ defsub map.adr
  ; de=chipy
  rept 5
   slde 0
-endm
+ endm
  add hl,de
  ld de,1800h
  add hl,de
@@ -2553,12 +2566,18 @@ endsub map.get.a
 defsub map.adrat.a
  ; hl=spr_x
  ; de=spr_y
+ ld bc,(gbl_offsetX)
+ and a
+ sbc hl,bc
  spr.unscale 0
  srl a
  srl a
  srl a
  push af
  ex de,hl
+ ld bc,(gbl_offsetY)
+ and a
+ sbc hl,bc
  spr.unscale 0
  srl a
  srl a

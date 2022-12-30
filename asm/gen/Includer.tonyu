@@ -1,8 +1,6 @@
 extends TObject;
 includes FileMod;
-let asms=new Asms;
-let asmsp=new Asms_MZO;
-Object.assign(asms.data, asmsp.data);
+let asms:Asms;
 let incled;
 let staticRoot=file("../static/asm/");
 function outFile() {
