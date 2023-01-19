@@ -872,7 +872,21 @@ defsub h.unreach
  ld hl,1800h
  call 4dh
  dw 0x18,0xfe
-endsub h.unreach`,
+endsub h.unreach
+
+h.nop:
+ ret
+ 
+beginram
+defhook macro h.name
+ &h.name:
+ jp h.nop
+endm
+endram
+sethook macro h.name, adr
+ ld (&h.name+1),&adr
+endm
+`,
         'z_th':`include z_ctrl
 include z_sp
 include z_vdp
@@ -1108,18 +1122,13 @@ endsub th.push
 
 defsub th.loop
  ; hook before stepall
- db 0cdh
- h.thent:
- dw int.nop
+ call h.thent
  ; save prev timecnt
  ld a,(timecnt)
  push af
- ; Do stepall
- call th.stepall
- ; hook after stepall
- db 0cdh
- h.thlop:
- dw int.nop
+  call th.stepall
+  ; hook after stepall
+  call h.thlop
  ; wait until timecnt changes
  pop af
  bwat:
@@ -1134,6 +1143,9 @@ defsub th.loop
  ; repeat
  jr th.loop
 endsub th.loop
+
+defhook h.thent
+defhook h.thlop
 
 endram
 
@@ -2287,8 +2299,10 @@ tnu.run macro Main,st,en
  ;call MZOCmd
  ;call mus.ini
  new &Main, 0,&st ,&en
- movw (h.thlop),onExitFrame
- movw (h.thent),keyall
+ ld hl,onExitFrame
+ sethook h.thlop, hl
+ ld hl,keyall
+ sethook h.thent, hl
  jp th.loop
 endm
 
@@ -2814,13 +2828,11 @@ doint:
  ret
 
 beginram
-srlabel h.tntimi
- call int.nop
- ret
+ defhook h.tntimi
 endram
 
 defsub setInterval
- ld (h.tntimi+1), hl
+ sethook h.tntimi, hl
 endsub setInterval
 defsub clearInterval
  ld hl, int.nop
