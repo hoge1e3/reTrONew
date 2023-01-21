@@ -867,12 +867,12 @@ endtbl macro n
 endm
 
 
-defsub h.unreach
+defsub h.unreach.default
  ld a,'u'
  ld hl,1800h
  call 4dh
  dw 0x18,0xfe
-endsub h.unreach
+endsub h.unreach.default
 
 h.nop:
  ret
@@ -882,6 +882,7 @@ defhook macro h.name
  &h.name:
  jp h.nop
 endm
+defhook h.unreach
 endram
 sethook macro h.name, adr
  ld (&h.name+1),&adr
@@ -1324,10 +1325,8 @@ defsub unreach.new
  db 0
 endsub unreach.new
 unreach.new.init macro xx
-ld hl,h.unreach
-ld (hl),0c3h
-ld hl,unreach.new
-ld (h.unreach+1),hl
+ ld hl, unreach.new
+ sethook h.unreach, hl
 endm`,
         'z_sp':`include z_mem
 include z_debug
@@ -2275,7 +2274,7 @@ defsub onExitFrame
 endsub onExitFrame
 
 tnu.run macro Main,st,en
- ;unreach.new.init 0
+ unreach.new.init 0
  ld sp,sp.ini
  call screen1
  call screen2
