@@ -32,4 +32,4 @@ Game Engine for MSX, based on [Tonyu System 2](https://github.com/hoge1e3/Tonyu2
 
 # Related project
 
-- If you with to run MSX emulator directory in the IDE, see [reTrONew_embed](https://github.com/hoge1e3/reTrONew_embed/)
+- If you wish to run MSX emulator directly in the IDE, see [reTrONew_embed](https://github.com/hoge1e3/reTrONew_embed/)
