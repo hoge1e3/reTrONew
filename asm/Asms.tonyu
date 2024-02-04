@@ -677,6 +677,8 @@ spr.scale equ 1
 spr.xmax equ 256<<spr.scale
 spr.ymax equ 192<<spr.scale
 
+space.char equ 32
+
 ENASLT EQU 0024H
 RSLREG EQU 0138H
 EXPTBL EQU 0FCC1H
@@ -2706,7 +2708,7 @@ nega:
  ld (strbuf.i),a
  jr loop
 posi:
- ld a, ' '
+ ld a, space.char
  ld (strbuf.i),a
 loop:
  ld de,10
