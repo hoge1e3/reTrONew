@@ -116,7 +116,7 @@ build();
     if (n2seq(a)>n2seq(b)){
         return isConfli(b,a);
     }
-    return confli[a+"\t"+b]=true;
+    return confli[a+"\t"+b];
 }
 \addMembers(names:String[]) {
     for (let name of names) {
