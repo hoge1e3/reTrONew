@@ -14,15 +14,17 @@ let pa=new Panel {
     width:8,height:8,
     scaleX:1
 };
+let ps=$Boot.patgens.bgs;
 for(let i=0;
-i<$imageList.length;i++){
-    let l=$imageList [i];
-    if(l.width!=8)continue;
-    if(l.height!=8)continue;
+i<ps.length;i++){
+  // let l=$imageList [ps [i]];
+    //print(l.width,l.height);
+  //  if(l.width!=8)continue;
+ //   if(l.height!=8)continue;
     if(count>=256)break;
     count++;
     pa.clearRect();
-    pa.drawSprite(4,4,i);
+    pa.drawSprite(4,4,ps [i]);
     //updateEx(50);
     let d=pa.getImageData(
     0,0,8,8);

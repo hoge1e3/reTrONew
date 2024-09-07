@@ -9,15 +9,16 @@ let pa=new Panel {
     width:16,height:16,
     scaleX:2
 };
+let ps=$Boot.patgens.sps;
 for(let i=0;
-i<$imageList.length;i++){
-    let l=$imageList [i];
-    if(l.width!=16)continue;
-    if(l.height!=16)continue;
+i<ps.length;i++){
+    //let l=$imageList [ps [i]];
+//    if(l.width!=16)continue;
+  //  if(l.height!=16)continue;
     if(count>=64)break;
     count++;
     pa.clearRect();
-    pa.drawSprite(8,8,i);
+    pa.drawSprite(8,8,ps [i]);
     //updateEx(50);
     let d=pa.getImageData(
     0,0,8,16);

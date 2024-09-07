@@ -49,6 +49,18 @@ extends RBoot;
             // "Hello" and "World!!" may not be placed in contiguous memory areas.
             //"$f_str": "ERROR! float cannot point string",
         },
+        // sprite patterns: an object 
+        //   with key of an image name(See Window->Image List)
+        //   and its value is the first sprite number(in MSX)from which the image is loaded.
+        "sprites": {$pat_spr:0},
+        //Ex. Overwrite $pat_spr image chips with $pat_myspr from sprite pattern No. 16. 
+        // The chip of $pat_myspr+n corresponds to sprite No. 16+n
+        // The overwrite order is the value of each global value, the order of keys in object literal does NOT matter.
+        // In this example, it should be $pat_spr < $pat_myspr .
+        //{$pat_spr:0,$pat_myspr:16},   
+
+        // BG patterns: same as "sprites"
+        "BGs": {$pat_font:0},
         asmDebug=0
     };
 }

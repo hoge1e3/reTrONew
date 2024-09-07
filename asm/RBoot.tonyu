@@ -25,6 +25,7 @@ native Tonyu;
     };
 }
 let kanaTbl,dac10,dac5;
+let patgens;
 \createMainObject() {
     //--config section---
     config();
@@ -47,6 +48,12 @@ let kanaTbl,dac10,dac5;
     dac10="がぎぐげござじずぜぞ"+
     "だぢづでどばびぶべぼ";
     dac5="ぱぴぷぺぽ";
+    
+    $config.sprites=$config.sprites ||
+    {$pat_spr=0};
+    $config.BGs=$config.BGs ||
+    {$pat_font=0};
+    imgOrder();
     
     $RSprPat=new RSprPat;
     if (!$config.postprocess.noPreview) {
@@ -92,9 +99,6 @@ let kanaTbl,dac10,dac5;
         Tonyu.setGlobal(k,v);
         $config.consts [k]=globalLabel(k);
     }
-
-    $pat_font_orig=$pat_font;
-    $pat_font=0;
     for (let k,v in $config.intArrays) {
         if (typeof v==="number") {
             let n=v;
@@ -147,6 +151,8 @@ let kanaTbl,dac10,dac5;
 }
 \getAssetTimestamp(){
     let r=0;
+    let resfile=file("../res.json");
+    return resfile.lastUpdate();
     let res=$currentProject.getResource();
     for(let img of res.images){
         if(!img.url.match(/^ls:/))
@@ -159,6 +165,64 @@ let kanaTbl,dac10,dac5;
         if(m>r)r=m;
     }
     return(r);
+}
+\imgOrder(){
+    let res=$currentProject.getResource();
+    let pats= [];
+    for(let img of res.images){
+        if(!img.url.match(/^ls:/))
+        continue;
+        if(img.url.match(/thumbnail/))
+        continue;
+        pats.push {
+            name=img.name,
+            from=Tonyu.getGlobal(img.name)
+        };
+    }
+    pats.sort \(a,b){
+        return a.from-b.from;
+    };
+    let sps=[],bgs=[];
+    //print($JSON.stringify(
+    //$config.BGs));
+    for(let i,p of pats){
+        p.to=(
+        i<pats.length-1?
+        pats [i+1].from:
+        $imageList.length);
+        //print($JSON.stringify(        p));
+        if($config.BGs [p.name]!=null){
+            
+            let dst=$config.BGs [p.name];
+            //print(p.name,dst);
+            for(let i=p.from ;
+            i<p.to;i++){
+                bgs [dst+i-p.from ]=i;
+            }
+        }    
+        if($config.sprites [p.name]!=null){
+            let dst=$config.sprites [p.name];
+            for(let i=p.from ;
+            i<p.to;i++){
+                sps [dst+i-p.from ]=i;
+            }
+        }    
+
+    }
+    let bgrev={};
+    for(let k,v of bgs)bgrev[v]=k;
+    patgens={bgs,sps,bgrev};
+    for(let k,v of bgs ){
+        //print("setG", k, v);
+        Tonyu.setGlobal(k,v);
+    }
+    for(let k,v of sps ){
+        Tonyu.setGlobal(k,v);
+    }
+    //print(bgs[35]);
+    /*print(bgs);
+    
+    print(sps);*/
 }
 \globalLabel(n:String) {
     return `gbl_${n.replace(/\$/g,"")}`;
@@ -196,7 +260,18 @@ let kanaTbl,dac10,dac5;
             c=kanaTbl.indexOf(s[i]);
             if (c>=0) c+=128+4;else c=32;
         }
-        res.push(c);
+        if (c===92) {
+            if (s[i+1]==="u") {
+                // \u0000
+                res.push( ("0x"+s.substring(i+2,i+6)) -0 );
+                i+=5;
+            } else {
+                res.push(s.charCodeAt(i));
+                i++;
+            }
+        } else {
+            res.push(c);
+        }
     }
     return res;
 }

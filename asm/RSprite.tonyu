@@ -20,21 +20,21 @@ let statusReg;
     sprpat.palette [n-1]=c;
 }
 \map_setAt(x,y,p) {
-    $map.set( x>>(3+spr_scale) , y>>(3+spr_scale), $pat_font_orig+p);
+    map_set( x>>(3+spr_scale) , y>>(3+spr_scale), p);
 }
 \map_getAt(x,y) {
-    return $map.get( x>>(3+spr_scale) , y>>(3+spr_scale))-$pat_font_orig;
+    return map_get( x>>(3+spr_scale) , y>>(3+spr_scale));
 }
 \map_set(x,y,p) {
-    $map.set( x , y, $pat_font_orig+p);
+    $map.set( x , y, $Boot.patgens.bgs [p]);
 }
 \map_get(x,y) {
-    return $map.get( x , y)-$pat_font_orig;
+    return $Boot.patgens.bgrev [$map.get( x , y)];
 }
 \map_line(x,y,s,l){
     for(;l>0;l--){
-        $map.set( x , y,
-        $pat_font_orig+peek(s));
+        map_set( x , y,
+        peek(s));
         s++;
         x++;
         

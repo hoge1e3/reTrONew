@@ -14,7 +14,8 @@ let imgs={};
     if (c<=0) return null;
     let key=`${p}\t${c}`;
     if (imgs[key]) return imgs[key];
-    let ls=$imageList[p];
+    let ls=$imageList[$Boot.patgens
+    .sps[p]];
     if (!ls) return  null;
     let res=new Panel{width:ls.width, height:ls.height};
     imgs[key]=res;

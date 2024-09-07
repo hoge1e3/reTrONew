@@ -5,10 +5,10 @@ https://github.com/hoge1e3/reTrONew
 //setInterval(inter);
 locate(0,5);
 
-printf("Aaa %s bbb",
+printf("Aaa %s \u0023\u0024 bbb",
 $mesgs [1]);
 print( $mesgs [1]);
-sound_playBGM($se_Ribbon);
+//sound_playBGM($se_Ribbon);
 asm_inline(`
 LD hl,1800h
 LD A,35
@@ -41,7 +41,7 @@ switch(coli){
 //updateEx(60);
 //$sound.setBGMVolume(30);
 locate(10,10);
-print("てすとです=",$rtn_test);
+print("てすとです=#",$rtn_test);
 //sound_vol(0,8);
 /*setInterval(inter);
 $psg=new PSGs;
