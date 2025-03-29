@@ -45,7 +45,12 @@ let statusReg;
     }
 }
 \div(x,y) {
-    return floor(x/y);
+    let s=sgn(x*y);
+    x=abs(x);y=abs(y);
+    x=(x&0x7fff);
+    y=(y&0x7fff);
+    
+    return s*floor(x/y);
 }
 
 \locate(x,y) {
